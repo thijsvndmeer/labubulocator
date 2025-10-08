@@ -11,7 +11,7 @@ export const Header = () => {
           <div className="flex items-center gap-2">
             <TrendingUp className="h-6 w-6 text-primary" />
             <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Labubu Market
+              Labubu Locator
             </h1>
           </div>
           
