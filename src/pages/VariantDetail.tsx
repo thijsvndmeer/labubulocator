@@ -88,6 +88,13 @@ export default function VariantDetail() {
     );
   }
 
+  const getImageUrl = (image: string) => {
+    if (image.startsWith('http')) {
+      return image;
+    }
+    return `/${image}`;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-subtle">
       <Header />
@@ -102,7 +109,7 @@ export default function VariantDetail() {
           <Card className="overflow-hidden">
             <div className="aspect-square bg-muted p-8">
               <img
-                src={`/${variant.images[0]}`}
+                src={getImageUrl(variant.images[0])}
                 alt={variant.name}
                 className="w-full h-full object-cover rounded-lg"
               />

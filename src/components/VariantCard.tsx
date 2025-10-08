@@ -12,14 +12,21 @@ interface VariantCardProps {
 }
 
 export const VariantCard = ({ variant }: VariantCardProps) => {
-  const lowestPrice = Math.min(...variant.priceSources.map(s => s.price));
+  const lowestPrice = Math.min(...(variant.priceSources || []).map(s => s.price));
+
+  const getImageUrl = (image: string) => {
+    if (image.startsWith('http')) {
+      return image;
+    }
+    return `/${image}`;
+  };
 
   return (
     <Card className="group overflow-hidden transition-all duration-300 hover:shadow-card-hover">
       <Link to={`/variant/${variant.id}`}>
         <div className="aspect-square overflow-hidden bg-muted">
           <img
-            src={variant.images[0]}
+            src={getImageUrl(variant.images[0])}
             alt={variant.name}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
@@ -44,21 +51,21 @@ export const VariantCard = ({ variant }: VariantCardProps) => {
           <div className="space-y-1">
             <div className="flex items-baseline justify-between">
               <span className="text-2xl font-bold text-primary">
-                ${variant.estimatedValue.toFixed(2)}
+                ${(variant.estimatedValue || 0).toFixed(2)}
               </span>
               <div className={`flex items-center gap-1 text-sm font-medium ${
-                variant.priceChange24h > 0 ? 'text-rarity-uncommon' : 'text-destructive'
+                (variant.priceChange24h || 0) > 0 ? 'text-rarity-uncommon' : 'text-destructive'
               }`}>
-                {variant.priceChange24h > 0 ? (
+                {(variant.priceChange24h || 0) > 0 ? (
                   <TrendingUp className="h-3.5 w-3.5" />
                 ) : (
                   <TrendingDown className="h-3.5 w-3.5" />
                 )}
-                {Math.abs(variant.priceChange24h)}%
+                {Math.abs(variant.priceChange24h || 0)}%
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              Floor: ${lowestPrice.toFixed(2)} • Range: ${variant.priceRange.low}-${variant.priceRange.high}
+              Floor: ${lowestPrice > 0 && lowestPrice !== Infinity ? lowestPrice.toFixed(2) : 'N/A'} • Range: ${variant.priceRange?.low || 'N/A'}-${variant.priceRange?.high || 'N/A'}
             </p>
           </div>
         </Link>
@@ -86,7 +93,7 @@ export const VariantCard = ({ variant }: VariantCardProps) => {
         </div>
 
         <Link to={`/variant/${variant.id}`}>
-          <ConfidenceScore score={variant.confidenceScore} />
+          <ConfidenceScore score={variant.confidenceScore || 0} />
         </Link>
       </div>
     </Card>
