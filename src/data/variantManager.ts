@@ -1,5 +1,4 @@
-'''
-import { Variant } from '@/types/variant';
+import { PriceData, Sale, PriceSnapshot, Variant } from '@/types/variant';
 import Papa from 'papaparse';
 
 let variants: Variant[] = [];
@@ -119,4 +118,3 @@ export const updateVariantWithScrapedData = (variantId: string, scrapedPrices: P
   variants[variantIndex] = variant;
   return variant;
 };
-'''

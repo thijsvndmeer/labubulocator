@@ -18,7 +18,9 @@ const Index = () => {
       setVariants(getAllVariants());
     };
     loadVariants();
-  }, []);  const { 
+  }, []);
+
+  const { 
     filteredVariants, 
     selectedRarity, 
     setSelectedRarity, 
