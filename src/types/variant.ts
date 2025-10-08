@@ -1,18 +1,46 @@
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'secret';
+export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock' | 'pre_order' | 'discontinued';
+
+export interface PriceSource {
+  source: string;
+  price: number;
+  currency: string;
+  timestamp: string;
+  url: string;
+  inStock: boolean;
+}
+
+export interface AffiliateLink {
+  network: string;
+  url: string;
+  id: string;
+  displayName: string;
+}
 
 export interface Variant {
   id: string;
   name: string;
   series: string;
+  variant?: string;
   sku: string;
   rarity: Rarity;
   images: string[];
+  description: string;
+  msrp: number;
+  retailUrl: string;
+  lastSalePrice: number;
+  floorPrice: number;
+  priceSources: PriceSource[];
+  affiliateLinks: AffiliateLink[];
+  stockStatus: StockStatus;
+  attributes: Record<string, string>;
   estimatedValue: number;
   priceRange: {
     low: number;
     high: number;
   };
   confidenceScore: number;
+  priceChange24h: number;
   recentSales: Sale[];
   priceHistory: PriceSnapshot[];
 }

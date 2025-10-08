@@ -1,20 +1,22 @@
 import { Card } from '@/components/ui/card';
 import { RarityBadge } from '@/components/RarityBadge';
 import { ConfidenceScore } from '@/components/ConfidenceScore';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { StockStatusBadge } from '@/components/StockStatusBadge';
+import { TrendingUp, TrendingDown, ExternalLink } from 'lucide-react';
 import { Variant } from '@/types/variant';
 import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 interface VariantCardProps {
   variant: Variant;
 }
 
 export const VariantCard = ({ variant }: VariantCardProps) => {
-  const priceChange = Math.random() > 0.5 ? 8.5 : -3.2; // Mock price change
+  const lowestPrice = Math.min(...variant.priceSources.map(s => s.price));
 
   return (
-    <Link to={`/variant/${variant.id}`}>
-      <Card className="group overflow-hidden transition-all duration-300 hover:shadow-card-hover cursor-pointer">
+    <Card className="group overflow-hidden transition-all duration-300 hover:shadow-card-hover">
+      <Link to={`/variant/${variant.id}`}>
         <div className="aspect-square overflow-hidden bg-muted">
           <img
             src={variant.images[0]}
@@ -22,40 +24,71 @@ export const VariantCard = ({ variant }: VariantCardProps) => {
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
         </div>
-        
-        <div className="p-4 space-y-3">
+      </Link>
+      
+      <div className="p-4 space-y-3">
+        <Link to={`/variant/${variant.id}`}>
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold truncate">{variant.name}</h3>
               <p className="text-sm text-muted-foreground truncate">{variant.series}</p>
+              {variant.variant && (
+                <p className="text-xs text-muted-foreground truncate">{variant.variant}</p>
+              )}
             </div>
             <RarityBadge rarity={variant.rarity} />
           </div>
+        </Link>
 
+        <Link to={`/variant/${variant.id}`}>
           <div className="space-y-1">
             <div className="flex items-baseline justify-between">
               <span className="text-2xl font-bold text-primary">
                 ${variant.estimatedValue.toFixed(2)}
               </span>
               <div className={`flex items-center gap-1 text-sm font-medium ${
-                priceChange > 0 ? 'text-rarity-uncommon' : 'text-destructive'
+                variant.priceChange24h > 0 ? 'text-rarity-uncommon' : 'text-destructive'
               }`}>
-                {priceChange > 0 ? (
+                {variant.priceChange24h > 0 ? (
                   <TrendingUp className="h-3.5 w-3.5" />
                 ) : (
                   <TrendingDown className="h-3.5 w-3.5" />
                 )}
-                {Math.abs(priceChange)}%
+                {Math.abs(variant.priceChange24h)}%
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              Range: ${variant.priceRange.low} - ${variant.priceRange.high}
+              Floor: ${lowestPrice.toFixed(2)} • Range: ${variant.priceRange.low}-${variant.priceRange.high}
             </p>
           </div>
+        </Link>
 
-          <ConfidenceScore score={variant.confidenceScore} />
+        <div className="flex items-center justify-between gap-2 pt-2">
+          <StockStatusBadge status={variant.stockStatus} />
+          {variant.affiliateLinks.length > 0 && (
+            <Button
+              size="sm"
+              variant="outline"
+              asChild
+              onClick={(e) => e.stopPropagation()}
+            >
+              <a
+                href={variant.affiliateLinks[0].url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1"
+              >
+                Buy Now
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </Button>
+          )}
         </div>
-      </Card>
-    </Link>
+
+        <Link to={`/variant/${variant.id}`}>
+          <ConfidenceScore score={variant.confidenceScore} />
+        </Link>
+      </div>
+    </Card>
   );
 };

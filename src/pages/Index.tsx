@@ -1,11 +1,28 @@
 import { Header } from '@/components/Header';
 import { VariantCard } from '@/components/VariantCard';
+import { SearchFilters } from '@/components/SearchFilters';
 import { mockVariants } from '@/data/mockVariants';
-import { TrendingUp, Sparkles } from 'lucide-react';
+import { useVariantFilters } from '@/hooks/useVariantFilters';
 import heroBanner from '@/assets/hero-banner.jpg';
+import { TrendingUp, Package } from 'lucide-react';
 
 const Index = () => {
-  const trendingVariants = mockVariants.slice(0, 4);
+  const {
+    filteredVariants,
+    searchQuery,
+    setSearchQuery,
+    selectedRarity,
+    setSelectedRarity,
+    selectedSeries,
+    setSelectedSeries,
+    sortBy,
+    setSortBy,
+    allSeries,
+  } = useVariantFilters(mockVariants);
+
+  const trendingVariants = mockVariants
+    .sort((a, b) => Math.abs(b.priceChange24h) - Math.abs(a.priceChange24h))
+    .slice(0, 4);
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -25,53 +42,80 @@ const Index = () => {
               Track Your Labubu Collection Value
             </h2>
             <p className="text-lg text-primary-foreground/90 mb-8">
-              Real-time market prices backed by completed sales data. 
-              Discover values, track trends, and build your dream collection.
+              Real-time pricing from Amazon, eBay, StockX, and trusted resellers
             </p>
           </div>
         </div>
       </section>
 
-      {/* Trending Section */}
-      <section className="container mx-auto px-4 py-12">
-        <div className="flex items-center gap-2 mb-6">
-          <TrendingUp className="h-6 w-6 text-primary" />
-          <h2 className="text-2xl font-bold">Trending Now</h2>
-          <Sparkles className="h-5 w-5 text-secondary ml-auto" />
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {trendingVariants.map((variant) => (
-            <VariantCard key={variant.id} variant={variant} />
-          ))}
-        </div>
-      </section>
+      <div className="container mx-auto px-4 py-12 space-y-16">
+        {/* Trending Section */}
+        <section>
+          <div className="flex items-center gap-3 mb-8">
+            <TrendingUp className="h-8 w-8 text-primary" />
+            <div>
+              <h2 className="text-3xl font-bold">Trending Now</h2>
+              <p className="text-muted-foreground">Biggest price movers in the last 24 hours</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {trendingVariants.map((variant) => (
+              <VariantCard key={variant.id} variant={variant} />
+            ))}
+          </div>
+        </section>
 
-      {/* All Variants Section */}
-      <section className="container mx-auto px-4 py-12">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">All Variants</h2>
+        {/* All Variants Section */}
+        <section>
+          <div className="flex items-center gap-3 mb-8">
+            <Package className="h-8 w-8 text-primary" />
+            <div>
+              <h2 className="text-3xl font-bold">Complete Catalog</h2>
+              <p className="text-muted-foreground">
+                Tracking {mockVariants.length} Labubu variants across all series
+              </p>
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <SearchFilters
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedRarity={selectedRarity}
+              onRarityChange={setSelectedRarity}
+              selectedSeries={selectedSeries}
+              onSeriesChange={setSelectedSeries}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              allSeries={allSeries}
+            />
+          </div>
+
+          {filteredVariants.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {filteredVariants.map((variant) => (
+                <VariantCard key={variant.id} variant={variant} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No variants found matching your filters.</p>
+            </div>
+          )}
+        </section>
+
+        {/* Footer */}
+        <footer className="text-center py-8 border-t">
           <p className="text-sm text-muted-foreground">
-            {mockVariants.length} variants tracked
+            <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through our links.
           </p>
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {mockVariants.map((variant) => (
-            <VariantCard key={variant.id} variant={variant} />
-          ))}
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-border mt-16">
-        <div className="container mx-auto px-4 py-8">
-          <p className="text-center text-sm text-muted-foreground">
-            Price data aggregated from verified marketplace sales. 
-            Values update continuously based on completed transactions.
+          <p className="text-sm text-muted-foreground mt-2">
+            Price data aggregated from Pop Mart, Amazon, eBay, StockX, and verified resellers.
+            Updated every 30 minutes. All prices in USD unless noted.
           </p>
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
   );
 };
