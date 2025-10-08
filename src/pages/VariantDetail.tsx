@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { mockVariants } from '@/data/mockVariants';
+import { getVariantById, initializeVariants, updateVariantWithScrapedData } from '@/data/variantManager';
+import { Variant } from '@/types/variant';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RarityBadge } from '@/components/RarityBadge';
@@ -11,10 +13,64 @@ import { ArrowLeft, Bell, Heart, ExternalLink, Package, Tag } from 'lucide-react
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Header } from '@/components/Header';
+import { useQuery } from '@tanstack/react-query';
+import { getAmazonPrice, getEbayPrice, getStockXPrice } from '@/lib/api';
 
 export default function VariantDetail() {
   const { id } = useParams();
-  const variant = mockVariants.find((v) => v.id === id);
+  const [variant, setVariant] = useState<Variant | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const { data: amazonPrice } = useQuery({
+    queryKey: ['amazonPrice', variant?.name],
+    queryFn: () => getAmazonPrice(variant!.name),
+    enabled: !!variant,
+  });
+  const { data: stockxPrice } = useQuery({
+    queryKey: ['stockxPrice', variant?.name],
+    queryFn: () => getStockXPrice(variant!.name),
+    enabled: !!variant,
+  });
+  const { data: ebayPrice } = useQuery({
+    queryKey: ['ebayPrice', variant?.name],
+    queryFn: () => getEbayPrice(variant!.name),
+    enabled: !!variant,
+  });
+
+  useEffect(() => {
+    const loadVariant = async () => {
+      await initializeVariants();
+      const variantData = getVariantById(id!);
+      if (variantData) {
+        setVariant(variantData);
+      }
+      setLoading(false);
+    };
+    loadVariant();
+  }, [id]);
+
+  useEffect(() => {
+    if (variant && (amazonPrice || stockxPrice || ebayPrice)) {
+      const scrapedPrices = [amazonPrice, stockxPrice, ebayPrice].filter(p => p).map(p => p!);
+      const updatedVariant = updateVariantWithScrapedData(variant.id, scrapedPrices);
+      if(updatedVariant) {
+        setVariant(updatedVariant);
+      }
+    }
+  }, [variant, amazonPrice, stockxPrice, ebayPrice]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle">
+        <Header />
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <h1 className="text-2xl font-bold">Loading...</h1>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!variant) {
     return (
@@ -46,7 +102,7 @@ export default function VariantDetail() {
           <Card className="overflow-hidden">
             <div className="aspect-square bg-muted p-8">
               <img
-                src={variant.images[0]}
+                src={`/${variant.images[0]}`}
                 alt={variant.name}
                 className="w-full h-full object-cover rounded-lg"
               />
@@ -85,10 +141,10 @@ export default function VariantDetail() {
                   <p className="text-sm text-primary-foreground/80 mb-1">Estimated Market Value</p>
                   <div className="flex items-baseline gap-3">
                     <span className="text-4xl font-bold text-primary-foreground">
-                      ${variant.estimatedValue.toFixed(2)}
+                      ${variant.estimatedValue?.toFixed(2)}
                     </span>
                     <span className="text-sm text-primary-foreground/80">
-                      Floor: ${variant.floorPrice.toFixed(2)}
+                      Floor: ${variant.floorPrice?.toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -100,11 +156,11 @@ export default function VariantDetail() {
                   </div>
                   <div>
                     <span className="text-primary-foreground/70">Last Sale: </span>
-                    <span className="font-semibold">${variant.lastSalePrice.toFixed(2)}</span>
+                    <span className="font-semibold">${variant.lastSalePrice?.toFixed(2)}</span>
                   </div>
                 </div>
 
-                <ConfidenceScore score={variant.confidenceScore} className="text-primary-foreground/90" />
+                <ConfidenceScore score={variant.confidenceScore || 0} className="text-primary-foreground/90" />
               </div>
             </Card>
 
@@ -150,12 +206,12 @@ export default function VariantDetail() {
 
         {/* Price Comparison */}
         <div className="mt-8">
-          <PriceComparison sources={variant.priceSources} msrp={variant.msrp} />
+          <PriceComparison variantName={variant.name} msrp={variant.msrp} />
         </div>
 
         {/* Price History */}
         <div className="mt-8">
-          <PriceHistoryChart history={variant.priceHistory} currentPrice={variant.estimatedValue} />
+          <PriceHistoryChart history={variant.priceHistory || []} currentPrice={variant.estimatedValue || 0} />
         </div>
 
         {/* Recent Sales */}
@@ -172,7 +228,7 @@ export default function VariantDetail() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {variant.recentSales.map((sale, index) => (
+              {variant.recentSales?.map((sale, index) => (
                 <TableRow key={index}>
                   <TableCell>{new Date(sale.date).toLocaleDateString()}</TableCell>
                   <TableCell>{sale.source}</TableCell>

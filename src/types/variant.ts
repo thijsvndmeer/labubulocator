@@ -6,10 +6,15 @@ export interface PriceSource {
   price: number;
   currency: string;
   timestamp: string;
-  url: string;
+  url:string;
   inStock: boolean;
 }
 
+export interface PriceData {
+  site: string;
+  price: number;
+  url: string;
+}
 export interface AffiliateLink {
   network: string;
   url: string;
@@ -28,21 +33,21 @@ export interface Variant {
   description: string;
   msrp: number;
   retailUrl: string;
-  lastSalePrice: number;
-  floorPrice: number;
-  priceSources: PriceSource[];
+  lastSalePrice?: number;
+  floorPrice?: number;
+  priceSources?: PriceData[];
   affiliateLinks: AffiliateLink[];
   stockStatus: StockStatus;
   attributes: Record<string, string>;
-  estimatedValue: number;
-  priceRange: {
+  estimatedValue?: number;
+  priceRange?: {
     low: number;
     high: number;
   };
-  confidenceScore: number;
-  priceChange24h: number;
-  recentSales: Sale[];
-  priceHistory: PriceSnapshot[];
+  confidenceScore?: number;
+  priceChange24h?: number;
+  recentSales?: Sale[];
+  priceHistory?: PriceSnapshot[];
 }
 
 export interface Sale {

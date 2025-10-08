@@ -38,17 +38,17 @@ export const useVariantFilters = (variants: Variant[], searchQuery: string) => {
     // Sort
     switch (sortBy) {
       case 'price-low':
-        filtered.sort((a, b) => a.estimatedValue - b.estimatedValue);
+        filtered.sort((a, b) => (a.estimatedValue || 0) - (b.estimatedValue || 0));
         break;
       case 'price-high':
-        filtered.sort((a, b) => b.estimatedValue - a.estimatedValue);
+        filtered.sort((a, b) => (b.estimatedValue || 0) - (a.estimatedValue || 0));
         break;
       case 'rarity':
         const rarityOrder: Rarity[] = ['secret', 'legendary', 'epic', 'rare', 'uncommon', 'common'];
         filtered.sort((a, b) => rarityOrder.indexOf(a.rarity) - rarityOrder.indexOf(b.rarity));
         break;
       case 'trending':
-        filtered.sort((a, b) => Math.abs(b.priceChange24h) - Math.abs(a.priceChange24h));
+        filtered.sort((a, b) => Math.abs(b.priceChange24h || 0) - Math.abs(a.priceChange24h || 0));
         break;
       case 'newest':
       default:

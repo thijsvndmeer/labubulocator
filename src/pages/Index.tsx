@@ -5,50 +5,20 @@ import { SearchFilters } from '@/components/SearchFilters';
 import { useVariantFilters } from '@/hooks/useVariantFilters';
 import heroBanner from '@/assets/hero-banner.jpg';
 import { TrendingUp, Package } from 'lucide-react';
-import Papa from 'papaparse';
 import { Variant } from '@/types/variant';
+import { getAllVariants, initializeVariants } from '@/data/variantManager';
 
 const Index = () => {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    const fetchVariants = async () => {
-      const response = await fetch('/labubus.csv');
-      const reader = response.body.getReader();
-      const result = await reader.read();
-      const decoder = new TextDecoder('utf-8');
-      const csv = decoder.decode(result.value);
-
-      Papa.parse(csv, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          const parsedVariants = results.data.map((row: any) => ({
-            ...row,
-            images: JSON.parse(row.images),
-            msrp: parseFloat(row.msrp),
-            lastSalePrice: parseFloat(row.lastSalePrice),
-            floorPrice: parseFloat(row.floorPrice),
-            priceSources: JSON.parse(row.priceSources),
-            affiliateLinks: JSON.parse(row.affiliateLinks),
-            attributes: JSON.parse(row.attributes),
-            estimatedValue: parseFloat(row.estimatedValue),
-            priceRange: JSON.parse(row.priceRange),
-            confidenceScore: Number(row.confidenceScore),
-            priceChange24h: parseFloat(row.priceChange24h),
-            recentSales: JSON.parse(row.recentSales),
-            priceHistory: JSON.parse(row.priceHistory),
-          }));
-          setVariants(parsedVariants as Variant[]);
-        },
-      });
+    const loadVariants = async () => {
+      await initializeVariants();
+      setVariants(getAllVariants());
     };
-
-    fetchVariants();
-  }, []);
-
-  const { 
+    loadVariants();
+  }, []);  const { 
     filteredVariants, 
     selectedRarity, 
     setSelectedRarity, 
@@ -60,7 +30,7 @@ const Index = () => {
   } = useVariantFilters(variants, searchQuery);
 
   const trendingVariants = variants
-    .sort((a, b) => Math.abs(b.priceChange24h) - Math.abs(a.priceChange24h))
+    .sort((a, b) => Math.abs(b.priceChange24h || 0) - Math.abs(a.priceChange24h || 0))
     .slice(0, 4);
 
   return (

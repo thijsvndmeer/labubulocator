@@ -1,17 +1,37 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, CheckCircle2, XCircle } from 'lucide-react';
-import { PriceSource } from '@/types/variant';
+import { ExternalLink } from 'lucide-react';
+import { PriceData } from '@/types/variant';
 import { Badge } from '@/components/ui/badge';
+import { useQuery } from '@tanstack/react-query';
+import { getAmazonPrice, getStockXPrice, getEbayPrice } from '@/lib/api';
 
 interface PriceComparisonProps {
-  sources: PriceSource[];
+  variantName: string;
   msrp: number;
 }
 
-export const PriceComparison = ({ sources, msrp }: PriceComparisonProps) => {
-  const sortedSources = [...sources].sort((a, b) => a.price - b.price);
-  const lowestPrice = sortedSources[0];
+export const PriceComparison = ({ variantName, msrp }: PriceComparisonProps) => {
+  const { data: amazonPrice, isLoading: amazonLoading, isError: amazonError } = useQuery({
+    queryKey: ['amazonPrice', variantName],
+    queryFn: () => getAmazonPrice(variantName),
+  });
+
+  const { data: stockxPrice, isLoading: stockxLoading, isError: stockxError } = useQuery({
+    queryKey: ['stockxPrice', variantName],
+    queryFn: () => getStockXPrice(variantName),
+  });
+
+  const { data: ebayPrice, isLoading: ebayLoading, isError: ebayError } = useQuery({
+    queryKey: ['ebayPrice', variantName],
+    queryFn: () => getEbayPrice(variantName),
+  });
+
+  const isLoading = amazonLoading || stockxLoading || ebayLoading;
+
+  const prices = [amazonPrice, stockxPrice, ebayPrice].filter((p): p is PriceData => !!p);
+  const sortedPrices = [...prices].sort((a, b) => a.price - b.price);
+  const lowestPrice = sortedPrices[0];
 
   return (
     <Card className="p-6">
@@ -23,8 +43,10 @@ export const PriceComparison = ({ sources, msrp }: PriceComparisonProps) => {
           </Badge>
         </div>
 
+        {isLoading && <div>Loading prices...</div>}
+
         <div className="space-y-3">
-          {sortedSources.map((source, index) => (
+          {sortedPrices.map((source, index) => (
             <div
               key={index}
               className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
@@ -36,27 +58,11 @@ export const PriceComparison = ({ sources, msrp }: PriceComparisonProps) => {
               <div className="flex items-center gap-3 flex-1">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">{source.source}</span>
+                    <span className="font-medium">{source.site}</span>
                     {source === lowestPrice && (
                       <Badge className="bg-rarity-uncommon text-white text-xs">
                         Best Price
                       </Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(source.timestamp).toLocaleDateString()}
-                    </span>
-                    {source.inStock ? (
-                      <div className="flex items-center gap-1 text-xs text-rarity-uncommon">
-                        <CheckCircle2 className="h-3 w-3" />
-                        In Stock
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <XCircle className="h-3 w-3" />
-                        Out of Stock
-                      </div>
                     )}
                   </div>
                 </div>
