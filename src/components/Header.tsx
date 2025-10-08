@@ -1,4 +1,4 @@
-import { PlusCircle, Search, TrendingUp } from 'lucide-react';
+import { PlusCircle, Search, LocateFixed } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from './ui/button';
 import { Link } from 'react-router-dom';
@@ -9,7 +9,7 @@ export const Header = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-2">
-            <TrendingUp className="h-6 w-6 text-primary" />
+            <LocateFixed className="h-6 w-6 text-primary" />
             <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Labubu Locator
             </h1>
