@@ -35,7 +35,13 @@ export const StockStatusBadge = ({ status }: StockStatusBadgeProps) => {
     },
   };
 
-  const { label, icon: Icon, className } = config[status];
+  const badgeConfig = config[status] || {
+    label: 'Unknown',
+    icon: AlertCircle,
+    className: 'bg-muted text-muted-foreground border-border',
+  };
+
+  const { label, icon: Icon, className } = badgeConfig;
 
   return (
     <Badge variant="outline" className={className}>
