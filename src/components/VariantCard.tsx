@@ -14,7 +14,10 @@ interface VariantCardProps {
 export const VariantCard = ({ variant }: VariantCardProps) => {
   const lowestPrice = Math.min(...(variant.priceSources || []).map(s => s.price));
 
-  const getImageUrl = (image: string) => {
+  const getImageUrl = (image?: string) => {
+    if (!image) {
+      return '/placeholder.svg';
+    }
     if (image.startsWith('http')) {
       return image;
     }
@@ -26,7 +29,7 @@ export const VariantCard = ({ variant }: VariantCardProps) => {
       <Link to={`/variant/${variant.id}`}>
         <div className="aspect-square overflow-hidden bg-muted">
           <img
-            src={getImageUrl(variant.images[0])}
+            src={getImageUrl(variant.images?.[0])}
             alt={variant.name}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
