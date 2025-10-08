@@ -1,5 +1,7 @@
-import { Search, TrendingUp } from 'lucide-react';
+import { PlusCircle, Search, TrendingUp } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Button } from './ui/button';
+import { Link } from 'react-router-dom';
 
 export const Header = () => {
   return (
@@ -13,13 +15,21 @@ export const Header = () => {
             </h1>
           </div>
           
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search variants, series, SKU..."
-              className="pl-10 transition-all duration-200 focus:shadow-card"
-            />
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search variants, series, SKU..."
+                className="pl-10 transition-all duration-200 focus:shadow-card"
+              />
+            </div>
+            <Link to="/add-variant">
+              <Button variant="outline">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Add New
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

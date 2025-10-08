@@ -1,8 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Variant, Rarity } from '@/types/variant';
 
-export const useVariantFilters = (variants: Variant[]) => {
-  const [searchQuery, setSearchQuery] = useState('');
+export const useVariantFilters = (variants: Variant[], searchQuery: string) => {
   const [selectedRarity, setSelectedRarity] = useState<Rarity | 'all'>('all');
   const [selectedSeries, setSelectedSeries] = useState('all');
   const [sortBy, setSortBy] = useState('trending');
@@ -62,8 +61,6 @@ export const useVariantFilters = (variants: Variant[]) => {
 
   return {
     filteredVariants,
-    searchQuery,
-    setSearchQuery,
     selectedRarity,
     setSelectedRarity,
     selectedSeries,
