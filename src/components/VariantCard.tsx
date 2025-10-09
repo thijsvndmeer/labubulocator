@@ -11,25 +11,31 @@ interface VariantCardProps {
   variant: Variant;
 }
 
-const assetImages = import.meta.glob('/src/assets/*.png', { eager: true, as: 'url' });
+const assetImages = import.meta.glob('/src/assets/**/*.png', { eager: true, query: '?url', import: 'default' });
 
 export const VariantCard = ({ variant }: VariantCardProps) => {
   const lowestPrice = Math.min(...(variant.priceSources || []).map(s => s.price));
 
-  const getImageUrl = (sku: string) => {
-    const imagePath = `/src/assets/${sku}.png`;
-    if (assetImages[imagePath]) {
-      return assetImages[imagePath];
+  const getImageUrl = (variant: Variant) => {
+    const sku = variant.sku.toLowerCase();
+
+    let foundImagePath = Object.keys(assetImages).find(path => {
+      const filename = path.split('/').pop()?.toLowerCase() || '';
+      return filename.includes(sku);
+    });
+
+    if (foundImagePath && assetImages[foundImagePath]) {
+      return assetImages[foundImagePath];
     }
     return '/placeholder.svg';
   };
 
   return (
     <Card className="group overflow-hidden transition-all duration-300 hover:shadow-card-hover">
-      <Link to={`/variant/${variant.id}`}>
+      <Link to={`/variant/${variant.sku}`}>
         <div className="aspect-square overflow-hidden bg-muted">
           <img
-            src={getImageUrl(variant.sku)}
+            src={getImageUrl(variant)}
             alt={variant.name}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
@@ -37,7 +43,7 @@ export const VariantCard = ({ variant }: VariantCardProps) => {
       </Link>
       
       <div className="p-4 space-y-3">
-        <Link to={`/variant/${variant.id}`}>
+        <Link to={`/variant/${variant.sku}`}>
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold truncate">{variant.name}</h3>
@@ -50,7 +56,7 @@ export const VariantCard = ({ variant }: VariantCardProps) => {
           </div>
         </Link>
 
-        <Link to={`/variant/${variant.id}`}>
+        <Link to={`/variant/${variant.sku}`}>
           <div className="space-y-1">
             <div className="flex items-baseline justify-between">
               <span className="text-2xl font-bold text-primary">
@@ -95,7 +101,7 @@ export const VariantCard = ({ variant }: VariantCardProps) => {
           )}
         </div>
 
-        <Link to={`/variant/${variant.id}`}>
+        <Link to={`/variant/${variant.sku}`}>
           <ConfidenceScore score={variant.confidenceScore || 0} />
         </Link>
       </div>
