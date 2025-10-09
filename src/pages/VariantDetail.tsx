@@ -16,10 +16,10 @@ import { Header } from '@/components/Header';
 import { useQuery } from '@tanstack/react-query';
 import { getAmazonPrice, getEbayPrice, getStockXPrice } from '@/lib/api';
 
-const assetImages = import.meta.glob('/src/assets/*.png', { eager: true, as: 'url' });
+const assetImages = import.meta.glob('/src/assets/**/*.png', { eager: true, query: '?url', import: 'default' });
 
 export default function VariantDetail() {
-  const { id } = useParams();
+  const { sku } = useParams();
   const [variant, setVariant] = useState<Variant | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -42,19 +42,19 @@ export default function VariantDetail() {
   useEffect(() => {
     const loadVariant = async () => {
       await initializeVariants();
-      const variantData = getVariantById(id!);
+      const variantData = getVariantBySku(sku!);
       if (variantData) {
         setVariant(variantData);
       }
       setLoading(false);
     };
     loadVariant();
-  }, [id]);
+  }, [sku]);
 
   useEffect(() => {
     if (variant && (amazonPrice || stockxPrice || ebayPrice)) {
       const scrapedPrices = [amazonPrice, stockxPrice, ebayPrice].filter(p => p).map(p => p!);
-      const updatedVariant = updateVariantWithScrapedData(variant.id, scrapedPrices);
+      const updatedVariant = updateVariantWithScrapedData(variant.sku, scrapedPrices);
       if(updatedVariant) {
         setVariant(updatedVariant);
       }
@@ -91,9 +91,9 @@ export default function VariantDetail() {
   }
 
   const getImageUrl = (sku: string) => {
-    const imagePath = `/src/assets/${sku}.png`;
-    if (assetImages[imagePath]) {
-      return assetImages[imagePath];
+    const foundImagePath = Object.keys(assetImages).find(path => path.includes(sku));
+    if (foundImagePath && assetImages[foundImagePath]) {
+      return assetImages[foundImagePath];
     }
     return '/placeholder.svg';
   };

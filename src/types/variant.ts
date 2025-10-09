@@ -23,7 +23,6 @@ export interface AffiliateLink {
 }
 
 export interface Variant {
-  id: string;
   name: string;
   series: string;
   variant?: string;

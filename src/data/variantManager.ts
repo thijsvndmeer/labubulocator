@@ -26,7 +26,6 @@ export const initializeVariants = async () => {
       skipEmptyLines: true,
       complete: (results) => {
         variants = results.data.map((row: any) => ({
-          id: row.id,
           name: row.name,
           series: row.series,
           variant: row.variant,
@@ -65,12 +64,12 @@ export const getAllVariants = (): Variant[] => {
   return variants;
 };
 
-export const getVariantById = (id: string): Variant | undefined => {
-  return variants.find((v) => v.id === id);
+export const getVariantBySku = (sku: string): Variant | undefined => {
+  return variants.find((v) => v.sku === sku);
 };
 
-export const updateVariantWithScrapedData = (variantId: string, scrapedPrices: PriceData[]): Variant | undefined => {
-  const variantIndex = variants.findIndex(v => v.id === variantId);
+export const updateVariantWithScrapedData = (variantSku: string, scrapedPrices: PriceData[]): Variant | undefined => {
+  const variantIndex = variants.findIndex(v => v.sku === variantSku);
   if (variantIndex === -1) {
     return undefined;
   }
