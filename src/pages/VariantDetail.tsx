@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getVariantById, initializeVariants, updateVariantWithScrapedData } from '@/data/variantManager';
+import { getVariantBySku, initializeVariants, updateVariantWithScrapedData } from '@/data/variantManager';
 import { Variant } from '@/types/variant';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,12 +41,23 @@ export default function VariantDetail() {
 
   useEffect(() => {
     const loadVariant = async () => {
-      await initializeVariants();
-      const variantData = getVariantBySku(sku!);
-      if (variantData) {
-        setVariant(variantData);
+      console.log('VariantDetail: useEffect triggered for SKU:', sku);
+      try {
+        await initializeVariants();
+        console.log('VariantDetail: initializeVariants completed.');
+        const variantData = getVariantBySku(sku!);
+        console.log('VariantDetail: getVariantBySku returned:', variantData);
+        if (variantData) {
+          setVariant(variantData);
+        } else {
+          console.warn('VariantDetail: No variant found for SKU:', sku);
+        }
+      } catch (error) {
+        console.error('VariantDetail: Error loading variant:', error);
+      } finally {
+        setLoading(false);
+        console.log('VariantDetail: setLoading(false) called.');
       }
-      setLoading(false);
     };
     loadVariant();
   }, [sku]);
@@ -123,7 +134,7 @@ export default function VariantDetail() {
           <Card className="overflow-hidden">
             <div className="aspect-square bg-muted p-8">
               <img
-                src={getImageUrl(variant.sku)}
+                src={getImageUrl(variant)}
                 alt={variant.name}
                 className="w-full h-full object-cover rounded-lg"
               />

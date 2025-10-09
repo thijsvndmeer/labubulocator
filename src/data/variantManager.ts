@@ -17,47 +17,60 @@ export const initializeVariants = async () => {
     return;
   }
 
-  const response = await fetch('/labubus.csv');
-  const csvText = await response.text();
+  console.log('Attempting to fetch labubus.csv...');
+  try {
+    const response = await fetch('/labubus.csv');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const csvText = await response.text();
+    console.log('labubus.csv fetched successfully.');
 
-  return new Promise<void>((resolve, reject) => {
-    Papa.parse(csvText, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        variants = results.data.map((row: any) => ({
-          name: row.name,
-          series: row.series,
-          variant: row.variant,
-          sku: row.sku,
-          rarity: row.rarity,
-          images: parseJsonString(row.images, []),
-          description: row.description,
-          msrp: parseFloat(row.msrp),
-          retailUrl: row.retailUrl,
-          stockStatus: row.stockStatus,
-          attributes: parseJsonString(row.attributes, {}),
-          affiliateLinks: parseJsonString(row.affiliateLinks, []),
-          
-          // These will be calculated dynamically
-          lastSalePrice: 0,
-          floorPrice: 0,
-          priceSources: [],
-          estimatedValue: 0,
-          priceRange: { low: 0, high: 0 },
-          confidenceScore: 0,
-          priceChange24h: 0,
-          recentSales: [],
-          priceHistory: [],
-        }));
-        resolve();
-      },
-      error: (error: any) => {
-        console.error('Error parsing CSV:', error);
-        reject(error);
-      },
+    return new Promise<void>((resolve, reject) => {
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          console.log('CSV parsing complete. Raw data:', results.data);
+          variants = results.data.map((row: any) => ({
+            name: row.name,
+            series: row.series,
+            variant: row.variant,
+            sku: row.sku,
+            rarity: row.rarity,
+            images: parseJsonString(row.images, []),
+            description: row.description,
+            msrp: parseFloat(row.msrp),
+            retailUrl: row.retailUrl,
+            stockStatus: row.stockStatus,
+            attributes: parseJsonString(row.attributes, {}),
+            affiliateLinks: parseJsonString(row.affiliateLinks, []),
+            
+            // These will be calculated dynamically
+            lastSalePrice: 0,
+            floorPrice: 0,
+            priceSources: [],
+            estimatedValue: 0,
+            priceRange: { low: 0, high: 0 },
+            confidenceScore: 0,
+            priceChange24h: 0,
+            recentSales: [],
+            priceHistory: [],
+          }));
+          console.log('Initialized variants:', variants);
+          resolve();
+        },
+        error: (error: any) => {
+          console.error('Error parsing CSV:', error);
+          reject(error);
+        },
+      });
     });
-  });
+  } catch (error) {
+    console.error('Failed to fetch or process labubus.csv:', error);
+    // Ensure the promise is rejected if an error occurs during fetch or initial processing
+    return Promise.reject(error);
+  }
 };
 
 export const getAllVariants = (): Variant[] => {
@@ -65,7 +78,10 @@ export const getAllVariants = (): Variant[] => {
 };
 
 export const getVariantBySku = (sku: string): Variant | undefined => {
-  return variants.find((v) => v.sku === sku);
+  console.log('Searching for SKU:', sku);
+  const foundVariant = variants.find((v) => v.sku === sku);
+  console.log('Found variant:', foundVariant);
+  return foundVariant;
 };
 
 export const updateVariantWithScrapedData = (variantSku: string, scrapedPrices: PriceData[]): Variant | undefined => {

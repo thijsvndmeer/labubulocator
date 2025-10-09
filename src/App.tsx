@@ -19,7 +19,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/add-variant" element={<AddVariantPage />} />
-          <Route path="/variant/:id" element={<VariantDetail />} />
+          <Route path="/variant/:sku" element={<VariantDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
