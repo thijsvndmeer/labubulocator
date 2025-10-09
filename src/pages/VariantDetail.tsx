@@ -16,6 +16,8 @@ import { Header } from '@/components/Header';
 import { useQuery } from '@tanstack/react-query';
 import { getAmazonPrice, getEbayPrice, getStockXPrice } from '@/lib/api';
 
+const assetImages = import.meta.glob('/src/assets/*.png', { eager: true, as: 'url' });
+
 export default function VariantDetail() {
   const { id } = useParams();
   const [variant, setVariant] = useState<Variant | null>(null);
@@ -88,14 +90,12 @@ export default function VariantDetail() {
     );
   }
 
-  const getImageUrl = (image?: string) => {
-    if (!image) {
-      return '/placeholder.svg';
+  const getImageUrl = (sku: string) => {
+    const imagePath = `/src/assets/${sku}.png`;
+    if (assetImages[imagePath]) {
+      return assetImages[imagePath];
     }
-    if (image.startsWith('http')) {
-      return image;
-    }
-    return `/${image}`;
+    return '/placeholder.svg';
   };
 
   return (
@@ -112,7 +112,7 @@ export default function VariantDetail() {
           <Card className="overflow-hidden">
             <div className="aspect-square bg-muted p-8">
               <img
-                src={getImageUrl(variant.images?.[0])}
+                src={getImageUrl(variant.sku)}
                 alt={variant.name}
                 className="w-full h-full object-cover rounded-lg"
               />

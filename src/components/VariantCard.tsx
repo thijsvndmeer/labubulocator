@@ -11,17 +11,17 @@ interface VariantCardProps {
   variant: Variant;
 }
 
+const assetImages = import.meta.glob('/src/assets/*.png', { eager: true, as: 'url' });
+
 export const VariantCard = ({ variant }: VariantCardProps) => {
   const lowestPrice = Math.min(...(variant.priceSources || []).map(s => s.price));
 
-  const getImageUrl = (image?: string) => {
-    if (!image) {
-      return '/placeholder.svg';
+  const getImageUrl = (sku: string) => {
+    const imagePath = `/src/assets/${sku}.png`;
+    if (assetImages[imagePath]) {
+      return assetImages[imagePath];
     }
-    if (image.startsWith('http')) {
-      return image;
-    }
-    return `/${image}`;
+    return '/placeholder.svg';
   };
 
   return (
@@ -29,7 +29,7 @@ export const VariantCard = ({ variant }: VariantCardProps) => {
       <Link to={`/variant/${variant.id}`}>
         <div className="aspect-square overflow-hidden bg-muted">
           <img
-            src={getImageUrl(variant.images?.[0])}
+            src={getImageUrl(variant.sku)}
             alt={variant.name}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
