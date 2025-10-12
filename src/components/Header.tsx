@@ -1,9 +1,28 @@
 import { PlusCircle, Search, LocateFixed } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from './ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ChangeEvent } from 'react';
 
-export const Header = () => {
+interface HeaderProps {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+}
+
+export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
+  const navigate = useNavigate();
+
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const handleSearchSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (searchQuery.trim() !== '') {
+      navigate(`/catalog?search=${searchQuery}`);
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-md">
       <div className="container mx-auto px-4 py-4">
@@ -15,22 +34,29 @@ export const Header = () => {
             </h1>
           </div>
           
-          <div className="flex items-center gap-4">
+          <form onSubmit={handleSearchSubmit} className="flex items-center gap-4">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
                 placeholder="Search variants, series, SKU..."
                 className="pl-10 transition-all duration-200 focus:shadow-card"
+                value={searchQuery}
+                onChange={handleSearchChange}
               />
             </div>
+            <Link to="/catalog">
+              <Button variant="outline">
+                Catalog
+              </Button>
+            </Link>
             <Link to="/add-variant">
               <Button variant="outline">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Add New
               </Button>
             </Link>
-          </div>
+          </form>
         </div>
       </div>
     </header>
