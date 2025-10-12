@@ -6,8 +6,25 @@ const priceHistories = new Map<string, PriceHistory>()
 // Setters
 //============================================================================================================================================================================================
 
-priceHistories.set('test', { history: [{ price: 1, date: new Date('2022-01-01T00:00:00.000Z') }] })
-priceHistories.set('test2', { history: [{ price: 2, date: new Date('2022-01-01T00:00:00.000Z') }, { price: 3, date: new Date('2022-01-02T00:00:00.000Z') }, { price: 4, date: new Date('2022-01-03T00:00:00.000Z') }] })
+export const addPrice = (sku: string, priceEntry : PriceEntry) => {
+    let priceHistory = priceHistories.get(sku);
+    // make sure the price history exists
+    if (!priceHistory) {
+        priceHistory = { history: [] };
+        priceHistories.set(sku, priceHistory);
+    }
+
+    // insert the new price while keeping the history sorted
+    priceHistory.history.push(priceEntry);
+    priceHistory.history.sort((a, b) => a.date.getTime() - b.date.getTime());
+}
+
+addPrice('test1', { price: 5, date: new Date('2022-01-04T00:00:00.000Z') })
+addPrice('test2', { price: 6, date: new Date('2022-01-05T00:00:00.000Z') })
+addPrice('test2', { price: 2, date: new Date('2021-01-05T00:00:00.000Z') })
+addPrice('test2', { price: 9, date: new Date('2025-01-05T00:00:00.000Z') })
+addPrice('test2', { price: 3, date: new Date('2024-01-05T00:00:00.000Z') })
+addPrice('test2', { price: 1, date: new Date('2020-01-05T00:00:00.000Z') })
 
 //============================================================================================================================================================================================
 // Getters
