@@ -1,84 +1,95 @@
-import { useState, useMemo, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useVariantFilters } from "@/hooks/useVariantFilters";
-import { VariantCard } from "@/components/VariantCard";
-import { LabubuVariant } from "@/types/variant";
-import { useSearchParams } from "react-router-dom";
+import { useState, useEffect } from 'react';
+import { Header } from '@/components/Header';
+import { VariantCard } from '@/components/VariantCard';
+import { SearchFilters } from '@/components/SearchFilters';
+import { useVariantFilters } from '@/hooks/useVariantFilters';
+import { Package } from 'lucide-react';
+import { Variant } from '@/types/variant';
+import { getAllVariants, initializeVariants } from '@/data/variantManager';
+import { Link } from 'react-router-dom';
 
-export function CatalogPage({ variants }: { variants: LabubuVariant[] }) {
-  const [searchParams] = useSearchParams();
-  const initialSearchTerm = searchParams.get("search") || "";
-  const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
-  const [sortOrder, setSortOrder] = useState("name-asc");
+interface CatalogPageProps {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+}
+
+export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) => {
+  const [variants, setVariants] = useState<Variant[]>([]);
 
   useEffect(() => {
-    setSearchTerm(initialSearchTerm);
-  }, [initialSearchTerm]);
+    const loadVariants = async () => {
+      await initializeVariants();
+      setVariants(getAllVariants());
+    };
+    loadVariants();
+  }, []);
 
-  const { filteredVariants } = useVariantFilters(variants, {
-    searchTerm,
-    sortOrder,
-  });
-
-  const sortedVariants = useMemo(() => {
-    let sorted = [...filteredVariants];
-    if (sortOrder === "name-asc") {
-      sorted.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortOrder === "name-desc") {
-      sorted.sort((a, b) => b.name.localeCompare(a.name));
-    } else if (sortOrder === "price-asc") {
-      sorted.sort((a, b) => a.latestPrice - b.latestPrice);
-    } else if (sortOrder === "price-desc") {
-      sorted.sort((a, b) => b.latestPrice - a.latestPrice);
-    } else if (sortOrder === "rarity-asc") {
-      sorted.sort((a, b) => a.rarity - b.rarity);
-    } else if (sortOrder === "rarity-desc") {
-      sorted.sort((a, b) => b.rarity - a.rarity);
-    } else if (sortOrder === "random") {
-      sorted = sorted.sort(() => Math.random() - 0.5);
-    }
-    return sorted;
-  }, [filteredVariants, sortOrder]);
+  const { 
+    filteredVariants, 
+    selectedRarity, 
+    setSelectedRarity, 
+    selectedSeries, 
+    setSelectedSeries, 
+    sortBy, 
+    setSortBy, 
+    allSeries 
+  } = useVariantFilters(variants, searchQuery);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Complete Catalog</h1>
-        <div className="flex items-center space-x-4">
-          <Input
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-64"
-          />
-          <Select value={sortOrder} onValueChange={setSortOrder}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-              <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-              <SelectItem value="price-asc">Price (Low to High)</SelectItem>
-              <SelectItem value="price-desc">Price (High to Low)</SelectItem>
-              <SelectItem value="rarity-asc">Rarity (Low to High)</SelectItem>
-              <SelectItem value="rarity-desc">Rarity (High to Low)</SelectItem>
-              <SelectItem value="random">Random</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {sortedVariants.map((variant) => (
-          <VariantCard key={variant.id} variant={variant} />
-        ))}
+    <div className="min-h-screen bg-gradient-subtle">
+      {/* Header is now handled by App.tsx */}
+
+      <div className="container mx-auto px-4 py-12 space-y-16">
+        {/* All Variants Section */}
+        <section>
+          <div className="flex items-center gap-3 mb-8">
+            <Package className="h-8 w-8 text-primary" />
+            <div>
+              <h2 className="text-3xl font-bold">Complete Catalog</h2>
+              <p className="text-muted-foreground">
+                Tracking {variants.length} Labubu variants across all series
+              </p>
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <SearchFilters
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedRarity={selectedRarity}
+              onRarityChange={setSelectedRarity}
+              selectedSeries={selectedSeries}
+              onSeriesChange={setSelectedSeries}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              allSeries={allSeries}
+            />
+          </div>
+
+          {filteredVariants.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {filteredVariants.map((variant) => (
+                <VariantCard key={variant.id} variant={variant} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No variants found matching your filters.</p>
+            </div>
+          )}
+        </section>
+
+        {/* Footer */}
+        <footer className="text-center py-8 border-t">
+          <p className="text-sm text-muted-foreground">
+            <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through our links.
+          </p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Price data aggregated from Pop Mart, Amazon, eBay, StockX, and verified resellers.
+            Updated every 30 minutes. All prices in USD unless noted.
+          </p>
+        </footer>
       </div>
     </div>
   );
-}
+};
