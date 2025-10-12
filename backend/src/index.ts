@@ -1,5 +1,7 @@
 import express, { Request, Response } from 'express';
 import labubuRoutes from './routes/labubu';
+import * as labubuPriceService from './services/labubuPriceService';
+import { PriceEntry } from '@common/types/labubu'
 
 const app = express();
 const port = 3001;
@@ -38,7 +40,10 @@ app.listen(port, () => {
   console.log(`Backend server is running at http://localhost:${port}`);
 });
 
-const interval = 15 * 60 * 1000 // 15 minutes
+const interval = 0.1 * 60 * 1000 // 15 minutes
 setInterval(() => {
-  // TODO add logic to update price history
+  // TODO - replace this with a real price
+  const priceEntry: PriceEntry = { price: Math.random() * 100, date: new Date() }
+  labubuPriceService.addPrice('test', priceEntry)
+  console.log('Added price entry:', priceEntry)
 }, interval)

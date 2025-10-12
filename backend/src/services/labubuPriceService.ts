@@ -43,7 +43,6 @@ export const getPrice = (sku: string): PriceEntry | null => {
     return null;
 }
 
-
 /**
  * Returns the entire price history for a given SKU, or null if no price history is found.
  * @param {string} sku - The SKU to retrieve the price history for.
