@@ -23,6 +23,7 @@ export const initializeVariants = async (): Promise<void> => {
     return initializationPromise;
   }
 
+  // eslint-disable-next-line no-async-promise-executor
   initializationPromise = new Promise<void>(async (resolve, reject) => {
     console.log('Attempting to fetch labubus.csv...');
     try {

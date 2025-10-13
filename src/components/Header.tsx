@@ -1,9 +1,10 @@
-import { PlusCircle, Search, LocateFixed, Package, Heart } from 'lucide-react';
+import { PlusCircle, Search, LocateFixed, Package, Heart, Boxes } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from './ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { getFavorites } from '@/lib/favorites';
+import { getCollection } from '@/lib/collection';
 
 interface HeaderProps {
   searchQuery: string;
@@ -13,17 +14,19 @@ interface HeaderProps {
 export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
   const navigate = useNavigate();
   const [favoriteCount, setFavoriteCount] = useState<number>(0);
+  const [collectionCount, setCollectionCount] = useState<number>(0);
 
   useEffect(() => {
-    const updateFavoriteCount = () => {
+    const updateCounts = () => {
       setFavoriteCount(getFavorites().length);
+      setCollectionCount(getCollection().length);
     };
 
-    updateFavoriteCount(); // Set initial count
+    updateCounts(); // Set initial count
 
-    window.addEventListener('storage', updateFavoriteCount);
+    window.addEventListener('storage', updateCounts);
     return () => {
-      window.removeEventListener('storage', updateFavoriteCount);
+      window.removeEventListener('storage', updateCounts);
     };
   }, []);
 
@@ -70,6 +73,16 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
                 onChange={handleSearchChange}
               />
             </div>
+            {collectionCount > 0 && (
+              <Link to="/collection">
+                <Button variant="outline" className="relative">
+                  <Boxes className="h-4 w-4" />
+                  <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {collectionCount}
+                  </span>
+                </Button>
+              </Link>
+            )}
             {favoriteCount > 0 && (
               <Link to="/favorites">
                 <Button variant="outline" className="relative">

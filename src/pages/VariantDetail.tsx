@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { recordPageView, getPrice, getPriceHistory } from '@/lib/api';
 import { isFavorite, addFavorite, removeFavorite } from '@/lib/favorites';
+import { isCollected, addCollection, removeCollection } from '@/lib/collection';
 
 const assetImages = import.meta.glob('/src/assets/**/*.png', { eager: true, query: '?url', import: 'default' });
 
@@ -24,6 +25,7 @@ export default function VariantDetail() {
   const { sku } = useParams();
   const [variant, setVariant] = useState<Variant | null>(null);
   const [isFavorited, setIsFavorited] = useState<boolean>(false);
+  const [isCollectedState, setIsCollectedState] = useState<boolean>(false);
   const [isLoadingVariant, setIsLoadingVariant] = useState<boolean>(true);
 
   useEffect(() => {
@@ -35,6 +37,7 @@ export default function VariantDetail() {
         setVariant(baseVariantData);
         recordPageView(baseVariantData.sku);
         setIsFavorited(isFavorite(baseVariantData.sku));
+        setIsCollectedState(isCollected(baseVariantData.sku));
       } else {
         console.warn('VariantDetail: No base variant found for SKU:', sku);
         setVariant(null); // Explicitly set to null if not found
@@ -52,6 +55,16 @@ export default function VariantDetail() {
       addFavorite(variant.sku);
     }
     setIsFavorited(!isFavorited);
+  };
+
+  const handleCollectionToggle = () => {
+    if (!variant) return;
+    if (isCollectedState) {
+      removeCollection(variant.sku);
+    } else {
+      addCollection(variant.sku);
+    }
+    setIsCollectedState(!isCollectedState);
   };
 
   const { data: currentPrice, isLoading: isLoadingPrice } = useQuery({
@@ -78,7 +91,7 @@ export default function VariantDetail() {
       };
       setVariant(mergedVariant);
     }
-  }, [currentPrice, priceHistory]);
+  }, [currentPrice, priceHistory, variant]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -400,7 +413,14 @@ export default function VariantDetail() {
                           >
                             <Heart className={isFavorited ? 'h-4 w-4 fill-current' : 'h-4 w-4'} />
                           </Button>
-
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={handleCollectionToggle}
+                            className={isCollectedState ? 'text-blue-500 hover:text-blue-600' : ''}
+                          >
+                            <Package className={isCollectedState ? 'h-4 w-4 fill-current' : 'h-4 w-4'} />
+                          </Button>
                         </div>
 
             

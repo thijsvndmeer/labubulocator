@@ -11,11 +11,12 @@ import { Badge } from '@/components/ui/badge';
 interface VariantCardProps {
   variant: Variant;
   isPopular?: boolean;
+  hideStockStatus?: boolean;
 }
 
 const assetImages = import.meta.glob('/src/assets/**/*.png', { eager: true, query: '?url', import: 'default' });
 
-export const VariantCard = ({ variant, isPopular }: VariantCardProps) => {
+export const VariantCard = ({ variant, isPopular, hideStockStatus }: VariantCardProps) => {
   const lowestPrice = Math.min(...(variant.priceSources || []).map(s => s.price));
 
   const getImageUrl = (variant: Variant) => {
@@ -88,7 +89,7 @@ export const VariantCard = ({ variant, isPopular }: VariantCardProps) => {
         </Link>
 
         <div className="flex items-center justify-between gap-2 pt-2">
-          <StockStatusBadge status={variant.stockStatus} />
+          {!hideStockStatus && <StockStatusBadge status={variant.stockStatus} />}
           {variant.affiliateLinks.length > 0 && (
             <Button
               size="sm"

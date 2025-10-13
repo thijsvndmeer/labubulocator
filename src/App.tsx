@@ -8,6 +8,8 @@ import VariantDetail from "./pages/VariantDetail";
 import NotFound from "./pages/NotFound";
 import { CatalogPage } from "./pages/Catalog";
 import { FavoritesPage } from "./pages/Favorites";
+import Collection from "./pages/Collection";
+import SharedCollection from "./pages/SharedCollection";
 import { Header } from "./components/Header";
 import { useState, useEffect }
  from "react";
@@ -38,6 +40,8 @@ export const AppContent = () => {
         <Route path="/catalog" element={<CatalogPage searchQuery={searchQuery} setSearchQuery={setSearchQuery} />} />
         <Route path="/variant/:sku" element={<VariantDetail />} />
         <Route path="/favorites" element={<FavoritesPage />} />
+        <Route path="/collection" element={<Collection />} />
+        <Route path="/sharedcollection" element={<SharedCollection />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
