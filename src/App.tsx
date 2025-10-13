@@ -26,9 +26,11 @@ export const AppContent = () => {
     }
   }, [location.search]);
 
+  const showHeader = !location.pathname.startsWith("/variant/");
+
   return (
     <>
-      <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      {showHeader && <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />}
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/catalog" element={<CatalogPage searchQuery={searchQuery} setSearchQuery={setSearchQuery} />} />
@@ -45,7 +47,9 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <AppContent />
+      <div className="min-h-screen bg-gradient-subtle">
+        <AppContent />
+      </div>
     </TooltipProvider>
   </QueryClientProvider>
 );

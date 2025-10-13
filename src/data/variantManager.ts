@@ -3,7 +3,7 @@ import Papa from 'papaparse';
 
 let variants: Variant[] = [];
 
-const parseJsonString = (jsonString: string, defaultValue: any) => {
+const parseJsonString = <T>(jsonString: string, defaultValue: T): T => {
   try {
     // The JSON strings in the CSV are double-quoted, so we need to parse them twice.
     return JSON.parse(JSON.parse(`"${jsonString}"`));
@@ -32,7 +32,23 @@ export const initializeVariants = async () => {
         skipEmptyLines: true,
         complete: (results) => {
           console.log('CSV parsing complete. Raw data:', results.data);
-          variants = results.data.map((row: any) => ({
+
+          interface CsvRow {
+            name: string;
+            series: string;
+            variant: string;
+            sku: string;
+            rarity: string;
+            images: string;
+            description: string;
+            msrp: string;
+            retailUrl: string;
+            stockStatus: string;
+            attributes: string;
+            affiliateLinks: string;
+          }
+
+          variants = (results.data as CsvRow[]).map((row: CsvRow) => ({
             name: row.name,
             series: row.series,
             variant: row.variant,
@@ -60,7 +76,7 @@ export const initializeVariants = async () => {
           console.log('Initialized variants:', variants);
           resolve();
         },
-        error: (error: any) => {
+        error: (error: Error) => {
           console.error('Error parsing CSV:', error);
           reject(error);
         },

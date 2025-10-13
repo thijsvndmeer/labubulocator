@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getVariantBySku, initializeVariants, updateVariantWithScrapedData } from '@/data/variantManager';
 import { Variant } from '@/types/variant';
 import { Card } from '@/components/ui/card';
@@ -12,13 +12,13 @@ import { PriceHistoryChart } from '@/components/PriceHistoryChart';
 import { ArrowLeft, Bell, Heart, ExternalLink, Package, Tag } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Header } from '@/components/Header';
 import { useQuery } from '@tanstack/react-query';
-import { getAmazonPrice, getEbayPrice, getStockXPrice } from '@/lib/api';
+import { getAmazonPrice, getEbayPrice, getStockXPrice, recordPageView } from '@/lib/api';
 
 const assetImages = import.meta.glob('/src/assets/**/*.png', { eager: true, query: '?url', import: 'default' });
 
 export default function VariantDetail() {
+  const navigate = useNavigate();
   const { sku } = useParams();
   const [variant, setVariant] = useState<Variant | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,6 +38,12 @@ export default function VariantDetail() {
     queryFn: () => getEbayPrice(variant!.name),
     enabled: !!variant,
   });
+
+  useEffect(() => {
+    if (variant) {
+      recordPageView(variant.sku);
+    }
+  }, [variant]);
 
   useEffect(() => {
     const loadVariant = async () => {
@@ -62,20 +68,22 @@ export default function VariantDetail() {
     loadVariant();
   }, [sku]);
 
-  useEffect(() => {
-    if (variant && (amazonPrice || stockxPrice || ebayPrice)) {
-      const scrapedPrices = [amazonPrice, stockxPrice, ebayPrice].filter(p => p).map(p => p!);
-      const updatedVariant = updateVariantWithScrapedData(variant.sku, scrapedPrices);
-      if(updatedVariant) {
-        setVariant(updatedVariant);
+    useEffect(() => {
+      if (variant && (amazonPrice || stockxPrice || ebayPrice)) {
+        const scrapedPrices = [amazonPrice, stockxPrice, ebayPrice].filter(p => p).map(p => p!); 
+        const updatedVariant = updateVariantWithScrapedData(variant.sku, scrapedPrices);
+        if(updatedVariant) {
+          setVariant(updatedVariant);
+        }
       }
-    }
-  }, [variant, amazonPrice, stockxPrice, ebayPrice]);
-
+    }, [variant, amazonPrice, stockxPrice, ebayPrice]);
+  
+    useEffect(() => {
+      window.scrollTo(0, 0);
+    }, []);
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-subtle">
-        <Header />
+      <div className="min-h-screen">
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center space-y-4">
             <h1 className="text-2xl font-bold">Loading...</h1>
@@ -87,14 +95,11 @@ export default function VariantDetail() {
 
   if (!variant) {
     return (
-      <div className="min-h-screen bg-gradient-subtle">
-        <Header />
+      <div className="min-h-screen">
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center space-y-4">
             <h1 className="text-2xl font-bold">Variant not found</h1>
-            <Link to="/">
-              <Button>Back to Catalog</Button>
-            </Link>
+              <Button onClick={() => navigate(-1)}>Back</Button>
           </div>
         </div>
       </div>
@@ -109,7 +114,7 @@ export default function VariantDetail() {
       skuToMatch = skuToMatch.replace('lbb-bii-', 'lbb-bie-');
     }
 
-    let foundImagePath = Object.keys(assetImages).find(path => {
+    const foundImagePath = Object.keys(assetImages).find(path => {
       const filename = path.split('/').pop()?.toLowerCase() || '';
       return filename.includes(skuToMatch);
     });
@@ -121,13 +126,12 @@ export default function VariantDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
-      <Header />
+    <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
-        <Link to="/catalog" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
+        <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
           <ArrowLeft className="h-4 w-4" />
-          Back to Catalog
-        </Link>
+          Go Back
+        </button>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Image Section */}

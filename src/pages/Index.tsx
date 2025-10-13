@@ -35,7 +35,7 @@ const Index = () => {
     .slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="min-h-screen">
 
       
       {/* Hero Section */}

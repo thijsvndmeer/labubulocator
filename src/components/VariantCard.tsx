@@ -19,7 +19,7 @@ export const VariantCard = ({ variant }: VariantCardProps) => {
   const getImageUrl = (variant: Variant) => {
     const sku = variant.sku.toLowerCase();
 
-    let foundImagePath = Object.keys(assetImages).find(path => {
+    const foundImagePath = Object.keys(assetImages).find(path => {
       const filename = path.split('/').pop()?.toLowerCase() || '';
       return filename.includes(sku);
     });

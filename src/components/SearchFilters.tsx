@@ -82,7 +82,7 @@ export const SearchFilters = ({
             <SelectItem value="price-high">Price: High to Low</SelectItem>
             <SelectItem value="newest">Newest First</SelectItem>
             <SelectItem value="rarity">Rarity</SelectItem>
-            <SelectItem value="trending">Trending</SelectItem>
+            <SelectItem value="most-popular">Most Popular</SelectItem>
           </SelectContent>
         </Select>
 
@@ -93,7 +93,7 @@ export const SearchFilters = ({
             onSearchChange('');
             onRarityChange('all');
             onSeriesChange('all');
-            onSortChange('trending');
+            onSortChange('most-popular');
           }}
         >
           Clear Filters

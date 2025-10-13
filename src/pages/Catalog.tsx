@@ -36,7 +36,7 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
   } = useVariantFilters(variants, searchQuery);
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="min-h-screen">
       {/* Header is now handled by App.tsx */}
 
       <div className="container mx-auto px-4 py-12 space-y-16">

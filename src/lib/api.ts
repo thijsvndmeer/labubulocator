@@ -13,6 +13,31 @@ import { PriceData } from "@/types/variant";
 // might need to adjust the code based on the exact structure of the API responses.
 // =======================================================================================
 
+const API_BASE_URL = 'http://localhost:3001/api/labubus';
+
+export const recordPageView = async (variantId: string): Promise<void> => {
+  try {
+    await fetch(`${API_BASE_URL}/${variantId}/view`, {
+      method: 'POST',
+    });
+  } catch (error) {
+    console.error(`Error recording page view for ${variantId}:`, error);
+  }
+};
+
+export const getPopularVariants = async (): Promise<{ variantId: string; viewCount: number }[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/popular`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching popular variants:', error);
+    return [];
+  }
+};
 
 // =======================================================================================
 // Amazon Product Advertising API
