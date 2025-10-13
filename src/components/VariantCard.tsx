@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 
 interface VariantCardProps {
   variant: Variant;
-  isPopular: boolean;
+  isPopular?: boolean;
 }
 
 const assetImages = import.meta.glob('/src/assets/**/*.png', { eager: true, query: '?url', import: 'default' });
@@ -33,7 +33,9 @@ export const VariantCard = ({ variant, isPopular }: VariantCardProps) => {
   };
 
   return (
-    <Card className="group overflow-hidden transition-all duration-300 hover:shadow-card-hover">
+    <Card 
+      className="group overflow-hidden transition-all duration-300 hover:shadow-card-hover fade-in"
+    >
       <Link to={`/variant/${variant.sku}`}>
         <div className="aspect-square overflow-hidden bg-muted">
           <img

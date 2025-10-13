@@ -7,8 +7,10 @@ import Index from "./pages/Index";
 import VariantDetail from "./pages/VariantDetail";
 import NotFound from "./pages/NotFound";
 import { CatalogPage } from "./pages/Catalog";
+import { FavoritesPage } from "./pages/Favorites";
 import { Header } from "./components/Header";
-import { useState, useEffect } from "react";
+import { useState, useEffect }
+ from "react";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +37,7 @@ export const AppContent = () => {
         <Route path="/" element={<Index />} />
         <Route path="/catalog" element={<CatalogPage searchQuery={searchQuery} setSearchQuery={setSearchQuery} />} />
         <Route path="/variant/:sku" element={<VariantDetail />} />
+        <Route path="/favorites" element={<FavoritesPage />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

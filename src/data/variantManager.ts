@@ -2,6 +2,8 @@ import { PriceData, Sale, PriceSnapshot, Variant } from '@/types/variant';
 import Papa from 'papaparse';
 
 let variants: Variant[] = [];
+let isInitialized = false;
+let initializationPromise: Promise<void> | null = null;
 
 const parseJsonString = <T>(jsonString: string, defaultValue: T): T => {
   try {
@@ -12,21 +14,25 @@ const parseJsonString = <T>(jsonString: string, defaultValue: T): T => {
   }
 };
 
-export const initializeVariants = async () => {
-  if (variants.length > 0) {
-    return;
+export const initializeVariants = async (): Promise<void> => {
+  if (isInitialized) {
+    return initializationPromise!;
   }
 
-  console.log('Attempting to fetch labubus.csv...');
-  try {
-    const response = await fetch('/labubus.csv');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const csvText = await response.text();
-    console.log('labubus.csv fetched successfully.');
+  if (initializationPromise) {
+    return initializationPromise;
+  }
 
-    return new Promise<void>((resolve, reject) => {
+  initializationPromise = new Promise<void>(async (resolve, reject) => {
+    console.log('Attempting to fetch labubus.csv...');
+    try {
+      const response = await fetch('/labubus.csv');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const csvText = await response.text();
+      console.log('labubus.csv fetched successfully.');
+
       Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
@@ -74,19 +80,23 @@ export const initializeVariants = async () => {
             priceHistory: [],
           }));
           console.log('Initialized variants:', variants);
+          isInitialized = true;
           resolve();
         },
         error: (error: Error) => {
           console.error('Error parsing CSV:', error);
+          initializationPromise = null; // Reset on error to allow retry
           reject(error);
         },
       });
-    });
-  } catch (error) {
-    console.error('Failed to fetch or process labubus.csv:', error);
-    // Ensure the promise is rejected if an error occurs during fetch or initial processing
-    return Promise.reject(error);
-  }
+    } catch (error) {
+      console.error('Failed to fetch or process labubus.csv:', error);
+      initializationPromise = null; // Reset on error to allow retry
+      reject(error);
+    }
+  });
+
+  return initializationPromise;
 };
 
 export const getAllVariants = (): Variant[] => {

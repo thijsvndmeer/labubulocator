@@ -1,8 +1,9 @@
-import { PlusCircle, Search, LocateFixed, Package } from 'lucide-react';
+import { PlusCircle, Search, LocateFixed, Package, Heart } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from './ui/button';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChangeEvent } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
+import { getFavorites } from '@/lib/favorites';
 
 interface HeaderProps {
   searchQuery: string;
@@ -11,6 +12,20 @@ interface HeaderProps {
 
 export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
   const navigate = useNavigate();
+  const [favoriteCount, setFavoriteCount] = useState<number>(0);
+
+  useEffect(() => {
+    const updateFavoriteCount = () => {
+      setFavoriteCount(getFavorites().length);
+    };
+
+    updateFavoriteCount(); // Set initial count
+
+    window.addEventListener('storage', updateFavoriteCount);
+    return () => {
+      window.removeEventListener('storage', updateFavoriteCount);
+    };
+  }, []);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
@@ -55,6 +70,16 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
                 onChange={handleSearchChange}
               />
             </div>
+            {favoriteCount > 0 && (
+              <Link to="/favorites">
+                <Button variant="outline" className="relative">
+                  <Heart className="h-4 w-4" />
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {favoriteCount}
+                  </span>
+                </Button>
+              </Link>
+            )}
           </form>
         </div>
       </div>

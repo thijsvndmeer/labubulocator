@@ -15,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { recordPageView, getPrice, getPriceHistory } from '@/lib/api';
+import { isFavorite, addFavorite, removeFavorite } from '@/lib/favorites';
 
 const assetImages = import.meta.glob('/src/assets/**/*.png', { eager: true, query: '?url', import: 'default' });
 
@@ -22,21 +23,36 @@ export default function VariantDetail() {
   const navigate = useNavigate();
   const { sku } = useParams();
   const [variant, setVariant] = useState<Variant | null>(null);
+  const [isFavorited, setIsFavorited] = useState<boolean>(false);
+  const [isLoadingVariant, setIsLoadingVariant] = useState<boolean>(true);
 
   useEffect(() => {
     const loadBaseVariant = async () => {
+      setIsLoadingVariant(true);
       await initializeVariants();
       const baseVariantData = getVariantBySku(sku!);
       if (baseVariantData) {
         setVariant(baseVariantData);
         recordPageView(baseVariantData.sku);
+        setIsFavorited(isFavorite(baseVariantData.sku));
       } else {
         console.warn('VariantDetail: No base variant found for SKU:', sku);
         setVariant(null); // Explicitly set to null if not found
       }
+      setIsLoadingVariant(false);
     };
     loadBaseVariant();
   }, [sku]);
+
+  const handleFavoriteToggle = () => {
+    if (!variant) return;
+    if (isFavorited) {
+      removeFavorite(variant.sku);
+    } else {
+      addFavorite(variant.sku);
+    }
+    setIsFavorited(!isFavorited);
+  };
 
   const { data: currentPrice, isLoading: isLoadingPrice } = useQuery({
     queryKey: ['price', sku],
@@ -68,7 +84,7 @@ export default function VariantDetail() {
     window.scrollTo(0, 0);
   }, []);
 
-  const isLoadingInitialData = !variant && (isLoadingPrice || isLoadingPriceHistory);
+  const isLoadingInitialData = isLoadingVariant || isLoadingPrice || isLoadingPriceHistory;
 
   if (isLoadingInitialData) {
     return (
@@ -165,7 +181,7 @@ export default function VariantDetail() {
     );
   }
 
-  if (!variant) {
+  if (!variant && !isLoadingVariant) {
     return (
       <div className="min-h-screen">
         <div className="min-h-screen flex items-center justify-center">
@@ -376,10 +392,13 @@ export default function VariantDetail() {
 
                           </Button>
 
-                          <Button variant="outline" size="icon">
-
-                            <Heart className="h-4 w-4" />
-
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={handleFavoriteToggle}
+                            className={isFavorited ? 'text-red-500 hover:text-red-600' : ''}
+                          >
+                            <Heart className={isFavorited ? 'h-4 w-4 fill-current' : 'h-4 w-4'} />
                           </Button>
 
                         </div>
