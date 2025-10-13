@@ -36,7 +36,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
-      <Header />
+
       
       {/* Hero Section */}
       <section className="relative overflow-hidden">
