@@ -1,4 +1,4 @@
-import { PlusCircle, Search, LocateFixed } from 'lucide-react';
+import { PlusCircle, Search, LocateFixed, Package } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from './ui/button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -27,11 +27,19 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
     <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-md">
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-2">
-            <LocateFixed className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Labubu Locator
-            </h1>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <LocateFixed className="h-6 w-6 text-primary" />
+              <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                Labubu Locator
+              </h1>
+            </div>
+            <Link to="/catalog">
+              <Button variant="outline">
+                <Package className="h-4 w-4 mr-2" />
+                Catalog
+              </Button>
+            </Link>
           </div>
           
           <form onSubmit={handleSearchSubmit} className="flex items-center gap-4">
@@ -45,17 +53,6 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
                 onChange={handleSearchChange}
               />
             </div>
-            <Link to="/catalog">
-              <Button variant="outline">
-                Catalog
-              </Button>
-            </Link>
-            <Link to="/add-variant">
-              <Button variant="outline">
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Add New
-              </Button>
-            </Link>
           </form>
         </div>
       </div>
