@@ -44,7 +44,7 @@ export const StockStatusBadge = ({ status }: StockStatusBadgeProps) => {
   const { label, icon: Icon, className } = badgeConfig;
 
   return (
-    <Badge variant="outline" className={className}>
+    <Badge variant="outline" className={`${className} fade-in`}>
       <Icon className="h-3 w-3 mr-1" />
       {label}
     </Badge>

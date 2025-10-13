@@ -50,7 +50,7 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
               <Input
                 type="search"
                 placeholder="Search variants, series, SKU..."
-                className="pl-10 transition-all duration-200 focus:shadow-card"
+                className="pl-10 transition-all duration-300 ease-in-out focus:shadow-card focus:border-primary focus:scale-[1.01]"
                 value={searchQuery}
                 onChange={handleSearchChange}
               />
