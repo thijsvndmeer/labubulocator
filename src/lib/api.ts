@@ -1,5 +1,6 @@
 
 import { PriceData } from "@/types/variant";
+import { PriceEntry, PriceHistory } from "@common/types/labubu";
 
 // To implement the actual API calls, you'll need to install some packages:
 // npm install axios stockx-api
@@ -36,6 +37,41 @@ export const getPopularVariants = async (): Promise<{ variantId: string; viewCou
   } catch (error) {
     console.error('Error fetching popular variants:', error);
     return [];
+  }
+};
+
+export const getPrice = async (labubuId: string): Promise<PriceEntry | null> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/${labubuId}/price`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    // The date comes as a string from the API, convert it back to a Date object
+    return { ...data, date: new Date(data.date) };
+  } catch (error) {
+    console.error(`Error fetching price for ${labubuId}:`, error);
+    return null;
+  }
+};
+
+export const getPriceHistory = async (labubuId: string): Promise<PriceHistory | null> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/${labubuId}/price-history`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    // The dates in the history array come as strings, convert them back to Date objects
+    return {
+      history: data.history.map((entry: PriceEntry) => ({
+        ...entry,
+        date: new Date(entry.date),
+      })),
+    };
+  } catch (error) {
+    console.error(`Error fetching price history for ${labubuId}:`, error);
+    return null;
   }
 };
 

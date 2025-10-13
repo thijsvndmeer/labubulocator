@@ -13,7 +13,7 @@ import { ArrowLeft, Bell, Heart, ExternalLink, Package, Tag } from 'lucide-react
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
-import { getAmazonPrice, getEbayPrice, getStockXPrice, recordPageView } from '@/lib/api';
+import { recordPageView, getPrice, getPriceHistory } from '@/lib/api';
 
 const assetImages = import.meta.glob('/src/assets/**/*.png', { eager: true, query: '?url', import: 'default' });
 
@@ -23,21 +23,7 @@ export default function VariantDetail() {
   const [variant, setVariant] = useState<Variant | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const { data: amazonPrice } = useQuery({
-    queryKey: ['amazonPrice', variant?.name],
-    queryFn: () => getAmazonPrice(variant!.name),
-    enabled: !!variant,
-  });
-  const { data: stockxPrice } = useQuery({
-    queryKey: ['stockxPrice', variant?.name],
-    queryFn: () => getStockXPrice(variant!.name),
-    enabled: !!variant,
-  });
-  const { data: ebayPrice } = useQuery({
-    queryKey: ['ebayPrice', variant?.name],
-    queryFn: () => getEbayPrice(variant!.name),
-    enabled: !!variant,
-  });
+
 
   useEffect(() => {
     if (variant) {
@@ -46,37 +32,42 @@ export default function VariantDetail() {
   }, [variant]);
 
   useEffect(() => {
-    const loadVariant = async () => {
+    const loadVariantData = async () => {
       console.log('VariantDetail: useEffect triggered for SKU:', sku);
+      setLoading(true);
       try {
-        await initializeVariants();
-        console.log('VariantDetail: initializeVariants completed.');
-        const variantData = getVariantBySku(sku!);
-        console.log('VariantDetail: getVariantBySku returned:', variantData);
-        if (variantData) {
-          setVariant(variantData);
+        // Get base variant data from local manager (CSV)
+        // This remains as per the workaround, as backend doesn't provide full variant objects
+        const baseVariantData = getVariantBySku(sku!);
+
+        if (baseVariantData) {
+          // Fetch price and price history from backend
+          const currentPrice = await getPrice(sku!);
+          const priceHistory = await getPriceHistory(sku!);
+
+          // Merge backend data with base variant data
+          const mergedVariant: Variant = {
+            ...baseVariantData,
+            lastSalePrice: currentPrice?.price || baseVariantData.lastSalePrice,
+            floorPrice: currentPrice?.price || baseVariantData.floorPrice, // Assuming current price can act as floor if no specific floor is provided
+            estimatedValue: currentPrice?.price || baseVariantData.estimatedValue,
+            priceRange: currentPrice ? { low: currentPrice.price, high: currentPrice.price } : baseVariantData.priceRange, // Simple range for now
+            priceHistory: priceHistory?.history || baseVariantData.priceHistory,
+            // confidenceScore, priceChange24h, recentSales would need more backend logic
+          };
+          setVariant(mergedVariant);
         } else {
           console.warn('VariantDetail: No variant found for SKU:', sku);
         }
       } catch (error) {
-        console.error('VariantDetail: Error loading variant:', error);
+        console.error('VariantDetail: Error loading variant data:', error);
       } finally {
         setLoading(false);
         console.log('VariantDetail: setLoading(false) called.');
       }
     };
-    loadVariant();
+    loadVariantData();
   }, [sku]);
-
-    useEffect(() => {
-      if (variant && (amazonPrice || stockxPrice || ebayPrice)) {
-        const scrapedPrices = [amazonPrice, stockxPrice, ebayPrice].filter(p => p).map(p => p!); 
-        const updatedVariant = updateVariantWithScrapedData(variant.sku, scrapedPrices);
-        if(updatedVariant) {
-          setVariant(updatedVariant);
-        }
-      }
-    }, [variant, amazonPrice, stockxPrice, ebayPrice]);
   
     useEffect(() => {
       window.scrollTo(0, 0);
@@ -240,10 +231,7 @@ export default function VariantDetail() {
           </div>
         </div>
 
-        {/* Price Comparison */}
-        <div className="mt-8">
-          <PriceComparison variantName={variant.name} msrp={variant.msrp} />
-        </div>
+
 
         {/* Price History */}
         <div className="mt-8">

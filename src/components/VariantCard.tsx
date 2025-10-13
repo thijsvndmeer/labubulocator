@@ -6,14 +6,16 @@ import { TrendingUp, TrendingDown, ExternalLink } from 'lucide-react';
 import { Variant } from '@/types/variant';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface VariantCardProps {
   variant: Variant;
+  isPopular: boolean;
 }
 
 const assetImages = import.meta.glob('/src/assets/**/*.png', { eager: true, query: '?url', import: 'default' });
 
-export const VariantCard = ({ variant }: VariantCardProps) => {
+export const VariantCard = ({ variant, isPopular }: VariantCardProps) => {
   const lowestPrice = Math.min(...(variant.priceSources || []).map(s => s.price));
 
   const getImageUrl = (variant: Variant) => {
@@ -55,6 +57,10 @@ export const VariantCard = ({ variant }: VariantCardProps) => {
             <RarityBadge rarity={variant.rarity} />
           </div>
         </Link>
+
+        {isPopular && (
+          <Badge variant="secondary" className="absolute top-2 left-2">Popular</Badge>
+        )}
 
         <Link to={`/variant/${variant.sku}`}>
           <div className="space-y-1">

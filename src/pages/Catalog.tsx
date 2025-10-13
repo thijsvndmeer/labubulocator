@@ -6,6 +6,7 @@ import { useVariantFilters } from '@/hooks/useVariantFilters';
 import { Package } from 'lucide-react';
 import { Variant } from '@/types/variant';
 import { getAllVariants, initializeVariants } from '@/data/variantManager';
+import { getPopularVariants } from '@/lib/api';
 import { Link } from 'react-router-dom';
 
 interface CatalogPageProps {
@@ -15,13 +16,22 @@ interface CatalogPageProps {
 
 export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) => {
   const [variants, setVariants] = useState<Variant[]>([]);
+  const [popularVariantIds, setPopularVariantIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const loadVariants = async () => {
+    const loadVariantsAndPopularity = async () => {
       await initializeVariants();
       setVariants(getAllVariants());
+
+      try {
+        const popular = await getPopularVariants();
+        const ids = new Set(popular.map(v => v.variantId));
+        setPopularVariantIds(ids);
+      } catch (error) {
+        console.error("Error fetching popular variants:", error);
+      }
     };
-    loadVariants();
+    loadVariantsAndPopularity();
   }, []);
 
   const { 
@@ -69,7 +79,7 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
           {filteredVariants.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {filteredVariants.map((variant) => (
-                <VariantCard key={variant.id} variant={variant} />
+                <VariantCard key={variant.id} variant={variant} isPopular={popularVariantIds.has(variant.sku)} />
               ))}
             </div>
           ) : (
