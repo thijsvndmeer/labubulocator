@@ -2,13 +2,25 @@
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
-    "rootDir": "./src",
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+
+    /* New settings for monorepo structure */
+    "baseUrl": ".",
+    "paths": {
+      "@common/*": ["../common/*"]
+    },
+    "rootDirs": [
+      "src",
+      "../common"
+    ]
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "../common/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }
