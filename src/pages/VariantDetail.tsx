@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getVariantBySku, initializeVariants, updateVariantWithScrapedData } from '@/data/variantManager';
+import { getVariantBySku, initializeVariants } from '@/data/variantManager';
 import { Variant } from '@/types/variant';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { StockStatusBadge } from '@/components/StockStatusBadge';
 import { PriceComparison } from '@/components/PriceComparison';
 import { PriceHistoryChart } from '@/components/PriceHistoryChart';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Bell, Heart, ExternalLink, Package, Tag } from 'lucide-react';
+import { ArrowLeft, Bell, Heart, ExternalLink, Package, Tag, RefreshCw } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
@@ -23,29 +23,30 @@ const assetImages = import.meta.glob('/src/assets/**/*.png', { eager: true, quer
 export default function VariantDetail() {
   const navigate = useNavigate();
   const { sku } = useParams();
-  const [variant, setVariant] = useState<Variant | null>(null);
   const [isFavorited, setIsFavorited] = useState<boolean>(false);
   const [isCollectedState, setIsCollectedState] = useState<boolean>(false);
-  const [isLoadingVariant, setIsLoadingVariant] = useState<boolean>(true);
 
-  useEffect(() => {
-    const loadBaseVariant = async () => {
-      setIsLoadingVariant(true);
+  const { data: variant, isLoading: isLoadingVariant, isFetching: isFetchingVariant, refetch: refetchVariant } = useQuery({
+    queryKey: ['variant', sku],
+    queryFn: async () => {
       await initializeVariants();
       const baseVariantData = getVariantBySku(sku!);
       if (baseVariantData) {
-        setVariant(baseVariantData);
         recordPageView(baseVariantData.sku);
-        setIsFavorited(isFavorite(baseVariantData.sku));
-        setIsCollectedState(isCollected(baseVariantData.sku));
-      } else {
-        console.warn('VariantDetail: No base variant found for SKU:', sku);
-        setVariant(null); // Explicitly set to null if not found
+        return baseVariantData;
       }
-      setIsLoadingVariant(false);
-    };
-    loadBaseVariant();
-  }, [sku]);
+      throw new Error('Variant not found');
+    },
+    enabled: !!sku,
+    keepPreviousData: true,
+  });
+
+  useEffect(() => {
+    if (variant) {
+      setIsFavorited(isFavorite(variant.sku));
+      setIsCollectedState(isCollected(variant.sku));
+    }
+  }, [variant]);
 
   const handleFavoriteToggle = () => {
     if (!variant) return;
@@ -67,39 +68,45 @@ export default function VariantDetail() {
     setIsCollectedState(!isCollectedState);
   };
 
-  const { data: currentPrice, isLoading: isLoadingPrice } = useQuery({
+  const { data: currentPrice, isFetching: isFetchingPrice, refetch: refetchPrice } = useQuery({
     queryKey: ['price', sku],
     queryFn: () => getPrice(sku!),
-    enabled: !!sku && !!variant, // Only run if sku and base variant are available
+    enabled: !!sku && !!variant,
+    keepPreviousData: true,
   });
 
-  const { data: priceHistory, isLoading: isLoadingPriceHistory } = useQuery({
+  const { data: priceHistory, isFetching: isFetchingPriceHistory, refetch: refetchPriceHistory } = useQuery({
     queryKey: ['priceHistory', sku],
     queryFn: () => getPriceHistory(sku!),
-    enabled: !!sku && !!variant, // Only run if sku and base variant are available
+    enabled: !!sku && !!variant,
+    keepPreviousData: true,
   });
 
-  useEffect(() => {
-    if (variant && (currentPrice || priceHistory)) {
-      const mergedVariant: Variant = {
-        ...variant,
-        lastSalePrice: currentPrice?.price || variant.lastSalePrice,
-        floorPrice: currentPrice?.price || variant.floorPrice,
-        estimatedValue: currentPrice?.price || variant.estimatedValue,
-        priceRange: currentPrice ? { low: currentPrice.price, high: currentPrice.price } : variant.priceRange,
-        priceHistory: priceHistory?.history || variant.priceHistory,
-      };
-      setVariant(mergedVariant);
-    }
-  }, [currentPrice, priceHistory, variant]);
+  const handleRefresh = () => {
+    refetchVariant();
+    refetchPrice();
+    refetchPriceHistory();
+  };
+
+  const isRefreshing = isFetchingVariant || isFetchingPrice || isFetchingPriceHistory;
+
+  const mergedVariant = useMemo(() => {
+    if (!variant) return null;
+    return {
+      ...variant,
+      lastSalePrice: currentPrice?.price || variant.lastSalePrice,
+      floorPrice: currentPrice?.price || variant.floorPrice,
+      estimatedValue: currentPrice?.price || variant.estimatedValue,
+      priceRange: currentPrice ? { low: currentPrice.price, high: currentPrice.price } : variant.priceRange,
+      priceHistory: priceHistory?.history || variant.priceHistory,
+    };
+  }, [variant, currentPrice, priceHistory]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const isLoadingInitialData = isLoadingVariant || isLoadingPrice || isLoadingPriceHistory;
-
-  if (isLoadingInitialData) {
+  if (isLoadingVariant && !mergedVariant) {
     return (
       <div className="min-h-screen">
         <div className="container mx-auto px-4 py-8">
@@ -194,7 +201,7 @@ export default function VariantDetail() {
     );
   }
 
-  if (!variant && !isLoadingVariant) {
+  if (!mergedVariant && !isLoadingVariant) {
     return (
       <div className="min-h-screen">
         <div className="min-h-screen flex items-center justify-center">
@@ -205,6 +212,10 @@ export default function VariantDetail() {
         </div>
       </div>
     );
+  }
+
+  if (!mergedVariant) {
+    return null; // Should not happen based on the logic above, but as a safeguard.
   }
 
   const getImageUrl = (variant: Variant) => {
@@ -239,8 +250,8 @@ export default function VariantDetail() {
           <Card className="overflow-hidden">
             <div className="aspect-square bg-muted p-8">
               <img
-                src={getImageUrl(variant)}
-                alt={variant.name}
+                src={getImageUrl(mergedVariant)}
+                alt={mergedVariant.name}
                 className="w-full h-full object-cover rounded-lg"
               />
             </div>
@@ -251,123 +262,68 @@ export default function VariantDetail() {
             <div>
               <div className="flex items-start justify-between gap-4 mb-2">
                 <div className="flex-1">
-                  <h1 className="text-3xl font-bold mb-1">{variant.name}</h1>
-                  <p className="text-lg text-muted-foreground">{variant.series}</p>
-                  {variant.variant && (
-                    <p className="text-sm text-muted-foreground">{variant.variant}</p>
+                  <h1 className="text-3xl font-bold mb-1">{mergedVariant.name}</h1>
+                  <p className="text-lg text-muted-foreground">{mergedVariant.series}</p>
+                  {mergedVariant.variant && (
+                    <p className="text-sm text-muted-foreground">{mergedVariant.variant}</p>
                   )}
                 </div>
-                <RarityBadge rarity={variant.rarity} />
+                <RarityBadge rarity={mergedVariant.rarity} />
               </div>
               
               <div className="flex items-center gap-2 mt-3">
                 <Badge variant="outline" className="font-mono">
                   <Tag className="h-3 w-3 mr-1" />
-                  {variant.sku}
+                  {mergedVariant.sku}
                 </Badge>
-                <StockStatusBadge status={variant.stockStatus} />
+                <StockStatusBadge status={mergedVariant.stockStatus} />
               </div>
             </div>
 
-                        <p className="text-muted-foreground">{variant.description}</p>
+                        <p className="text-muted-foreground">{mergedVariant.description}</p>
 
             
 
                         {/* Price Info */}
 
-                        {isLoadingPrice ? (
-
-                          <Card className="p-6 bg-gradient-primary">
-
-                            <div className="space-y-4">
-
-                              <div>
-
-                                <Skeleton className="h-4 w-40 mb-1" />
-
-                                <div className="flex items-baseline gap-3">
-
-                                  <Skeleton className="h-10 w-32" />
-
-                                  <Skeleton className="h-5 w-24" />
-
-                                </div>
-
+                        <Card className="p-6 bg-gradient-primary relative">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="absolute top-2 right-2 text-primary-foreground/80 hover:text-primary-foreground"
+                            onClick={handleRefresh}
+                            disabled={isRefreshing}
+                          >
+                            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                          </Button>
+                          <div className="space-y-4">
+                            <div>
+                              <p className="text-sm text-primary-foreground/80 mb-1">Estimated Market Value</p>
+                              <div className="flex items-baseline gap-3">
+                                <span className="text-4xl font-bold text-primary-foreground">
+                                  ${mergedVariant.estimatedValue?.toFixed(2) || '--.--'}
+                                </span>
+                                <span className="text-sm text-primary-foreground/80">
+                                  Floor: ${mergedVariant.floorPrice?.toFixed(2) || '--.--'}
+                                </span>
                               </div>
-
-                              <div className="flex items-center gap-4 text-sm">
-
-                                <Skeleton className="h-5 w-20" />
-
-                                <Skeleton className="h-5 w-24" />
-
-                              </div>
-
-                              <Skeleton className="h-5 w-48" />
-
                             </div>
-
-                          </Card>
-
-                        ) : (
-
-                          <Card className="p-6 bg-gradient-primary">
-
-                            <div className="space-y-4">
-
+          
+                            <div className="flex items-center gap-4 text-sm text-primary-foreground/90">
                               <div>
-
-                                <p className="text-sm text-primary-foreground/80 mb-1">Estimated Market Value</p>
-
-                                <div className="flex items-baseline gap-3">
-
-                                  <span className="text-4xl font-bold text-primary-foreground">
-
-                                    ${variant.estimatedValue?.toFixed(2)}
-
-                                  </span>
-
-                                  <span className="text-sm text-primary-foreground/80">
-
-                                    Floor: ${variant.floorPrice?.toFixed(2)}
-
-                                  </span>
-
-                                </div>
-
+                                <span className="text-primary-foreground/70">MSRP: </span>
+                                <span className="font-semibold">${mergedVariant.msrp.toFixed(2)}</span>
                               </div>
-
-            
-
-                              <div className="flex items-center gap-4 text-sm text-primary-foreground/90">
-
-                                <div>
-
-                                  <span className="text-primary-foreground/70">MSRP: </span>
-
-                                  <span className="font-semibold">${variant.msrp.toFixed(2)}</span>
-
-                                </div>
-
-                                <div>
-
-                                  <span className="text-primary-foreground/70">Last Sale: </span>
-
-                                  <span className="font-semibold">${variant.lastSalePrice?.toFixed(2)}</span>
-
-                                </div>
-
+                              <div>
+                                <span className="text-primary-foreground/70">Last Sale: </span>
+                                <span className="font-semibold">${mergedVariant.lastSalePrice?.toFixed(2) || '--.--'}</span>
                               </div>
-
-            
-
-                              <ConfidenceScore score={variant.confidenceScore || 0} className="text-primary-foreground/90" />
-
                             </div>
-
-                          </Card>
-
-                        )}
+          
+                            <ConfidenceScore score={mergedVariant.confidenceScore || 0} className="text-primary-foreground/90" />
+                          </div>
+                        </Card>
 
             
 
@@ -375,7 +331,7 @@ export default function VariantDetail() {
 
                         <div className="flex gap-3">
 
-                          {variant.affiliateLinks.slice(0, 2).map((link) => (
+                          {mergedVariant.affiliateLinks.slice(0, 2).map((link) => (
 
                             <Button key={link.id} size="lg" className="flex-1" asChild>
 
@@ -439,7 +395,7 @@ export default function VariantDetail() {
 
                           <div className="grid grid-cols-2 gap-3 text-sm">
 
-                            {Object.entries(variant.attributes).map(([key, value]) => (
+                            {Object.entries(mergedVariant.attributes).map(([key, value]) => (
 
                               <div key={key}>
 
@@ -464,7 +420,7 @@ export default function VariantDetail() {
 
                     <div className="mt-8">
 
-                      {isLoadingPriceHistory ? (
+                      {isFetchingPriceHistory && !priceHistory ? (
 
                         <Card className="mt-8 p-6">
 
@@ -476,7 +432,7 @@ export default function VariantDetail() {
 
                       ) : (
 
-                        <PriceHistoryChart history={variant.priceHistory || []} currentPrice={variant.estimatedValue || 0} />
+                        <PriceHistoryChart history={mergedVariant.priceHistory || []} currentPrice={mergedVariant.estimatedValue || 0} />
 
                       )}
 
@@ -490,7 +446,7 @@ export default function VariantDetail() {
 
                       <h2 className="text-2xl font-bold mb-4">Recent Sales</h2>
 
-                      {isLoadingPriceHistory ? (
+                      {isFetchingPriceHistory && !priceHistory ? (
 
                         <div className="space-y-2">
 
@@ -528,7 +484,7 @@ export default function VariantDetail() {
 
                           <TableBody>
 
-                            {variant.recentSales?.map((sale, index) => (
+                            {mergedVariant.recentSales?.map((sale, index) => (
 
                               <TableRow key={index}>
 
