@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import * as priceService from '../services/labubuPriceService';
-import { recordPageView, getPopularVariants } from '../services/pageViewService';
 
 const router = Router();
 
@@ -14,19 +13,6 @@ router.get('/:labubuId/price', (req, res) => {
 
 router.get('/:labubuId/price-history', (req, res) => {
     res.status(200).json(priceService.getPriceHistory(req.params.labubuId));
-});
-
-router.get('/popular', (req, res) => {
-    res.status(200).json(getPopularVariants());
-});
-
-//============================================================================================================================================================================================
-// Post requests
-//============================================================================================================================================================================================
-
-router.post('/:labubuId/view', (req, res) => {
-    recordPageView(req.params.labubuId);
-    res.status(200).send('Page view recorded');
 });
 
 //============================================================================================================================================================================================
