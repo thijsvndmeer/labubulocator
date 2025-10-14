@@ -68,25 +68,21 @@ export default function VariantDetail() {
     setIsCollectedState(!isCollectedState);
   };
 
-  const { data: currentPrice, isFetching: isFetchingPrice, refetch: refetchPrice } = useQuery({
+  const { data: currentPrice, isFetching: isFetchingPrice } = useQuery({
     queryKey: ['price', sku],
     queryFn: () => getPrice(sku!),
     enabled: !!sku && !!variant,
     keepPreviousData: true,
+    refetchInterval: 30000,
   });
 
-  const { data: priceHistory, isFetching: isFetchingPriceHistory, refetch: refetchPriceHistory } = useQuery({
+  const { data: priceHistory, isFetching: isFetchingPriceHistory } = useQuery({
     queryKey: ['priceHistory', sku],
     queryFn: () => getPriceHistory(sku!),
     enabled: !!sku && !!variant,
     keepPreviousData: true,
+    refetchInterval: 30000,
   });
-
-  const handleRefresh = () => {
-    refetchVariant();
-    refetchPrice();
-    refetchPriceHistory();
-  };
 
   const isRefreshing = isFetchingVariant || isFetchingPrice || isFetchingPriceHistory;
 
@@ -239,6 +235,11 @@ export default function VariantDetail() {
 
   return (
     <div className="min-h-screen">
+      {isRefreshing && (
+        <div className="fixed top-4 right-4 z-50">
+          <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      )}
       <div className="container mx-auto px-4 py-8">
         <button onClick={() => navigate(-1)} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
           <ArrowLeft className="h-4 w-4" />
@@ -287,16 +288,6 @@ export default function VariantDetail() {
                         {/* Price Info */}
 
                         <Card className="p-6 bg-gradient-primary relative">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="absolute top-2 right-2 text-primary-foreground/80 hover:text-primary-foreground"
-                            onClick={handleRefresh}
-                            disabled={isRefreshing}
-                          >
-                            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-                            {isRefreshing ? 'Refreshing...' : 'Refresh'}
-                          </Button>
                           <div className="space-y-4">
                             <div>
                               <p className="text-sm text-primary-foreground/80 mb-1">Estimated Market Value</p>
@@ -419,23 +410,7 @@ export default function VariantDetail() {
                     {/* Price History */}
 
                     <div className="mt-8">
-
-                      {isFetchingPriceHistory && !priceHistory ? (
-
-                        <Card className="mt-8 p-6">
-
-                          <Skeleton className="h-8 w-48 mb-4" />
-
-                          <Skeleton className="h-64 w-full" />
-
-                        </Card>
-
-                      ) : (
-
-                        <PriceHistoryChart history={mergedVariant.priceHistory || []} currentPrice={mergedVariant.estimatedValue || 0} />
-
-                      )}
-
+                      <PriceHistoryChart history={mergedVariant.priceHistory || []} currentPrice={mergedVariant.estimatedValue || 0} />
                     </div>
 
             
@@ -446,79 +421,67 @@ export default function VariantDetail() {
 
                       <h2 className="text-2xl font-bold mb-4">Recent Sales</h2>
 
-                      {isFetchingPriceHistory && !priceHistory ? (
+                        {(mergedVariant.recentSales && mergedVariant.recentSales.length > 0) ? (
+                          <Table>
 
-                        <div className="space-y-2">
+                            <TableHeader>
 
-                          <Skeleton className="h-10 w-full" />
+                              <TableRow>
 
-                          <Skeleton className="h-10 w-full" />
+                                <TableHead>Date</TableHead>
 
-                          <Skeleton className="h-10 w-full" />
+                                <TableHead>Source</TableHead>
 
-                          <Skeleton className="h-10 w-full" />
+                                <TableHead>Price</TableHead>
 
-                        </div>
+                                <TableHead>Currency</TableHead>
 
-                      ) : (
-
-                        <Table>
-
-                          <TableHeader>
-
-                            <TableRow>
-
-                              <TableHead>Date</TableHead>
-
-                              <TableHead>Source</TableHead>
-
-                              <TableHead>Price</TableHead>
-
-                              <TableHead>Currency</TableHead>
-
-                              <TableHead></TableHead>
-
-                            </TableRow>
-
-                          </TableHeader>
-
-                          <TableBody>
-
-                            {mergedVariant.recentSales?.map((sale, index) => (
-
-                              <TableRow key={index}>
-
-                                <TableCell>{new Date(sale.date).toLocaleDateString()}</TableCell>
-
-                                <TableCell>{sale.source}</TableCell>
-
-                                <TableCell className="font-semibold">${sale.price.toFixed(2)}</TableCell>
-
-                                <TableCell>{sale.currency}</TableCell>
-
-                                <TableCell>
-
-                                  <Button variant="ghost" size="sm" asChild>
-
-                                    <a href={sale.url} target="_blank" rel="noopener noreferrer">
-
-                                      View <ExternalLink className="h-3 w-3 ml-1" />
-
-                                    </a>
-
-                                  </Button>
-
-                                </TableCell>
+                                <TableHead></TableHead>
 
                               </TableRow>
 
-                            ))}
+                            </TableHeader>
 
-                          </TableBody>
+                            <TableBody>
 
-                        </Table>
+                              {mergedVariant.recentSales?.map((sale, index) => (
 
-                      )}
+                                <TableRow key={index}>
+
+                                  <TableCell>{new Date(sale.date).toLocaleDateString()}</TableCell>
+
+                                  <TableCell>{sale.source}</TableCell>
+
+                                  <TableCell className="font-semibold">${sale.price.toFixed(2)}</TableCell>
+
+                                  <TableCell>{sale.currency}</TableCell>
+
+                                  <TableCell>
+
+                                    <Button variant="ghost" size="sm" asChild>
+
+                                      <a href={sale.url} target="_blank" rel="noopener noreferrer">
+
+                                        View <ExternalLink className="h-3 w-3 ml-1" />
+
+                                      </a>
+
+                                    </Button>
+
+                                  </TableCell>
+
+                                </TableRow>
+
+                              ))}
+
+                            </TableBody>
+
+                          </Table>
+                        ) : (
+                          <div className="text-center py-12">
+                            <p className="text-muted-foreground">No recent sales data available.</p>
+                          </div>
+                        )}
 
                       <p className="text-xs text-muted-foreground mt-4">
 

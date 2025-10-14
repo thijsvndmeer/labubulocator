@@ -8,7 +8,16 @@ interface PriceHistoryChartProps {
 }
 
 export const PriceHistoryChart = ({ history, currentPrice }: PriceHistoryChartProps) => {
-  if (history.length === 0) return null;
+  if (history.length === 0) {
+    return (
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold">Price History</h3>
+        <div className="flex items-center justify-center h-24">
+          <p className="text-muted-foreground">No price history available.</p>
+        </div>
+      </Card>
+    );
+  }
 
   const latest = history[0];
   const oldest = history[history.length - 1];
