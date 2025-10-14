@@ -6,20 +6,23 @@ import { TrendingUp, TrendingDown, ExternalLink } from 'lucide-react';
 import { Variant } from '@/types/variant';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface VariantCardProps {
   variant: Variant;
+  isPopular?: boolean;
+  hideStockStatus?: boolean;
 }
 
 const assetImages = import.meta.glob('/src/assets/**/*.png', { eager: true, query: '?url', import: 'default' });
 
-export const VariantCard = ({ variant }: VariantCardProps) => {
+export const VariantCard = ({ variant, isPopular, hideStockStatus }: VariantCardProps) => {
   const lowestPrice = Math.min(...(variant.priceSources || []).map(s => s.price));
 
   const getImageUrl = (variant: Variant) => {
     const sku = variant.sku.toLowerCase();
 
-    let foundImagePath = Object.keys(assetImages).find(path => {
+    const foundImagePath = Object.keys(assetImages).find(path => {
       const filename = path.split('/').pop()?.toLowerCase() || '';
       return filename.includes(sku);
     });
@@ -31,7 +34,9 @@ export const VariantCard = ({ variant }: VariantCardProps) => {
   };
 
   return (
-    <Card className="group overflow-hidden transition-all duration-300 hover:shadow-card-hover">
+    <Card 
+      className="group overflow-hidden transition-all duration-300 hover:shadow-card-hover fade-in"
+    >
       <Link to={`/variant/${variant.sku}`}>
         <div className="aspect-square overflow-hidden bg-muted">
           <img
@@ -55,6 +60,10 @@ export const VariantCard = ({ variant }: VariantCardProps) => {
             <RarityBadge rarity={variant.rarity} />
           </div>
         </Link>
+
+        {isPopular && (
+          <Badge variant="secondary" className="absolute top-2 left-2">Popular</Badge>
+        )}
 
         <Link to={`/variant/${variant.sku}`}>
           <div className="space-y-1">
@@ -80,7 +89,7 @@ export const VariantCard = ({ variant }: VariantCardProps) => {
         </Link>
 
         <div className="flex items-center justify-between gap-2 pt-2">
-          <StockStatusBadge status={variant.stockStatus} />
+          {!hideStockStatus && <StockStatusBadge status={variant.stockStatus} />}
           {variant.affiliateLinks.length > 0 && (
             <Button
               size="sm"

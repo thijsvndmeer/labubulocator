@@ -2,8 +2,10 @@ import { PriceData, Sale, PriceSnapshot, Variant } from '@/types/variant';
 import Papa from 'papaparse';
 
 let variants: Variant[] = [];
+let isInitialized = false;
+let initializationPromise: Promise<void> | null = null;
 
-const parseJsonString = (jsonString: string, defaultValue: any) => {
+const parseJsonString = <T>(jsonString: string, defaultValue: T): T => {
   try {
     // The JSON strings in the CSV are double-quoted, so we need to parse them twice.
     return JSON.parse(JSON.parse(`"${jsonString}"`));
@@ -12,27 +14,48 @@ const parseJsonString = (jsonString: string, defaultValue: any) => {
   }
 };
 
-export const initializeVariants = async () => {
-  if (variants.length > 0) {
-    return;
+export const initializeVariants = async (): Promise<void> => {
+  if (isInitialized) {
+    return initializationPromise!;
   }
 
-  console.log('Attempting to fetch labubus.csv...');
-  try {
-    const response = await fetch('/labubus.csv');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const csvText = await response.text();
-    console.log('labubus.csv fetched successfully.');
+  if (initializationPromise) {
+    return initializationPromise;
+  }
 
-    return new Promise<void>((resolve, reject) => {
+  // eslint-disable-next-line no-async-promise-executor
+  initializationPromise = new Promise<void>(async (resolve, reject) => {
+    console.log('Attempting to fetch labubus.csv...');
+    try {
+      const response = await fetch('/labubus.csv');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const csvText = await response.text();
+      console.log('labubus.csv fetched successfully.');
+
       Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
         complete: (results) => {
           console.log('CSV parsing complete. Raw data:', results.data);
-          variants = results.data.map((row: any) => ({
+
+          interface CsvRow {
+            name: string;
+            series: string;
+            variant: string;
+            sku: string;
+            rarity: string;
+            images: string;
+            description: string;
+            msrp: string;
+            retailUrl: string;
+            stockStatus: string;
+            attributes: string;
+            affiliateLinks: string;
+          }
+
+          variants = (results.data as CsvRow[]).map((row: CsvRow) => ({
             name: row.name,
             series: row.series,
             variant: row.variant,
@@ -58,19 +81,23 @@ export const initializeVariants = async () => {
             priceHistory: [],
           }));
           console.log('Initialized variants:', variants);
+          isInitialized = true;
           resolve();
         },
-        error: (error: any) => {
+        error: (error: Error) => {
           console.error('Error parsing CSV:', error);
+          initializationPromise = null; // Reset on error to allow retry
           reject(error);
         },
       });
-    });
-  } catch (error) {
-    console.error('Failed to fetch or process labubus.csv:', error);
-    // Ensure the promise is rejected if an error occurs during fetch or initial processing
-    return Promise.reject(error);
-  }
+    } catch (error) {
+      console.error('Failed to fetch or process labubus.csv:', error);
+      initializationPromise = null; // Reset on error to allow retry
+      reject(error);
+    }
+  });
+
+  return initializationPromise;
 };
 
 export const getAllVariants = (): Variant[] => {

@@ -35,8 +35,8 @@ const Index = () => {
     .slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
-      <Header />
+    <div className="min-h-screen">
+
       
       {/* Hero Section */}
       <section className="relative overflow-hidden">
