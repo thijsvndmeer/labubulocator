@@ -64,7 +64,7 @@ All colors MUST be HSL.
 
     /* Rarity colors */
     --rarity-common: 210, 100%, 75%;
-    --rarity-uncommon: 145, 100%, 86%;
+    --rarity-uncommon: hsl(96, 100%, 81%);
     --rarity-rare: 318, 100%, 85%;
     --rarity-epic: 280 70% 60%;
     --rarity-legendary: 40 90% 55%;
