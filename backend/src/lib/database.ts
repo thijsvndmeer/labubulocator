@@ -5,7 +5,7 @@ import path from 'path';
 // Setup
 //============================================================================================================================================================================================
 
-const dbPath = path.resolve(__dirname, '..', '..', 'data', 'app.db');
+const dbPath = path.resolve(__dirname, '..', 'data', 'app.db');
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Error connecting to database', err.message);
@@ -45,7 +45,7 @@ db.serialize(() => {
       vendor_name TEXT NOT NULL,
       product_url TEXT UNIQUE NOT NULL,
       listing_title TEXT NOT NULL,
-      last_checked_at TEXT NOT NULL,
+      last_checked_at TEXT,
       in_stock INTEGER DEFAULT 1,
       FOREIGN KEY (labubu_id) REFERENCES labubus (id)
     )
