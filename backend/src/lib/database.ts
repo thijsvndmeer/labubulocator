@@ -1,11 +1,19 @@
 import sqlite3 from 'sqlite3';
 import path from 'path';
+import fs from 'fs';
 
 //============================================================================================================================================================================================
 // Setup
 //============================================================================================================================================================================================
 
 const dbPath = path.resolve(__dirname, '..', 'data', 'app.db');
+const dbDir = path.dirname(dbPath);
+
+// Create the directory if it doesn't exist
+if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+}
+
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Error connecting to database', err.message);
