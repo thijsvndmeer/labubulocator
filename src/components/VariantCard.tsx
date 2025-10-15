@@ -40,8 +40,10 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus }: VariantCard
       <Link to={`/variant/${variant.sku}`}>
         <div className="aspect-square overflow-hidden bg-muted">
           <img
+            key={getImageUrl(variant)}
             src={getImageUrl(variant)}
             alt={variant.name}
+            loading="lazy"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
         </div>
