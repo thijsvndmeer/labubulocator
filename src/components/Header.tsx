@@ -1,3 +1,4 @@
+import { ThemeToggle } from "./ThemeToggle";
 import { PlusCircle, Search, LocateFixed, Package, Heart, Boxes } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from './ui/button';
@@ -42,7 +43,7 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md">
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
@@ -93,6 +94,7 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
                 </Button>
               </Link>
             )}
+            <ThemeToggle />
           </form>
         </div>
       </div>

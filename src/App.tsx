@@ -11,8 +11,7 @@ import { FavoritesPage } from "./pages/Favorites";
 import Collection from "./pages/Collection";
 import SharedCollection from "./pages/SharedCollection";
 import { Header } from "./components/Header";
-import { useState, useEffect }
- from "react";
+import { useState, useEffect } from "react";
 
 const queryClient = new QueryClient();
 
@@ -62,3 +61,5 @@ const App = () => (
 );
 
 export default App;
+
+
