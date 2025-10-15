@@ -49,12 +49,12 @@ export const SearchFilters = ({
             <SelectValue placeholder="Rarity" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Rarities</SelectItem>
-            <SelectItem value="common">Common</SelectItem>
-            <SelectItem value="uncommon">Uncommon</SelectItem>
-            <SelectItem value="rare">Rare</SelectItem>
-            <SelectItem value="epic">Epic</SelectItem>
-            <SelectItem value="legendary">Legendary</SelectItem>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="common">Normal Labubu</SelectItem>
+            <SelectItem value="uncommon">Zimomo</SelectItem>
+            <SelectItem value="rare">Mokoko</SelectItem>
+            {/* <SelectItem value="epic">Epic</SelectItem>
+            <SelectItem value="legendary">Legendary</SelectItem> */}
             <SelectItem value="secret">Secret</SelectItem>
           </SelectContent>
         </Select>

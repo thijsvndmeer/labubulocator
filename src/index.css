@@ -63,9 +63,9 @@ All colors MUST be HSL.
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     /* Rarity colors */
-    --rarity-common: 210 15% 55%;
-    --rarity-uncommon: 145 60% 50%;
-    --rarity-rare: 220 80% 60%;
+    --rarity-common: 210, 100%, 75%;
+    --rarity-uncommon: 145, 100%, 86%;
+    --rarity-rare: 318, 100%, 85%;
     --rarity-epic: 280 70% 60%;
     --rarity-legendary: 40 90% 55%;
     --rarity-secret: 330 85% 55%;
