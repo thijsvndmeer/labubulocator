@@ -25,15 +25,34 @@ const priceHistoryRepository = new PriceHistoryRepository(db);
 //     priceHistory.history.sort((a, b) => a.date.getTime() - b.date.getTime());
 // }
 
-labubuRepository.findOrCreate({sku: 'example-sku', name: 'Example Labubu', series: 'Example Series', rarity: null, image: null, description: null, msrp: null}).then((labubu_id) => {
-    console.log('Labubu entry ensured.');
-    console.log(labubu_id);
-}, (err) => console.error(err));
+const runTest = async () => {
+    try {
+        console.log('--- Testing findOrCreate ---');
+        const labubu_id = await labubuRepository.findOrCreate({ sku: 'example-sku', name: 'Example Labubu', series: 'Example Series', rarity: null, image: null, description: null, msrp: null });
+        console.log('Labubu entry created.', labubu_id);
 
-labubuRepository.find({sku: 'example-sku'}, ['name']).then((labubu) => {
-    console.log('Labubu entry found.');
-    console.log(labubu);
-}, (err) => console.error(err));
+        console.log('\n--- Testing find (specific fields) ---');
+        const foundLabubu1 = await labubuRepository.find({ sku: 'example-sku' }, ['name']);
+        console.log('Labubu entry found.', foundLabubu1);
+
+        console.log('\n--- Testing update ---');
+        const updatedCount = await labubuRepository.update({ sku: 'example-sku' }, { rarity: 'Example Rarity', image: 'Example-image', description: 'Example description', msrp: 100 });
+        console.log('Labubu entry updated.', updatedCount);
+
+        console.log('\n--- Testing find (all fields) ---');
+        const foundLabubu2 = await labubuRepository.find({ sku: 'example-sku' });
+        console.log('Labubu entry found.', foundLabubu2);
+
+        console.log('\n--- Testing delete ---');
+        const deletedCount = await labubuRepository.delete({ sku: 'example-sku' });
+        console.log('Labubu entry deleted.', deletedCount);
+
+    } catch (err) {
+        console.error('An error occurred during the test run:', err);
+    }
+};
+
+runTest();
 
 //============================================================================================================================================================================================
 // Getters
