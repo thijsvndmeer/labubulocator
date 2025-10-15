@@ -63,10 +63,10 @@ All colors MUST be HSL.
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     /* Rarity colors */
-    --rarity-common: 210 15% 55%;
-    --rarity-uncommon: 145 60% 50%;
-    --rarity-rare: 220 80% 60%;
-    --rarity-epic: 280 70% 60%;
+    --rarity-common: 280, 66%, 72%;
+    --rarity-uncommon: 135, 53%, 69%;
+    --rarity-rare: 187, 61%, 73%;
+    --rarity-epic: 0, 57%, 63%;
     --rarity-legendary: 40 90% 55%;
     --rarity-secret: 330 85% 55%;
 
@@ -106,8 +106,8 @@ All colors MUST be HSL.
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 280 15% 20%;
-    --input: 280 15% 20%;
+    --border: 273, 12%, 33%;
+    --input: 273, 12%, 33%;
     --ring: 280 60% 65%;
 
     --gradient-primary: linear-gradient(135deg, hsl(280 60% 65%), hsl(280 70% 75%));
@@ -134,5 +134,6 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease-in-out;
   }
 }

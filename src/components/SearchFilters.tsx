@@ -49,12 +49,12 @@ export const SearchFilters = ({
             <SelectValue placeholder="Rarity" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Rarities</SelectItem>
-            <SelectItem value="common">Common</SelectItem>
-            <SelectItem value="uncommon">Uncommon</SelectItem>
-            <SelectItem value="rare">Rare</SelectItem>
-            <SelectItem value="epic">Epic</SelectItem>
-            <SelectItem value="legendary">Legendary</SelectItem>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="common">Normal Labubu</SelectItem>
+            <SelectItem value="uncommon">Zimomo</SelectItem>
+            <SelectItem value="rare">Mokoko</SelectItem>
+            {/* <SelectItem value="epic">Epic</SelectItem>
+            <SelectItem value="legendary">Legendary</SelectItem> */}
             <SelectItem value="secret">Secret</SelectItem>
           </SelectContent>
         </Select>
@@ -78,11 +78,12 @@ export const SearchFilters = ({
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="newest">Newest First</SelectItem>
             <SelectItem value="price-low">Price: Low to High</SelectItem>
             <SelectItem value="price-high">Price: High to Low</SelectItem>
-            <SelectItem value="newest">Newest First</SelectItem>
-            <SelectItem value="rarity">Rarity</SelectItem>
+            <SelectItem value="rarity">Type</SelectItem>
             <SelectItem value="most-popular">Most Popular</SelectItem>
+            <SelectItem value="random">Random</SelectItem>
           </SelectContent>
         </Select>
 
@@ -93,7 +94,7 @@ export const SearchFilters = ({
             onSearchChange('');
             onRarityChange('all');
             onSeriesChange('all');
-            onSortChange('most-popular');
+            onSortChange('newest');
           }}
         >
           Clear Filters

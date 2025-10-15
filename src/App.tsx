@@ -11,14 +11,20 @@ import { FavoritesPage } from "./pages/Favorites";
 import Collection from "./pages/Collection";
 import SharedCollection from "./pages/SharedCollection";
 import { Header } from "./components/Header";
-import { useState, useEffect }
- from "react";
+import { useState, useEffect } from "react";
 
 const queryClient = new QueryClient();
 
 export const AppContent = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(() => {
+    const storedSearchQuery = localStorage.getItem('searchQuery');
+    return storedSearchQuery || '';
+  });
   const location = useLocation();
+
+  useEffect(() => {
+    localStorage.setItem('searchQuery', searchQuery);
+  }, [searchQuery]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -26,9 +32,13 @@ export const AppContent = () => {
     if (search) {
       setSearchQuery(search);
     } else {
-      setSearchQuery("");
+      // Only clear search query if it's not coming from localStorage
+      const storedSearchQuery = localStorage.getItem('searchQuery');
+      if (!storedSearchQuery) {
+        setSearchQuery('');
+      }
     }
-  }, [location.search]);
+  }, [location.search, setSearchQuery]);
 
   const showHeader = !location.pathname.startsWith("/variant/");
 
@@ -62,3 +72,5 @@ const App = () => (
 );
 
 export default App;
+
+
