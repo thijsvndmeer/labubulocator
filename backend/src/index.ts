@@ -1,7 +1,7 @@
-import express, { Request, Response } from 'express';
-import labubuRoutes from './routes/labubu';
-import * as labubuPriceService from './services/labubuPriceService';
-import { PriceEntry } from '@common/types/labubu'
+import express, { Request, Response } from "express";
+import labubuRoutes from "./routes/labubu";
+import * as labubuPriceService from "./services/labubuPriceService";
+import { PriceEntry } from "@common/types/labubu";
 
 const app = express();
 const port = 3001;
@@ -12,28 +12,28 @@ const port = 3001;
 
 app.use((req, res, next) => {
   // Allow requests from the frontend
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4000/');
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:4000/");
   next();
 });
 
 app.use((req, res, next) => {
-  console.log(`Request received: ${req.method} ${req.path}`);  
+  console.log(`Request received: ${req.method} ${req.path}`);
   next();
-})
+});
 
 //============================================================================================================================================================================================
 // Routing
 //============================================================================================================================================================================================
 
-app.use('/api/labubus', labubuRoutes);
+app.use("/api/labubus", labubuRoutes);
 
 //============================================================================================================================================================================================
 // Start the server
 //============================================================================================================================================================================================
 
 // A simple root endpoint to confirm the server is running
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello from the Labubu Locator backend!');
+app.get("/", (req: Request, res: Response) => {
+  res.send("Hello from the Labubu Locator backend!");
 });
 
 app.listen(port, () => {

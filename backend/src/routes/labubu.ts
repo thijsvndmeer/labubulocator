@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import * as priceService from '../services/labubuPriceService';
+import { Router } from "express";
+import * as priceService from "../services/labubuPriceService";
 
 const router = Router();
 
@@ -7,12 +7,12 @@ const router = Router();
 // Get requests
 //============================================================================================================================================================================================
 
-router.get('/:labubuId/price', (req, res) => {
-    res.status(200).json(priceService.getPrice(req.params.labubuId));
+router.get("/:labubuId/price", (req, res) => {
+  res.status(200).json(priceService.getPrice(req.params.labubuId));
 });
 
-router.get('/:labubuId/price-history', (req, res) => {
-    res.status(200).json(priceService.getPriceHistory(req.params.labubuId));
+router.get("/:labubuId/price-history", (req, res) => {
+  res.status(200).json(priceService.getPriceHistory(req.params.labubuId));
 });
 
 //============================================================================================================================================================================================

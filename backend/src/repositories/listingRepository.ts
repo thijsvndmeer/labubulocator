@@ -1,54 +1,90 @@
-import { Database } from 'sqlite3';
-import { ListingData, PersistedListing } from '../types/labubu';
-import { BaseRepository } from './baseRepository';
+import { Database } from "sqlite3";
+import { ListingData, PersistedListing } from "../types/labubu";
+import { BaseRepository } from "./baseRepository";
 
 export class ListingRepository extends BaseRepository<PersistedListing> {
+  //============================================================================================================================================================================================
+  // Constructor
+  //============================================================================================================================================================================================
 
-    //============================================================================================================================================================================================
-    // Constructor
-    //============================================================================================================================================================================================
+  constructor(db: Database) {
+    super(db, "listings", [
+      "id",
+      "labubu_id",
+      "vendor_name",
+      "product_url",
+      "listing_title",
+      "last_checked_at",
+      "in_stock",
+    ]);
+  }
 
-    constructor(db: Database) {
-        super(db, 'listings', ['id', 'labubu_id', 'vendor_name', 'product_url', 'listing_title', 'last_checked_at', 'in_stock']);
+  //============================================================================================================================================================================================
+  // CRUD methods
+  //============================================================================================================================================================================================
+
+  // create
+
+  public async create(data: ListingData): Promise<number> {
+    return await super.create(data);
+  }
+
+  public async findOrCreate(data: ListingData): Promise<number> {
+    const existing = await this.find({ product_url: data.product_url }, ["id"]);
+    if (existing.length > 0) {
+      return existing[0].id;
     }
+    return await super.create(data);
+  }
 
-    //============================================================================================================================================================================================
-    // CRUD methods
-    //============================================================================================================================================================================================
+  // read
 
-    // create
+  public async find(
+    identifier: Partial<PersistedListing>
+  ): Promise<PersistedListing[]>;
 
-    public async create(data: ListingData): Promise<number> {
-        return await super.create(data);
-    }
+  public async find<K extends keyof PersistedListing>(
+    identifier: Partial<PersistedListing>,
+    fields: K[]
+  ): Promise<Pick<PersistedListing, K>[]>;
 
-    public async findOrCreate(data: ListingData): Promise<number> {
-        const existing = await this.find({ product_url: data.product_url}, ['id']);
-        if (existing) {
-            return existing.id;
-        }
-        return await super.create(data);
-    }
+  public async find<K extends keyof PersistedListing>(
+    identifier: Partial<PersistedListing> = {},
+    fields: K[] = []
+  ): Promise<Pick<PersistedListing, K>[]> {
+    return await super.find(identifier, fields);
+  }
 
-    // read
+  public async findAll(): Promise<PersistedListing[]>;
 
-    public async find(identifier: { id: number } | { product_url: string }): Promise<PersistedListing | null>;
+  public async findAll<K extends keyof PersistedListing>(
+    fields: K[] = []
+  ): Promise<Pick<PersistedListing, K>[]> {
+    return await super.find({}, fields);
+  }
 
-    public async find<K extends keyof PersistedListing>(identifier: { id: number } | { product_url: string }, fields: K[]): Promise<Pick<PersistedListing, K> | null>;
+  // update
 
-    public async find<K extends keyof PersistedListing>(identifier: { id: number } | { product_url: string }, fields?: K[]): Promise<Pick<PersistedListing, K> | null> {
-        return await super.find(identifier, fields);
-    }
+  public async update(
+    identifier: Partial<PersistedListing> = {},
+    data: Partial<ListingData>
+  ): Promise<number> {
+    return await super.update(identifier, data);
+  }
 
-    // update
+  public async updateAll(data: Partial<ListingData>): Promise<number> {
+    return await super.update({}, data);
+  }
 
-    public async update(identifier: { id: number } | { product_url: string }, data: Partial<ListingData>): Promise<number> {
-        return await super.update(identifier, data);
-    }
+  // delete
 
-    // delete
+  public async delete(
+    identifier: Partial<PersistedListing> = {}
+  ): Promise<number> {
+    return await super.delete(identifier);
+  }
 
-    public async delete(identifier: { id: number } | { product_url: string }): Promise<number> {
-        return await super.delete(identifier);
-    }
+  public async deleteAll(): Promise<number> {
+    return await super.delete();
+  }
 }
