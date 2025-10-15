@@ -40,10 +40,10 @@ app.listen(port, () => {
   console.log(`Backend server is running at http://localhost:${port}`);
 });
 
-const interval = 0.1 * 60 * 1000 // 15 minutes
-setInterval(() => {
-  // TODO - replace this with a real price
-  const priceEntry: PriceEntry = { price: Math.random() * 100, date: new Date() }
-  labubuPriceService.addPrice('test', priceEntry)
-  console.log('Added price entry:', priceEntry)
-}, interval)
+// const interval = 0.1 * 60 * 1000 // 15 minutes
+// setInterval(() => {
+//   // TODO - replace this with a real price
+//   const priceEntry: PriceEntry = { price: Math.random() * 100, date: new Date() }
+//   labubuPriceService.addPrice('test', priceEntry)
+//   console.log('Added price entry:', priceEntry)
+// }, interval)

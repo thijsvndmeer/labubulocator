@@ -33,3 +33,6 @@ Thumbs.db
 # Backend
 /backend/node_modules
 /backend/dist
+
+# Databases
+*.db
