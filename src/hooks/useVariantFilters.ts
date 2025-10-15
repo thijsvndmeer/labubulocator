@@ -1,20 +1,78 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Variant, Rarity } from '@/types/variant';
 import { getPopularVariants } from '@/lib/api';
+import { shuffleArray } from '@/lib/utils';
 
 export const useVariantFilters = (variants: Variant[], searchQuery: string) => {
-  const [selectedRarity, setSelectedRarity] = useState<Rarity | 'all'>('all');
-  const [selectedSeries, setSelectedSeries] = useState('all');
-  const [sortBy, setSortBy] = useState('most-popular');
+  const [selectedRarity, setSelectedRarity] = useState<Rarity | 'all'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('selectedRarity') as Rarity | 'all') || 'all';
+    }
+    return 'all';
+  });
+  const [selectedSeries, setSelectedSeries] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('selectedSeries') || 'all';
+    }
+    return 'all';
+  });
+  const [sortBy, setSortBy] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('sortBy') || 'most-popular';
+    }
+    return 'most-popular';
+  });
   const [popularVariants, setPopularVariants] = useState<{ variantId: string; viewCount: number }[]>([]);
+  const [randomOrderSkus, setRandomOrderSkus] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const storedOrder = sessionStorage.getItem('randomLabubuOrder');
+      return storedOrder ? JSON.parse(storedOrder) : [];
+    }
+    return [];
+  });
 
   useEffect(() => {
-    const fetchPopularity = async () => {
-      const data = await getPopularVariants();
-      setPopularVariants(data);
-    };
-    fetchPopularity();
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedRarity', selectedRarity);
+    }
+  }, [selectedRarity]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedSeries', selectedSeries);
+    }
+  }, [selectedSeries]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sortBy', sortBy);
+    }
+  }, [sortBy]);
+
+  useEffect(() => {
+    if (sortBy === 'most-popular') {
+      const fetchPopularity = async () => {
+        const data = await getPopularVariants();
+        setPopularVariants(data);
+      };
+      fetchPopularity();
+    }
   }, [sortBy]); // Refetch when sortBy changes, especially if it becomes 'most-popular'
+
+  useEffect(() => {
+    if (sortBy === 'random') {
+      if (randomOrderSkus.length === 0 && variants.length > 0) {
+        const shuffled = shuffleArray(variants.map(v => v.sku));
+        setRandomOrderSkus(shuffled);
+        sessionStorage.setItem('randomLabubuOrder', JSON.stringify(shuffled));
+      } else if (randomOrderSkus.length > 0) {
+        sessionStorage.setItem('randomLabubuOrder', JSON.stringify(randomOrderSkus));
+      }
+    } else {
+      setRandomOrderSkus([]);
+      sessionStorage.removeItem('randomLabubuOrder');
+    }
+  }, [sortBy, variants, randomOrderSkus]);
 
   const allSeries = useMemo(() => {
     const series = new Set(variants.map(v => v.series));
@@ -67,6 +125,17 @@ export const useVariantFilters = (variants: Variant[], searchQuery: string) => {
           return (aPopularity === -1 ? Infinity : aPopularity) - (bPopularity === -1 ? Infinity : bPopularity);
         });
         break;
+      case 'random':
+        if (randomOrderSkus.length > 0) {
+          const orderMap = new Map(randomOrderSkus.map((sku, index) => [sku, index]));
+          filtered.sort((a, b) => {
+            const aIndex = orderMap.get(a.sku);
+            const bIndex = orderMap.get(b.sku);
+            if (aIndex === undefined || bIndex === undefined) return 0; // Should not happen if randomOrderSkus is correctly populated
+            return aIndex - bIndex;
+          });
+        }
+        break;
       case 'newest':
       default:
         // Keep original order or sort by a default if 'newest' is not defined
@@ -74,7 +143,7 @@ export const useVariantFilters = (variants: Variant[], searchQuery: string) => {
     }
 
     return filtered;
-  }, [variants, searchQuery, selectedRarity, selectedSeries, sortBy, popularVariants]);
+  }, [variants, searchQuery, selectedRarity, selectedSeries, sortBy, popularVariants, randomOrderSkus]);
 
   return {
     filteredVariants,

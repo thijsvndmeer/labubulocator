@@ -57,18 +57,18 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
             </Link>
           </div>
           
-          <form onSubmit={handleSearchSubmit} className="flex items-center gap-4">
+          <form onSubmit={handleSearchSubmit} className="flex items-center gap-4 flex-wrap justify-end">
             <Link to="/catalog">
-              <Button variant="outline">
-                <Package className="h-4 w-4 mr-2" />
-                Catalog
+              <Button variant="outline" className="flex items-center justify-center md:w-auto w-10 h-10 p-0 md:px-4 md:py-2">
+                <Package className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">Catalog</span>
               </Button>
             </Link>
-            <div className="relative w-[500px]">
+            <div className="relative flex-grow min-w-[200px] max-w-[500px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search variants, series, SKU..."
+                placeholder="Search in catalog..."
                 className="pl-10 transition-all duration-300 ease-in-out focus:shadow-card focus:border-primary focus:scale-[1.01]"
                 value={searchQuery}
                 onChange={handleSearchChange}

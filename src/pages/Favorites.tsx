@@ -14,7 +14,7 @@ export const FavoritesPage = () => {
       await initializeVariants();
       const favoriteSkus = getFavorites();
       const variants = favoriteSkus.map(sku => getVariantBySku(sku)).filter(Boolean) as Variant[];
-      setFavoritedVariants(variants);
+      setFavoritedVariants(variants.reverse());
     };
 
     loadFavoritedVariants();

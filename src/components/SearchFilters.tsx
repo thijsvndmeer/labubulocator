@@ -83,6 +83,7 @@ export const SearchFilters = ({
             <SelectItem value="newest">Newest First</SelectItem>
             <SelectItem value="rarity">Rarity</SelectItem>
             <SelectItem value="most-popular">Most Popular</SelectItem>
+            <SelectItem value="random">Random</SelectItem>
           </SelectContent>
         </Select>
 

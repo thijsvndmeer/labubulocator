@@ -16,7 +16,12 @@ export default function Collection() {
   const [totalCollectionValue, setTotalCollectionValue] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const location = useLocation();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('collectionSearchQuery') || '';
+    }
+    return '';
+  });
   const { toast } = useToast();
 
   const handleShare = async () => {
@@ -39,14 +44,24 @@ export default function Collection() {
   };
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('collectionSearchQuery', searchQuery);
+    }
+  }, [searchQuery]);
+
+  useEffect(() => {
     const params = new URLSearchParams(location.search);
     const search = params.get("search");
     if (search) {
       setSearchQuery(search);
     } else {
-      setSearchQuery("");
+      // Only clear search query if it's not coming from localStorage
+      const storedSearchQuery = localStorage.getItem('collectionSearchQuery');
+      if (!storedSearchQuery) {
+        setSearchQuery('');
+      }
     }
-  }, [location.search]);
+  }, [location.search, setSearchQuery]);
 
   useEffect(() => {
     const loadCollection = async () => {
