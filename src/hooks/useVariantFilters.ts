@@ -18,9 +18,9 @@ export const useVariantFilters = (variants: Variant[], searchQuery: string) => {
   });
   const [sortBy, setSortBy] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('sortBy') || 'most-popular';
+      return localStorage.getItem('sortBy') || 'newest';
     }
-    return 'most-popular';
+    return 'newest';
   });
   const [popularVariants, setPopularVariants] = useState<{ variantId: string; viewCount: number }[]>([]);
   const [randomOrderSkus, setRandomOrderSkus] = useState<string[]>(() => {
