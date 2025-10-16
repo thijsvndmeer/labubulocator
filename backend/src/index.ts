@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import labubuRoutes from "./routes/labubu";
+import labubuRoutes from "./routes/labubus";
 import { LabubuRepository } from "./repositories/labubuRepository";
 import { ListingRepository } from "./repositories/listingRepository";
 import { PriceHistoryRepository } from "./repositories/priceHistoryRepository";
