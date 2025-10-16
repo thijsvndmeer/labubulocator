@@ -38,7 +38,8 @@ db.serialize(() => {
       description TEXT,
       rarity TEXT,
       image TEXT,
-      msrp REAL
+      msrp REAL,
+      lowestPrice REAL
     )
   `,
     (err) => {
@@ -53,13 +54,15 @@ db.serialize(() => {
     `
     CREATE TABLE IF NOT EXISTS listings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      labubu_id INTEGER NOT NULL,
-      vendor_name TEXT NOT NULL,
-      product_url TEXT UNIQUE NOT NULL,
-      listing_title TEXT NOT NULL,
-      last_checked_at TEXT,
-      in_stock INTEGER DEFAULT 1,
-      FOREIGN KEY (labubu_id) REFERENCES labubus (id)
+      labubuId INTEGER NOT NULL,
+      vendorName TEXT NOT NULL,
+      productUrl TEXT UNIQUE NOT NULL,
+      listingTitle TEXT NOT NULL,
+      currentPrice REAL,
+      inStock INTEGER DEFAULT 1,
+      lastCheckedAt TEXT,
+
+      FOREIGN KEY (labubuId) REFERENCES labubus (id)
     )
   `,
     (err) => {
@@ -74,10 +77,11 @@ db.serialize(() => {
     `
     CREATE TABLE IF NOT EXISTS price_history (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      listing_id INTEGER NOT NULL,
+      listingId INTEGER NOT NULL,
       price REAL,
       date TEXT NOT NULL,
-      FOREIGN KEY (listing_id) REFERENCES listings (id)
+
+      FOREIGN KEY (listingId) REFERENCES listings (id)
     )
   `,
     (err) => {

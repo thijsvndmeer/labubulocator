@@ -1,6 +1,7 @@
 import { Database } from "sqlite3";
 import { ListingData, PersistedListing } from "../types/labubu";
 import { BaseRepository } from "./baseRepository";
+import { WhereOptions } from "../utils/databaseUtils";
 
 export class ListingRepository extends BaseRepository<PersistedListing> {
   //============================================================================================================================================================================================
@@ -10,12 +11,13 @@ export class ListingRepository extends BaseRepository<PersistedListing> {
   constructor(db: Database) {
     super(db, "listings", [
       "id",
-      "labubu_id",
-      "vendor_name",
-      "product_url",
-      "listing_title",
-      "last_checked_at",
-      "in_stock",
+      "labubuId",
+      "vendorName",
+      "productUrl",
+      "listingTitle",
+      "currentPrice",
+      "inStock",
+      "lastCheckedAt",
     ]);
   }
 
@@ -30,8 +32,17 @@ export class ListingRepository extends BaseRepository<PersistedListing> {
   }
 
   public async getOrCreate(data: ListingData): Promise<number> {
-    const existing = await this.get({ product_url: data.product_url }, ["id"]);
+    const existing = await this.get({ filter: { productUrl: data.productUrl } }, ["id"]);
     if (existing.length > 0) {
+      return existing[0].id;
+    }
+    return await super.create(data);
+  }
+
+  public async updateOrCreate(data: ListingData): Promise<number> {
+    const existing = await super.get({ filter: { productUrl: data.productUrl } }, ["id"]);
+    if (existing.length > 0) {
+      await super.update({ filter: { productUrl: data.productUrl } }, data);
       return existing[0].id;
     }
     return await super.create(data);
@@ -40,38 +51,21 @@ export class ListingRepository extends BaseRepository<PersistedListing> {
   // read
 
   public async get<K extends keyof PersistedListing>(
-    identifier: Partial<PersistedListing>,
+    whereOptions: WhereOptions<PersistedListing> = {},
     fields: K[] = []
   ): Promise<Pick<PersistedListing, K>[]> {
-    return await super.get(identifier, fields);
-  }
-
-  public async getAll<K extends keyof PersistedListing>(
-    fields: K[] = []
-  ): Promise<Pick<PersistedListing, K>[]> {
-    return await super.getAll(fields);
+    return await super.get(whereOptions, fields);
   }
 
   // update
 
-  public async update(
-    identifier: Partial<PersistedListing>,
-    data: Partial<ListingData>
-  ): Promise<number> {
-    return await super.update(identifier, data);
-  }
-
-  public async updateAll(data: Partial<ListingData>): Promise<number> {
-    return await super.updateAll(data);
+  public async update(whereOptions: WhereOptions<PersistedListing> = {}, data: Partial<ListingData>): Promise<number> {
+    return await super.update(whereOptions, data);
   }
 
   // delete
 
-  public async delete(identifier: Partial<PersistedListing>): Promise<number> {
-    return await super.delete(identifier);
-  }
-
-  public async deleteAll(): Promise<number> {
-    return await super.deleteAll();
+  public async delete(whereOptions: WhereOptions<PersistedListing> = {}): Promise<number> {
+    return await super.delete(whereOptions);
   }
 }

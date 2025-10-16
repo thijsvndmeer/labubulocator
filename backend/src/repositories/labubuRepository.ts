@@ -2,6 +2,7 @@ import { Database } from "sqlite3";
 import { Labubu } from "@common/types/labubu";
 import { PersistedLabubu } from "../types/labubu";
 import { BaseRepository } from "./baseRepository";
+import { WhereOptions } from "../utils/databaseUtils";
 
 export class LabubuRepository extends BaseRepository<PersistedLabubu> {
   //============================================================================================================================================================================================
@@ -9,16 +10,7 @@ export class LabubuRepository extends BaseRepository<PersistedLabubu> {
   //============================================================================================================================================================================================
 
   constructor(db: Database) {
-    super(db, "labubus", [
-      "id",
-      "sku",
-      "name",
-      "series",
-      "rarity",
-      "image",
-      "description",
-      "msrp",
-    ]);
+    super(db, "labubus", ["id", "sku", "name", "series", "rarity", "image", "description", "msrp", "lowestPrice"]);
   }
 
   //============================================================================================================================================================================================
@@ -32,7 +24,7 @@ export class LabubuRepository extends BaseRepository<PersistedLabubu> {
   }
 
   public async getOrCreate(data: Labubu): Promise<number> {
-    const existing = await this.get({ sku: data.sku }, ["id"]);
+    const existing = await this.get({ filter: { sku: data.sku } }, ["id"]);
     if (existing.length > 0) {
       return existing[0].id;
     }
@@ -40,9 +32,9 @@ export class LabubuRepository extends BaseRepository<PersistedLabubu> {
   }
 
   public async updateOrCreate(data: Labubu): Promise<number> {
-    const existing = await super.get({ sku: data.sku }, ["id"]);
+    const existing = await super.get({ filter: { sku: data.sku } }, ["id"]);
     if (existing.length > 0) {
-      await super.update({ sku: data.sku }, data);
+      await super.update({ filter: { sku: data.sku } }, data);
       return existing[0].id;
     }
     return await super.create(data);
@@ -51,38 +43,21 @@ export class LabubuRepository extends BaseRepository<PersistedLabubu> {
   // read
 
   public async get<K extends keyof PersistedLabubu>(
-    identifier: Partial<PersistedLabubu>,
+    whereOptions: WhereOptions<PersistedLabubu> = {},
     fields: K[] = []
   ): Promise<Pick<PersistedLabubu, K>[]> {
-    return await super.get(identifier, fields);
-  }
-
-  public async getAll<K extends keyof PersistedLabubu>(
-    fields: K[] = []
-  ): Promise<Pick<PersistedLabubu, K>[]> {
-    return await super.getAll(fields);
+    return await super.get(whereOptions, fields);
   }
 
   // update
 
-  public async update(
-    identifier: Partial<PersistedLabubu>,
-    data: Partial<Labubu>
-  ): Promise<number> {
-    return await super.update(identifier, data);
-  }
-
-  public async updateAll(data: Partial<Labubu>): Promise<number> {
-    return await super.updateAll(data);
+  public async update(whereOptions: WhereOptions<PersistedLabubu> = {}, data: Partial<Labubu>): Promise<number> {
+    return await super.update(whereOptions, data);
   }
 
   // delete
 
-  public async delete(identifier: Partial<PersistedLabubu>): Promise<number> {
-    return await super.delete(identifier);
-  }
-
-  public async deleteAll(): Promise<number> {
-    return await super.deleteAll();
+  public async delete(whereOptions: WhereOptions<PersistedLabubu> = {}): Promise<number> {
+    return await super.delete(whereOptions);
   }
 }

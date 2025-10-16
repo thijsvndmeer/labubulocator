@@ -1,6 +1,7 @@
 import { Database } from "sqlite3";
 import { PersistedPriceEntry, PriceEntryData } from "../types/labubu";
 import { BaseRepository } from "./baseRepository";
+import { WhereOptions } from "src/utils/databaseUtils";
 
 export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> {
   //============================================================================================================================================================================================
@@ -8,7 +9,7 @@ export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> 
   //============================================================================================================================================================================================
 
   constructor(db: Database) {
-    super(db, "price_history", ["id", "listing_id", "price", "date"]);
+    super(db, "price_history", ["id", "listingId", "price", "date"]);
   }
 
   //============================================================================================================================================================================================
@@ -24,40 +25,24 @@ export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> 
   // read
 
   public async get<K extends keyof PersistedPriceEntry>(
-    identifier: Partial<PersistedPriceEntry>,
+    whereOptions: WhereOptions<PersistedPriceEntry> = {},
     fields: K[] = []
   ): Promise<Pick<PersistedPriceEntry, K>[]> {
-    return await super.get(identifier, fields);
-  }
-
-  public async getAll<K extends keyof PersistedPriceEntry>(
-    fields: K[] = []
-  ): Promise<Pick<PersistedPriceEntry, K>[]> {
-    return await super.getAll(fields);
+    return await super.get(whereOptions, fields);
   }
 
   // update
 
   public async update(
-    identifier: Partial<PersistedPriceEntry>,
+    whereOptions: WhereOptions<PersistedPriceEntry> = {},
     data: Partial<PriceEntryData>
   ): Promise<number> {
-    return await super.update(identifier, data);
-  }
-
-  public async updateAll(data: Partial<PriceEntryData>): Promise<number> {
-    return await super.updateAll(data);
+    return await super.update(whereOptions, data);
   }
 
   // delete
 
-  public async delete(
-    identifier: Partial<PersistedPriceEntry>
-  ): Promise<number> {
-    return await super.delete(identifier);
-  }
-
-  public async deleteAll(): Promise<number> {
-    return await super.deleteAll();
+  public async delete(whereOptions: WhereOptions<PersistedPriceEntry> = {}): Promise<number> {
+    return await super.delete(whereOptions);
   }
 }

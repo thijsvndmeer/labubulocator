@@ -5,7 +5,7 @@ export interface PersistedLabubu extends Labubu {
 }
 
 export interface ListingData extends Omit<Listing, "labubu_sku"> {
-  labubu_id: number;
+  labubuId: number;
 }
 
 export interface PersistedListing extends ListingData {
@@ -13,7 +13,7 @@ export interface PersistedListing extends ListingData {
 }
 
 export interface PriceEntryData extends PriceEntry {
-  listing_id: number;
+  listingId: number;
 }
 
 export interface PersistedPriceEntry extends PriceEntryData {
