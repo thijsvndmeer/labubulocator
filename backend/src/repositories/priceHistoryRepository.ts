@@ -1,7 +1,7 @@
 import { Database } from "sqlite3";
 import { PersistedPriceEntry, PriceEntryData } from "../types/labubu";
 import { BaseRepository } from "./baseRepository";
-import { WhereOptions } from "src/utils/databaseUtils";
+import { QueryOptions } from "src/utils/databaseUtils";
 
 export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> {
   //============================================================================================================================================================================================
@@ -25,24 +25,24 @@ export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> 
   // read
 
   public async get<K extends keyof PersistedPriceEntry>(
-    whereOptions: WhereOptions<PersistedPriceEntry> = {},
+    options: QueryOptions<PersistedPriceEntry> = {},
     fields: K[] = []
   ): Promise<Pick<PersistedPriceEntry, K>[]> {
-    return await super.get(whereOptions, fields);
+    return await super.get(options, fields);
   }
 
   // update
 
   public async update(
-    whereOptions: WhereOptions<PersistedPriceEntry> = {},
+    options: Pick<QueryOptions<PersistedPriceEntry>, "filter" | "ranges"> = {},
     data: Partial<PriceEntryData>
   ): Promise<number> {
-    return await super.update(whereOptions, data);
+    return await super.update(options, data);
   }
 
   // delete
 
-  public async delete(whereOptions: WhereOptions<PersistedPriceEntry> = {}): Promise<number> {
-    return await super.delete(whereOptions);
+  public async delete(options: Pick<QueryOptions<PersistedPriceEntry>, "filter" | "ranges"> = {}): Promise<number> {
+    return await super.delete(options);
   }
 }

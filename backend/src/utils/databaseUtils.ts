@@ -5,9 +5,13 @@ export type Range<T> =
   | { field: keyof T; max: number }
   | { field: keyof T; min: number; max: number };
 
-export interface WhereOptions<T> {
+export interface QueryOptions<T> {
   filter?: Partial<T>;
   ranges?: Range<T>[];
+  sortBy?: keyof T;
+  sortOrder?: "ASC" | "DESC";
+  limit?: number;
+  offset?: number;
 }
 
 /**
@@ -53,46 +57,93 @@ export const getQuery = <T>(db: Database, sql: string, params: unknown[] = []): 
 };
 
 /**
- * Builds a SQL clause from a data object, for use in WHERE or SET statements.
- * It converts object keys to `key = ?` strings and collects the corresponding values.
- * Properties with `undefined` values are ignored.
- * @param data The object to convert into a clause.
- * @returns An object containing an array of fields strings (e.g., `['key1 = ?', 'key2 = ?']`) and an array of their corresponding values.
+ * Dynamically builds a SQL SET clause and collects corresponding parameters
+ * from a partial data object. This is typically used for UPDATE statements.
+ *
+ * Properties with `undefined` values in the `data` object are ignored.
+ *
+ * @param data A partial object containing the key-value pairs to be set.
+ *             Keys are converted to `KEY = ?` and values are collected as parameters.
+ * @returns An object containing:
+ *   - `clause`: The dynamically generated SQL SET clause string (e.g., "SET name = ?, value = ?").
+ *   - `params`: An array of corresponding parameter values for the SET clause.
  */
-export const buildClause = <T>(data: Partial<T> = {}): { fields: string[]; params: unknown[] } => {
-  const entries = Object.entries(data).filter(([, value]) => value !== undefined);
+export const buildSetClause = <T>(data: Partial<T>): { clause: string; params: unknown[] } => {
+  const clauseList: string[] = [];
+  const params: unknown[] = [];
 
-  const fields = entries.map(([key]) => `${key} = ?`);
-  const params = entries.map(([, value]) => value);
+  const entries = Object.entries(data || {}).filter(([, value]) => value !== undefined);
+  entries.forEach(([key, value]) => {
+    clauseList.push(`${key} = ?`);
+    params.push(value);
+  });
 
-  return { fields, params };
+  return { clause: `SET ${clauseList.join(", ")}`, params: params };
 };
 
 /**
- * Builds SQL WHERE clauses and corresponding parameters by combining equality filters and range conditions.
- * This method processes equality filters first, then appends range conditions.
+ * Dynamically builds a combined SQL clause string (WHERE, ORDER BY, LIMIT, OFFSET)
+ * and collects corresponding parameters based on the provided query options.
  *
- * @param whereOptions An object containing:
- *          - `filter` An optional object containing key-value pairs for equality conditions. Each key will be converted to {KEY = ?} and pushed to fields. The values are pushed to params.
- *          - `ranges` An optional array of range objects. Each object specifies a field, and either a 'min' value, a 'max' value, or both.
- *                     Each Range will be converted to {KEY >= ?} {KEY <= ?} and pushed to fields. The min-max values are pushed to params.
+ * This function processes options in the following order:
+ * 1. Equality filters (`filter`)
+ * 2. Range conditions (`ranges`)
+ * 3. Sorting (`sortBy`, `sortOrder`)
+ * 4. Pagination (`limit`, `offset`)
+ *
+ * @param options The QueryOptions object containing various criteria for building the SQL clause.
+ *   - `filter`: Optional. Key-value pairs for equality conditions (e.g., `{ name: 'Labubu' }`).
+ *               Each key-value pair is converted to `KEY = ?`.
+ *   - `ranges`: Optional. An array of range objects (e.g., `{ field: 'msrp', min: 50, max: 100 }`).
+ *               Each range is converted to `FIELD >= ?` and/or `FIELD <= ?`.
+ *   - `sortBy`: Optional. The field name to sort the results by.
+ *   - `sortOrder`: Optional. The sorting direction, either "ASC" or "DESC".
+ *   - `limit`: Optional. The maximum number of rows to return.
+ *   - `offset`: Optional. The number of rows to skip. Only valid if `limit` is also present.
+ *
  * @returns An object containing:
- *          - `fields`: An array of SQL WHERE clause strings (e.g., `['KEY = ?', 'KEY >= ?']`).
- *          - `params`: An array of corresponding parameter values in the correct order.
+ *   - `clause`: The dynamically generated SQL clause string (e.g., "WHERE name = ? ORDER BY id ASC LIMIT 10 OFFSET 0").
+ *               This string will start with "WHERE", "ORDER BY", or "LIMIT" depending on which options are present.
+ *   - `params`: An array of corresponding parameter values for the WHERE clause.
  */
-export const buildWhereClause = <T>(whereOptions: WhereOptions<T>): { fields: string[]; params: unknown[] } => {
-  const result = buildClause(whereOptions.filter || {});
+export const buildOptionsClause = <T>(options: QueryOptions<T>): { clause: string; params: unknown[] } => {
+  const params: unknown[] = [];
 
-  for (const range of whereOptions.ranges || []) {
-    if ("min" in range) {
-      result.fields.push(`${range.field as string} >= ?`);
-      result.params.push(range.min);
+  let whereClause = "";
+  if (options.filter || options.ranges) {
+    const entries = Object.entries(options.filter || {}).filter(([, value]) => value !== undefined);
+    const clauseList: string[] = [];
+    entries.forEach(([key, value]) => {
+      clauseList.push(`${key} = ?`);
+      params.push(value);
+    });
+
+    for (const range of options.ranges || []) {
+      if ("min" in range) {
+        clauseList.push(`${range.field as string} >= ?`);
+        params.push(range.min);
+      }
+      if ("max" in range) {
+        clauseList.push(`${range.field as string} <= ?`);
+        params.push(range.max);
+      }
     }
-    if ("max" in range) {
-      result.fields.push(`${range.field as string} <= ?`);
-      result.params.push(range.max);
+
+    whereClause = `WHERE ${clauseList.join(" AND ")}`;
+  }
+
+  let sortClause = "";
+  if (options.sortBy) {
+    sortClause = `ORDER BY ${options.sortBy as string}${options.sortOrder ? ` ${options.sortOrder}` : ""}`;
+  }
+
+  let limitClause = "";
+  if (options.limit) {
+    limitClause += `LIMIT ${options.limit}`;
+    if (options.offset) {
+      limitClause += ` OFFSET ${options.offset}`;
     }
   }
 
-  return result;
+  return { clause: [whereClause, sortClause, limitClause].join(" "), params: params };
 };
