@@ -4,7 +4,7 @@ import { LabubuRepository } from "./repositories/labubuRepository";
 import { ListingRepository } from "./repositories/listingRepository";
 import { PriceHistoryRepository } from "./repositories/priceHistoryRepository";
 import db from "./lib/database";
-import { syncLabubus } from "./scripts/syncLabubus";
+import { syncLabubus } from "./services/labubuSyncService";
 import { LabubuPriceService } from "./services/labubuPriceService";
 
 const app = express();
