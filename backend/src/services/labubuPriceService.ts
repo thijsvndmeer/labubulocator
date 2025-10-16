@@ -27,8 +27,8 @@ const priceHistoryRepository = new PriceHistoryRepository(db);
 
 const runTest = async () => {
   try {
-    console.log("--- Testing findOrCreate ---");
-    const labubu_id = await labubuRepository.findOrCreate({
+    console.log("--- Testing getOrCreate ---");
+    const labubu_id = await labubuRepository.getOrCreate({
       sku: "example-sku",
       name: "Example Labubu",
       series: "Example Series",
@@ -39,8 +39,8 @@ const runTest = async () => {
     });
     console.log("Labubu entry created.", labubu_id);
 
-    console.log("\n--- Testing find (specific fields) ---");
-    const foundLabubu1 = await labubuRepository.find({ sku: "example-sku" }, [
+    console.log("\n--- Testing get (specific fields) ---");
+    const foundLabubu1 = await labubuRepository.get({ sku: "example-sku" }, [
       "name",
     ]);
     console.log("Labubu entry found.", foundLabubu1);
@@ -57,12 +57,12 @@ const runTest = async () => {
     );
     console.log("Labubu entry updated.", updatedCount);
 
-    console.log("\n--- Testing find (all fields) ---");
-    const foundLabubu2 = await labubuRepository.find({ sku: "example-sku" });
+    console.log("\n--- Testing get (all fields) ---");
+    const foundLabubu2 = await labubuRepository.get({ sku: "example-sku" });
     console.log("Labubu entry found.", foundLabubu2);
 
     console.log("\n--- Testing delete ---");
-    const deletedCount = await labubuRepository.delete();
+    const deletedCount = await labubuRepository.delete(foundLabubu2[0]);
     console.log("Labubu entry deleted.", deletedCount);
   } catch (err) {
     console.error("An error occurred during the test run:", err);

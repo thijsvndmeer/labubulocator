@@ -2,9 +2,9 @@ import { Database } from "sqlite3";
 import { buildClause, getQuery, runQuery } from "../utils/databaseUtils";
 
 export abstract class BaseRepository<T> {
-  private readonly db: Database;
-  private readonly tableName: string;
-  private readonly validFields: (keyof T)[];
+  protected readonly db: Database;
+  protected readonly tableName: string;
+  protected readonly validFields: (keyof T)[];
 
   //============================================================================================================================================================================================
   // Constructor
@@ -31,7 +31,7 @@ export abstract class BaseRepository<T> {
    * Throws an error if any of the fields are invalid.
    * @param fields - An array of field names to validate.
    */
-  private ensureValidFields(fields: string[]) {
+  protected ensureValidFields(fields: string[]) {
     for (const field of fields) {
       if (!this.validFields.includes(field as keyof T)) {
         throw new Error(`Invalid field: ${field}`);
@@ -44,7 +44,7 @@ export abstract class BaseRepository<T> {
    * Throws an error if any of the fields are invalid or if a field is 'id'.
    * @param fields - An array of field names to validate.
    */
-  private ensureValidDataFields(fields: string[]) {
+  protected ensureValidDataFields(fields: string[]) {
     for (const field of fields) {
       if (!this.validFields.includes(field as keyof T) || field === "id") {
         throw new Error(`Invalid field: ${field}`);
@@ -76,47 +76,66 @@ export abstract class BaseRepository<T> {
   // read
 
   /**
-   * Finds all rows in the database table that matches all the given identifiers.
-   * If no identifier is provided then all rows are returned.
+   * Gets all rows in the database table that matches all the given identifiers.
+   * If no identifier is provided, an empty array is returned.
    * If fields are provided, only those columns are returned in the result.
    * @param identifier - An object containing the values to search for in the table.
    * @param fields - An optional array of column names to return in the result.
    * @returns A promise that resolves with an array of the found rows. Is empty if no rows are found.
    * */
-  protected async find<K extends keyof T>(
-    identifier: Partial<T> = {},
+  protected async get<K extends keyof T>(
+    identifier: Partial<T>,
     fields: K[] = []
   ): Promise<Pick<T, K>[]> {
     this.ensureValidFields(Object.keys(identifier));
     const { fields: whereField, params: whereParam } = buildClause(identifier);
-    const whereClause =
-      whereField.length > 0 ? `WHERE ${whereField.join(" AND ")}` : "";
+    if (whereField.length === 0) {
+      return []; // Nothing to get
+    }
 
     this.ensureValidFields(fields as string[]);
 
     const sql = `SELECT ${fields.length > 0 ? fields.join(", ") : "*"} FROM ${
       this.tableName
-    } ${whereClause}`;
+    } WHERE ${whereField.join(" AND ")}`;
     return await getQuery(this.db, sql, whereParam);
+  }
+
+  /**
+   * Gets all rows in the database table.
+   * If fields are provided, only those columns are returned in the result.
+   * @param fields - An optional array of column names to return in the result.
+   * @returns A promise that resolves with an array of all rows. Is empty if the table is empty.
+   */
+  protected async getAll<K extends keyof T>(
+    fields: K[] = []
+  ): Promise<Pick<T, K>[]> {
+    this.ensureValidFields(fields as string[]);
+
+    const sql = `SELECT ${fields.length > 0 ? fields.join(", ") : "*"} FROM ${
+      this.tableName
+    }`;
+    return await getQuery(this.db, sql);
   }
 
   // update
 
   /**
    * Updates any record in the database table that matches all the given identifiers.
-   * If no identifier is provided then all records are updated.
+   * If no identifier is provided, no records are updated.
    * @param identifier - An object containing the values to search for in the table.
    * @param data - An object containing the data to update in the table, excluding the 'id' field.
    * @returns A promise that resolves to the number of rows affected by the update operation.
    */
   protected async update(
-    identifier: Partial<T> = {},
+    identifier: Partial<T>,
     data: Partial<Omit<T, "id">>
   ): Promise<number> {
     this.ensureValidFields(Object.keys(identifier));
     const { fields: whereField, params: whereParam } = buildClause(identifier);
-    const whereClause =
-      whereField.length > 0 ? `WHERE ${whereField.join(" AND ")}` : "";
+    if (whereField.length === 0) {
+      return 0; // Nothing to update
+    }
 
     this.ensureValidDataFields(Object.keys(data));
     const { fields: setFields, params: setParams } = buildClause(data);
@@ -126,25 +145,53 @@ export abstract class BaseRepository<T> {
 
     const sql = `UPDATE ${this.tableName} SET ${setFields.join(
       ", "
-    )} ${whereClause}`;
+    )} WHERE ${whereField.join(" AND ")}`;
     return (await runQuery(this.db, sql, setParams.concat(whereParam))).changes;
+  }
+
+  /**
+   * Updates all records in the database table.
+   * @param data - An object containing the data to update in the table, excluding the 'id' field.
+   * @returns A promise that resolves to the number of rows affected by the update operation.
+   */
+  protected async updateAll(data: Partial<Omit<T, "id">>): Promise<number> {
+    this.ensureValidDataFields(Object.keys(data));
+    const { fields: setFields, params: setParams } = buildClause(data);
+    if (setFields.length === 0) {
+      return 0; // No fields to update
+    }
+
+    const sql = `UPDATE ${this.tableName} SET ${setFields.join(", ")}`;
+    return (await runQuery(this.db, sql, setParams)).changes;
   }
 
   // delete
 
   /**
    * Deletes any record from the database table that matches all the given identifiers.
-   * If no identifier is provided then all records are deleted.
+   * If no identifier is provided, no records are deleted.
    * @param identifier - An object containing the values to search for in the table.
    * @returns A promise that resolves to the number of rows affected by the delete operation.
    */
-  protected async delete(identifier: Partial<T> = {}): Promise<number> {
+  protected async delete(identifier: Partial<T>): Promise<number> {
     this.ensureValidFields(Object.keys(identifier));
     const { fields: whereField, params: whereParam } = buildClause(identifier);
-    const whereClause =
-      whereField.length > 0 ? `WHERE ${whereField.join(" AND ")}` : "";
+    if (whereField.length === 0) {
+      return 0; // Nothing to delete
+    }
 
-    const sql = `DELETE FROM ${this.tableName} ${whereClause}`;
+    const sql = `DELETE FROM ${this.tableName} WHERE ${whereField.join(
+      " AND "
+    )}`;
     return (await runQuery(this.db, sql, whereParam)).changes;
+  }
+
+  /**
+   * Deletes all records from the database table.
+   * @returns A promise that resolves to the number of rows affected by the delete operation.
+   */
+  protected async deleteAll(): Promise<number> {
+    const sql = `DELETE FROM ${this.tableName}`;
+    return (await runQuery(this.db, sql)).changes;
   }
 }

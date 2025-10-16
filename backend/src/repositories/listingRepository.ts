@@ -29,8 +29,8 @@ export class ListingRepository extends BaseRepository<PersistedListing> {
     return await super.create(data);
   }
 
-  public async findOrCreate(data: ListingData): Promise<number> {
-    const existing = await this.find({ product_url: data.product_url }, ["id"]);
+  public async getOrCreate(data: ListingData): Promise<number> {
+    const existing = await this.get({ product_url: data.product_url }, ["id"]);
     if (existing.length > 0) {
       return existing[0].id;
     }
@@ -39,52 +39,39 @@ export class ListingRepository extends BaseRepository<PersistedListing> {
 
   // read
 
-  public async find(
-    identifier: Partial<PersistedListing>
-  ): Promise<PersistedListing[]>;
-
-  public async find<K extends keyof PersistedListing>(
+  public async get<K extends keyof PersistedListing>(
     identifier: Partial<PersistedListing>,
-    fields: K[]
-  ): Promise<Pick<PersistedListing, K>[]>;
-
-  public async find<K extends keyof PersistedListing>(
-    identifier: Partial<PersistedListing> = {},
     fields: K[] = []
   ): Promise<Pick<PersistedListing, K>[]> {
-    return await super.find(identifier, fields);
+    return await super.get(identifier, fields);
   }
 
-  public async findAll(): Promise<PersistedListing[]>;
-
-  public async findAll<K extends keyof PersistedListing>(
+  public async getAll<K extends keyof PersistedListing>(
     fields: K[] = []
   ): Promise<Pick<PersistedListing, K>[]> {
-    return await super.find({}, fields);
+    return await super.getAll(fields);
   }
 
   // update
 
   public async update(
-    identifier: Partial<PersistedListing> = {},
+    identifier: Partial<PersistedListing>,
     data: Partial<ListingData>
   ): Promise<number> {
     return await super.update(identifier, data);
   }
 
   public async updateAll(data: Partial<ListingData>): Promise<number> {
-    return await super.update({}, data);
+    return await super.updateAll(data);
   }
 
   // delete
 
-  public async delete(
-    identifier: Partial<PersistedListing> = {}
-  ): Promise<number> {
+  public async delete(identifier: Partial<PersistedListing>): Promise<number> {
     return await super.delete(identifier);
   }
 
   public async deleteAll(): Promise<number> {
-    return await super.delete();
+    return await super.deleteAll();
   }
 }

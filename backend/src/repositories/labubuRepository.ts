@@ -31,8 +31,8 @@ export class LabubuRepository extends BaseRepository<PersistedLabubu> {
     return await super.create(data);
   }
 
-  public async findOrCreate(data: Labubu): Promise<number> {
-    const existing = await this.find({ sku: data.sku }, ["id"]);
+  public async getOrCreate(data: Labubu): Promise<number> {
+    const existing = await this.get({ sku: data.sku }, ["id"]);
     if (existing.length > 0) {
       return existing[0].id;
     }
@@ -41,52 +41,39 @@ export class LabubuRepository extends BaseRepository<PersistedLabubu> {
 
   // read
 
-  public async find(
-    identifier: Partial<PersistedLabubu>
-  ): Promise<PersistedLabubu[]>;
-
-  public async find<K extends keyof PersistedLabubu>(
+  public async get<K extends keyof PersistedLabubu>(
     identifier: Partial<PersistedLabubu>,
-    fields: K[]
-  ): Promise<Pick<PersistedLabubu, K>[]>;
-
-  public async find<K extends keyof PersistedLabubu>(
-    identifier: Partial<PersistedLabubu> = {},
     fields: K[] = []
   ): Promise<Pick<PersistedLabubu, K>[]> {
-    return await super.find(identifier, fields);
+    return await super.get(identifier, fields);
   }
 
-  public async findAll(): Promise<PersistedLabubu[]>;
-
-  public async findAll<K extends keyof PersistedLabubu>(
+  public async getAll<K extends keyof PersistedLabubu>(
     fields: K[] = []
   ): Promise<Pick<PersistedLabubu, K>[]> {
-    return await super.find({}, fields);
+    return await super.getAll(fields);
   }
 
   // update
 
   public async update(
-    identifier: Partial<PersistedLabubu> = {},
+    identifier: Partial<PersistedLabubu>,
     data: Partial<Labubu>
   ): Promise<number> {
     return await super.update(identifier, data);
   }
 
   public async updateAll(data: Partial<Labubu>): Promise<number> {
-    return await super.update({}, data);
+    return await super.updateAll(data);
   }
 
   // delete
 
-  public async delete(
-    identifier: Partial<PersistedLabubu> = {}
-  ): Promise<number> {
+  public async delete(identifier: Partial<PersistedLabubu>): Promise<number> {
     return await super.delete(identifier);
   }
 
   public async deleteAll(): Promise<number> {
-    return await super.delete();
+    return await super.deleteAll();
   }
 }

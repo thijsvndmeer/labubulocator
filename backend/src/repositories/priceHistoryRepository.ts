@@ -23,52 +23,41 @@ export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> 
 
   // read
 
-  public async find(
-    identifier: Partial<PersistedPriceEntry>
-  ): Promise<PersistedPriceEntry[]>;
-
-  public async find<K extends keyof PersistedPriceEntry>(
+  public async get<K extends keyof PersistedPriceEntry>(
     identifier: Partial<PersistedPriceEntry>,
-    fields: K[]
-  ): Promise<Pick<PersistedPriceEntry, K>[]>;
-
-  public async find<K extends keyof PersistedPriceEntry>(
-    identifier: Partial<PersistedPriceEntry> = {},
     fields: K[] = []
   ): Promise<Pick<PersistedPriceEntry, K>[]> {
-    return await super.find(identifier, fields);
+    return await super.get(identifier, fields);
   }
 
-  public async findAll(): Promise<PersistedPriceEntry[]>;
-
-  public async findAll<K extends keyof PersistedPriceEntry>(
+  public async getAll<K extends keyof PersistedPriceEntry>(
     fields: K[] = []
   ): Promise<Pick<PersistedPriceEntry, K>[]> {
-    return await super.find({}, fields);
+    return await super.getAll(fields);
   }
 
   // update
 
   public async update(
-    identifier: Partial<PersistedPriceEntry> = {},
+    identifier: Partial<PersistedPriceEntry>,
     data: Partial<PriceEntryData>
   ): Promise<number> {
     return await super.update(identifier, data);
   }
 
   public async updateAll(data: Partial<PriceEntryData>): Promise<number> {
-    return await super.update({}, data);
+    return await super.updateAll(data);
   }
 
   // delete
 
   public async delete(
-    identifier: Partial<PersistedPriceEntry> = {}
+    identifier: Partial<PersistedPriceEntry>
   ): Promise<number> {
     return await super.delete(identifier);
   }
 
   public async deleteAll(): Promise<number> {
-    return await super.delete();
+    return await super.deleteAll();
   }
 }
