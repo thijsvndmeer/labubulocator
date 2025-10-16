@@ -12,11 +12,13 @@ interface VariantCardProps {
   variant: Variant;
   isPopular?: boolean;
   hideStockStatus?: boolean;
+  showCollectionStatus?: boolean;
+  isCollected?: boolean;
 }
 
 const assetImages = import.meta.glob('/src/assets/**/*.png', { eager: true, query: '?url', import: 'default' });
 
-export const VariantCard = ({ variant, isPopular, hideStockStatus }: VariantCardProps) => {
+export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectionStatus, isCollected }: VariantCardProps) => {
   const lowestPrice = Math.min(...(variant.priceSources || []).map(s => s.price));
 
   const getImageUrl = (variant: Variant) => {
@@ -33,9 +35,15 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus }: VariantCard
     return '/placeholder.svg';
   };
 
+  const cardClasses = [
+    "group overflow-hidden transition-all duration-300 hover:shadow-card-hover fade-in",
+    showCollectionStatus && isCollected && "glow-collected",
+    showCollectionStatus && !isCollected && "glow-uncollected",
+  ].filter(Boolean).join(' ');
+
   return (
     <Card 
-      className="group overflow-hidden transition-all duration-300 hover:shadow-card-hover fade-in"
+      className={cardClasses}
     >
       <Link to={`/variant/${variant.sku}`}>
         <div className="aspect-square overflow-hidden bg-muted">

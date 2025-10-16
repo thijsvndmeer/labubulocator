@@ -137,3 +137,11 @@ All colors MUST be HSL.
     transition: background-color 0.3s ease-in-out;
   }
 }
+
+.glow-collected {
+  box-shadow: 0 0 15px 5px hsla(123, 86%, 72%, 0.7);
+}
+
+.glow-uncollected {
+  box-shadow: 0 0 15px 5px hsl(0 84.2% 60.2% / 0.7);
+}
