@@ -6,7 +6,7 @@ import fs from "fs";
 // Setup
 //============================================================================================================================================================================================
 
-const dbPath = path.resolve(__dirname, "src", "data", "app.db");
+const dbPath = path.resolve("src", "data", "app.db");
 const dbDir = path.dirname(dbPath);
 
 // Create the directory if it doesn't exist

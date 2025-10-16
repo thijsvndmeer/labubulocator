@@ -39,6 +39,15 @@ export class LabubuRepository extends BaseRepository<PersistedLabubu> {
     return await super.create(data);
   }
 
+  public async updateOrCreate(data: Labubu): Promise<number> {
+    const existing = await super.get({ sku: data.sku }, ["id"]);
+    if (existing.length > 0) {
+      await super.update({ sku: data.sku }, data);
+      return existing[0].id;
+    }
+    return await super.create(data);
+  }
+
   // read
 
   public async get<K extends keyof PersistedLabubu>(

@@ -1,10 +1,26 @@
 import express, { Request, Response } from "express";
 import labubuRoutes from "./routes/labubu";
-import * as labubuPriceService from "./services/labubuPriceService";
-import { PriceEntry } from "@common/types/labubu";
+import { LabubuRepository } from "./repositories/labubuRepository";
+import { ListingRepository } from "./repositories/listingRepository";
+import { PriceHistoryRepository } from "./repositories/priceHistoryRepository";
+import db from "./lib/database";
+import { syncLabubus } from "./scripts/syncLabubus";
+import { LabubuPriceService } from "./services/labubuPriceService";
 
 const app = express();
 const port = 3001;
+
+//============================================================================================================================================================================================
+// Database
+//============================================================================================================================================================================================
+
+export const labubuRepository = new LabubuRepository(db);
+export const listingRepository = new ListingRepository(db);
+export const priceHistoryRepository = new PriceHistoryRepository(db);
+
+export const labubuPriceService = new LabubuPriceService(labubuRepository);
+
+syncLabubus();
 
 //============================================================================================================================================================================================
 // Middleware
