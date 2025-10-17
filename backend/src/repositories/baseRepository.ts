@@ -1,13 +1,6 @@
 import { Database } from "sqlite3";
-import {
-  getQuery,
-  runQuery,
-  buildOptionsClause,
-  buildSetClause,
-  Range,
-  Sorting,
-  QueryOptions,
-} from "../utils/databaseUtils";
+import { getQuery, runQuery, buildOptionsClause, buildSetClause } from "../utils/databaseUtils";
+import { QueryOptions } from "../types/labubu";
 
 export abstract class BaseRepository<T> {
   protected readonly db: Database;

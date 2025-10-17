@@ -1,7 +1,7 @@
 import { Database } from "sqlite3";
 import { PersistedPriceEntry, PriceEntryData } from "../types/labubu";
 import { BaseRepository } from "./baseRepository";
-import { QueryOptions } from "src/utils/databaseUtils";
+import { QueryOptions } from "../types/labubu";
 
 export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> {
   //============================================================================================================================================================================================

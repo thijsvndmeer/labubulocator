@@ -1,19 +1,5 @@
 import { Database } from "sqlite3";
-
-export type Range<T> =
-  | { field: keyof T; min: number }
-  | { field: keyof T; max: number }
-  | { field: keyof T; min: number; max: number };
-
-export type Sorting<T> = { by: keyof T } | { by: keyof T; direction: "ASC" | "DESC" };
-
-export interface QueryOptions<T> {
-  filter?: Partial<T>;
-  ranges?: Range<T>[];
-  order?: Sorting<T>[];
-  limit?: number;
-  offset?: number;
-}
+import { QueryOptions } from "../types/labubu";
 
 /**
  * Executes a SQL statement that doesn't return rows (e.g., INSERT, UPDATE, DELETE).
