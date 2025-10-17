@@ -5,11 +5,12 @@ export type Range<T> =
   | { field: keyof T; max: number }
   | { field: keyof T; min: number; max: number };
 
+export type Sorting<T> = { by: keyof T } | { by: keyof T; direction: "ASC" | "DESC" };
+
 export interface QueryOptions<T> {
   filter?: Partial<T>;
   ranges?: Range<T>[];
-  sortBy?: keyof T;
-  sortOrder?: "ASC" | "DESC";
+  order?: Sorting<T>[];
   limit?: number;
   offset?: number;
 }
@@ -88,7 +89,7 @@ export const buildSetClause = <T>(data: Partial<T>): { clause: string; params: u
  * This function processes options in the following order:
  * 1. Equality filters (`filter`)
  * 2. Range conditions (`ranges`)
- * 3. Sorting (`sortBy`, `sortOrder`)
+ * 3. Sorting (`order`)
  * 4. Pagination (`limit`, `offset`)
  *
  * @param options The QueryOptions object containing various criteria for building the SQL clause.
@@ -96,8 +97,7 @@ export const buildSetClause = <T>(data: Partial<T>): { clause: string; params: u
  *               Each key-value pair is converted to `KEY = ?`.
  *   - `ranges`: Optional. An array of range objects (e.g., `{ field: 'msrp', min: 50, max: 100 }`).
  *               Each range is converted to `FIELD >= ?` and/or `FIELD <= ?`.
- *   - `sortBy`: Optional. The field name to sort the results by.
- *   - `sortOrder`: Optional. The sorting direction, either "ASC" or "DESC".
+ *   - `order`: Optional. An array of sorting objects (e.g., `{ by: 'name', direction: 'ASC' }`).
  *   - `limit`: Optional. The maximum number of rows to return.
  *   - `offset`: Optional. The number of rows to skip. Only valid if `limit` is also present.
  *
@@ -129,12 +129,28 @@ export const buildOptionsClause = <T>(options: QueryOptions<T>): { clause: strin
       }
     }
 
-    whereClause = `WHERE ${clauseList.join(" AND ")}`;
+    if (clauseList.length > 0) {
+      whereClause = `WHERE ${clauseList.join(" AND ")}`;
+    }
   }
 
-  let sortClause = "";
-  if (options.sortBy) {
-    sortClause = `ORDER BY ${options.sortBy as string}${options.sortOrder ? ` ${options.sortOrder}` : ""}`;
+  let orderClause = "";
+  if (options.order) {
+    const clauseList: string[] = [];
+
+    for (const sorting of options.order) {
+      if ("by" in sorting) {
+        let clause = `${sorting.by as string}`;
+        if ("direction" in sorting) {
+          clause += ` ${sorting.direction as string}`;
+        }
+        clauseList.push(clause);
+      }
+    }
+
+    if (clauseList.length > 0) {
+      orderClause = `ORDER BY ${clauseList.join(", ")}`;
+    }
   }
 
   let limitClause = "";
@@ -145,5 +161,5 @@ export const buildOptionsClause = <T>(options: QueryOptions<T>): { clause: strin
     }
   }
 
-  return { clause: [whereClause, sortClause, limitClause].join(" "), params: params };
+  return { clause: [whereClause, orderClause, limitClause].join(" "), params: params };
 };

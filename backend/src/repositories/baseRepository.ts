@@ -1,5 +1,13 @@
 import { Database } from "sqlite3";
-import { getQuery, runQuery, buildOptionsClause, QueryOptions, buildSetClause } from "../utils/databaseUtils";
+import {
+  getQuery,
+  runQuery,
+  buildOptionsClause,
+  buildSetClause,
+  Range,
+  Sorting,
+  QueryOptions,
+} from "../utils/databaseUtils";
 
 export abstract class BaseRepository<T> {
   protected readonly db: Database;
@@ -28,7 +36,7 @@ export abstract class BaseRepository<T> {
 
   /**
    * Ensures that the provided QueryOptions contain valid fields and values.
-   * Throws an error if any field in filter, ranges, sortBy, limit, or offset is invalid.
+   * Throws an error if any field in filter, ranges, order, limit, or offset is invalid.
    *
    * @param options The QueryOptions object to validate.
    * @throws Error - If any option field or value is invalid.
@@ -40,11 +48,13 @@ export abstract class BaseRepository<T> {
     if (options.ranges) {
       this.ensureValidFields(options.ranges.map((r) => r.field as string));
     }
-    if (options.sortBy) {
-      this.ensureValidFields([options.sortBy as string]);
-    }
-    if (options.sortOrder && !(options.sortOrder === "ASC" || options.sortOrder === "DESC")) {
-      throw new Error(`Invalid sort order: ${options.sortOrder}`);
+    if (options.order) {
+      this.ensureValidFields(options.order.map((s) => s.by as string));
+      options.order.forEach((s) => {
+        if ("direction" in s && !(s.direction === "ASC" || s.direction === "DESC")) {
+          throw new Error(`Invalid sort direction: ${s.direction}`);
+        }
+      });
     }
     if (options.limit && !Number.isFinite(options.limit)) {
       throw new Error(`Invalid limit: ${options.limit}`);
@@ -110,8 +120,7 @@ export abstract class BaseRepository<T> {
    * @param options The QueryOptions object containing various criteria for building the SQL clause.
    *   - `filter`: Optional. Key-value pairs for equality conditions (e.g., `{ name: 'Labubu' }`).
    *   - `ranges`: Optional. An array of range objects (e.g., `{ field: 'msrp', min: 50, max: 100 }`).
-   *   - `sortBy`: Optional. The field name to sort the results by.
-   *   - `sortOrder`: Optional. The sorting direction, either "ASC" or "DESC".
+   *   - `order`: Optional. An array of sorting objects (e.g., `{ by: 'name', direction: 'ASC' }`).
    *   - `limit`: Optional. The maximum number of rows to return.
    *   - `offset`: Optional. The number of rows to skip. Only valid if `limit` is also present.
    * @param fields Optional. An array of column names to return in the result. If omitted, all columns are returned.
