@@ -11,6 +11,7 @@ import { FavoritesPage } from "./pages/Favorites";
 import Collection from "./pages/Collection";
 import SharedCollection from "./pages/SharedCollection";
 import SharedFavorites from "./pages/SharedFavorites";
+import Random from "./pages/Random";
 import { Header } from "./components/Header";
 import { useState, useEffect } from "react";
 
@@ -54,6 +55,7 @@ export const AppContent = () => {
         <Route path="/collection" element={<Collection />} />
         <Route path="/sharedcollection" element={<SharedCollection />} />
         <Route path="/sharedfavorites" element={<SharedFavorites />} />
+        <Route path="/random" element={<Random />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
