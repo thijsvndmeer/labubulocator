@@ -5,6 +5,8 @@ import { Search, SlidersHorizontal } from 'lucide-react';
 import { Rarity } from '@/types/variant';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { getCollection } from '@/lib/collection';
+import { useEffect, useState } from 'react';
 
 interface SearchFiltersProps {
   searchQuery: string;
@@ -33,6 +35,12 @@ export const SearchFilters = ({
   showCollectionStatus,
   onShowCollectionStatusChange,
 }: SearchFiltersProps) => {
+  const [collectionCount, setCollectionCount] = useState(0);
+
+  useEffect(() => {
+    setCollectionCount(getCollection().length);
+  }, []);
+
   return (
     <div className="space-y-4">
       {/* Search */}
@@ -108,7 +116,7 @@ export const SearchFilters = ({
           </Button>
         </div>
 
-        {showCollectionStatus !== undefined && onShowCollectionStatusChange && (
+        {showCollectionStatus !== undefined && onShowCollectionStatusChange && collectionCount > 0 && (
           <div className="flex items-center space-x-2">
             <Switch
               id="show-collection-status"

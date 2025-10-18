@@ -1,13 +1,25 @@
 import { useState, useEffect } from 'react';
 import { VariantCard } from '@/components/VariantCard';
 import { useVariantFilters } from '@/hooks/useVariantFilters';
-import { Heart } from 'lucide-react';
+import { Heart, Share2 } from 'lucide-react';
 import { Variant } from '@/types/variant';
 import { getVariantBySku, initializeVariants } from '@/data/variantManager';
 import { getFavorites } from '@/lib/favorites';
+import { useToast } from '@/components/ui/use-toast';
+import { SearchFilters } from '@/components/SearchFilters';
+import { Button } from '@/components/ui/button';
 
 export const FavoritesPage = () => {
   const [favoritedVariants, setFavoritedVariants] = useState<Variant[]>([]);
+  const [totalFavoritesValue, setTotalFavoritesValue] = useState<number>(0);
+  const [searchQuery, setSearchQuery] = useState<string>(
+    localStorage.getItem('favoritesSearchQuery') || ''
+  );
+  const { toast } = useToast();
+
+  useEffect(() => {
+    localStorage.setItem('favoritesSearchQuery', searchQuery);
+  }, [searchQuery]);
 
   useEffect(() => {
     const loadFavoritedVariants = async () => {
@@ -15,6 +27,8 @@ export const FavoritesPage = () => {
       const favoriteSkus = getFavorites();
       const variants = favoriteSkus.map(sku => getVariantBySku(sku)).filter(Boolean) as Variant[];
       setFavoritedVariants(variants.reverse());
+      const totalValue = variants.reduce((sum, variant) => sum + (variant.estimatedValue || 0), 0);
+      setTotalFavoritesValue(totalValue);
     };
 
     loadFavoritedVariants();
@@ -38,25 +52,62 @@ export const FavoritesPage = () => {
     sortBy, 
     setSortBy, 
     allSeries 
-  } = useVariantFilters(favoritedVariants, ''); // Pass favoritedVariants and empty search query
+  } = useVariantFilters(favoritedVariants, searchQuery);
+
+  const handleShare = async () => {
+    const favoriteSkus = favoritedVariants.map(v => v.sku);
+    const shareableLink = `${window.location.origin}/sharedfavorites?skus=${favoriteSkus.join(',')}`;
+    try {
+      await navigator.clipboard.writeText(shareableLink);
+      toast({
+        title: "Favorites link copied!",
+        description: "Share this link with others to show off your favorites.",
+      });
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+      toast({
+        title: "Failed to copy link",
+        description: "Please copy the URL manually.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-12 space-y-16">
-        {/* My Favorites Section */}
         <section>
-          <div className="flex items-center gap-3 mb-8">
-            <Heart className="h-8 w-8 text-red-500" />
-            <div>
-              <h2 className="text-3xl font-bold">My Favorites</h2>
-              <p className="text-muted-foreground">
-                {favoritedVariants.length} favorited Labubu variants
-              </p>
+          <div className="flex items-center justify-between gap-3 mb-8">
+            <div className="flex items-center gap-3">
+              <Heart className="h-8 w-8 text-red-500" />
+              <div>
+                <h2 className="text-3xl font-bold">My Favorites</h2>
+                <p className="text-muted-foreground">
+                  {favoritedVariants.length} favorited Labubu variants.
+                </p>
+              </div>
             </div>
+            {favoritedVariants.length > 0 && (
+              <Button variant="outline" onClick={handleShare}>
+                <Share2 className="h-4 w-4 mr-2" />
+                Share Favorites
+              </Button>
+            )}
           </div>
 
-          {/* SearchFilters are not needed for favorites, but we can keep the useVariantFilters hook for sorting/filtering if desired */}
-          {/* If we want to allow filtering/sorting of favorites, we would re-introduce SearchFilters here */}
+          <div className="mb-8">
+            <SearchFilters
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedRarity={selectedRarity}
+              onRarityChange={setSelectedRarity}
+              selectedSeries={selectedSeries}
+              onSeriesChange={setSelectedSeries}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              allSeries={allSeries}
+            />
+          </div>
 
           {filteredVariants.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -72,7 +123,6 @@ export const FavoritesPage = () => {
           )}
         </section>
 
-        {/* Footer */}
         <footer className="text-center py-8 border-t">
           <p className="text-sm text-muted-foreground">
             <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through our links.
