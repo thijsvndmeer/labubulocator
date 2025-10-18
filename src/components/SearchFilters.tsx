@@ -16,8 +16,8 @@ interface SearchFiltersProps {
   sortBy: string;
   onSortChange: (value: string) => void;
   allSeries: string[];
-  showCollectionStatus: boolean;
-  onShowCollectionStatusChange: (checked: boolean) => void;
+  showCollectionStatus?: boolean;
+  onShowCollectionStatusChange?: (checked: boolean) => void;
 }
 
 export const SearchFilters = ({
@@ -108,14 +108,16 @@ export const SearchFilters = ({
           </Button>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="show-collection-status"
-            checked={showCollectionStatus}
-            onCheckedChange={onShowCollectionStatusChange}
-          />
-          <Label htmlFor="show-collection-status">Show Collection Status</Label>
-        </div>
+        {showCollectionStatus !== undefined && onShowCollectionStatusChange && (
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="show-collection-status"
+              checked={showCollectionStatus}
+              onCheckedChange={onShowCollectionStatusChange}
+            />
+            <Label htmlFor="show-collection-status">Show Collection Status</Label>
+          </div>
+        )}
       </div>
     </div>
   );

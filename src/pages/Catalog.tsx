@@ -20,8 +20,19 @@ interface CatalogPageProps {
 export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) => {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [popularVariantIds, setPopularVariantIds] = useState<Set<string>>(new Set());
-  const [showCollectionStatus, setShowCollectionStatus] = useState(false);
+  const [showCollectionStatus, setShowCollectionStatus] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('showCollectionStatus') === 'true';
+    }
+    return false;
+  });
   const [userCollection, setUserCollection] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('showCollectionStatus', String(showCollectionStatus));
+    }
+  }, [showCollectionStatus]);
 
   useEffect(() => {
     const loadVariantsAndPopularity = async () => {
