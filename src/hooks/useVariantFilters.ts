@@ -75,8 +75,15 @@ export const useVariantFilters = (variants: Variant[], searchQuery: string) => {
   }, [sortBy, variants, randomOrderSkus]);
 
   const allSeries = useMemo(() => {
-    const series = new Set(variants.map(v => v.series));
-    return Array.from(series).sort();
+    const series: string[] = [];
+    const seenSeries = new Set<string>();
+    variants.forEach(v => {
+      if (!seenSeries.has(v.series)) {
+        series.push(v.series);
+        seenSeries.add(v.series);
+      }
+    });
+    return series;
   }, [variants]);
 
     const filteredVariants = useMemo(() => {
