@@ -8,13 +8,18 @@ interface StockStatusBadgeProps {
 
 export const StockStatusBadge = ({ status }: StockStatusBadgeProps) => {
   const config = {
-    in_stock: {
-      label: 'In Stock',
+    aftermarketorbb: {
+      label: 'Aftermarket or Blind Box',
       icon: CheckCircle2,
       className: 'bg-rarity-uncommon/10 text-rarity-uncommon border-rarity-uncommon/20',
     },
-    low_stock: {
-      label: 'Low Stock',
+    aftermarketorstore: {
+      label: 'Aftermarket or in Store',
+      icon: CheckCircle2,
+      className: 'bg-rarity-uncommon/10 text-rarity-uncommon border-rarity-uncommon/20',
+    },
+    aftermarket: {
+      label: 'Only on Aftermarket',
       icon: AlertCircle,
       className: 'bg-rarity-legendary/10 text-rarity-legendary border-rarity-legendary/20',
     },

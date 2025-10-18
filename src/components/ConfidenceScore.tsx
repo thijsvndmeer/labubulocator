@@ -9,15 +9,9 @@ interface ConfidenceScoreProps {
 
 export const ConfidenceScore = ({ score, className }: ConfidenceScoreProps) => {
   const getScoreColor = (score: number) => {
-    if (score >= 85) return 'text-rarity-uncommon';
-    if (score >= 70) return 'text-rarity-legendary';
-    return 'text-rarity-common';
-  };
-
-  const getScoreLabel = (score: number) => {
-    if (score >= 85) return 'High';
-    if (score >= 70) return 'Medium';
-    return 'Low';
+    if (score >= 85) return 'text-green-400';
+    if (score >= 70) return 'text-yellow-400';
+    return 'text-red-400';
   };
 
   return (
@@ -26,9 +20,9 @@ export const ConfidenceScore = ({ score, className }: ConfidenceScoreProps) => {
         <TooltipTrigger asChild>
           <div className={cn('flex items-center gap-1.5 cursor-help', className)}>
             <div className="flex items-center gap-1">
-              <span className="text-sm text-muted-foreground">Confidence:</span>
+              <span className="text-sm text-white">Confidence:</span>
               <span className={cn('text-sm font-semibold', getScoreColor(score))}>
-                {score}% {getScoreLabel(score)}
+                {score}%
               </span>
             </div>
             <Info className="h-3.5 w-3.5 text-muted-foreground" />
