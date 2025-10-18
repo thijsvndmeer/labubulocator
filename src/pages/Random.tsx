@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Wheel } from 'react-custom-roulette';
 import { getAllVariants, initializeVariants } from '@/data/variantManager';
@@ -77,8 +76,8 @@ const Random: React.FC = () => {
   }));
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 p-4 overflow-hidden">
-      {showConfetti && <Confetti />}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 overflow-hidden">
+      {showConfetti && <Confetti width={window.innerWidth} height={window.innerHeight} />}
       <Particles
         id="tsparticles"
         init={particlesInit}
@@ -155,11 +154,13 @@ const Random: React.FC = () => {
           detectRetina: true,
         }}
       />
-      <div className="z-10 flex flex-col items-center justify-center">
-        <h1 className="text-7xl font-extrabold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 animate-pulse">Wheel of Labubu</h1>
+      <div className="absolute top-4 left-0 w-full flex items-center justify-center z-20">
+        <h1 className="text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 animate-pulse">Wheel of Labubu</h1>
+      </div>
+      <div className="z-10 flex flex-col items-center justify-center w-full h-full">
         {variants.length > 0 ? (
           <>
-            <div className="mb-8 transform scale-125 transition-transform duration-500 hover:scale-150">
+            <div className="absolute top-[calc(50%+5rem)] left-1/2 -translate-x-1/2 -translate-y-1/2 transform scale-[3]">
               <Wheel
                 mustStartSpinning={mustSpin}
                 prizeNumber={prizeNumber}
@@ -178,7 +179,7 @@ const Random: React.FC = () => {
               />
             </div>
             <button 
-              className="px-16 py-8 text-4xl font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 rounded-full hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-110 disabled:bg-gray-400 disabled:from-gray-400 disabled:to-gray-400 animate-bounce"
+              className="absolute bottom-10 right-10 px-16 py-8 text-4xl font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 rounded-full hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-110 disabled:bg-gray-400 disabled:from-gray-400 disabled:to-gray-400 animate-bounce z-20"
               onClick={handleSpinClick} 
               disabled={mustSpin}
             >
@@ -189,7 +190,7 @@ const Random: React.FC = () => {
           <p className="text-white">Loading variants...</p>
         )}
         {selectedVariant && (
-          <div className="mt-8 animate-fade-in transform scale-75 shadow-lg rounded-lg overflow-hidden ring-8 ring-purple-500 ring-opacity-75">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-fade-in transform scale-75 shadow-lg rounded-lg overflow-hidden ring-8 ring-purple-500 ring-opacity-75 z-30">
             <VariantCard variant={selectedVariant} />
           </div>
         )}

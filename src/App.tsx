@@ -42,7 +42,7 @@ export const AppContent = () => {
     }
   }, [location.search, setSearchQuery]);
 
-  const showHeader = !location.pathname.startsWith("/variant/");
+  const showHeader = !location.pathname.startsWith("/variant/") && location.pathname !== "/random";
 
   return (
     <>
