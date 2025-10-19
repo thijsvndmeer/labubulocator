@@ -58,7 +58,7 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
           </div>
           
           <form onSubmit={handleSearchSubmit} className="flex items-center gap-4 flex-wrap justify-end">
-            <Link to="/catalog">
+            <Link to="/catalog" className="hidden md:flex">
               <Button variant="outline" className="flex items-center justify-center md:w-auto w-10 h-10 p-0 md:px-4 md:py-2">
                 <Package className="h-4 w-4 md:mr-2" />
                 <span className="hidden md:inline">Catalog</span>

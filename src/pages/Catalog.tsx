@@ -7,7 +7,7 @@ import { Package } from 'lucide-react';
 import { Variant } from '@/types/variant';
 import { getAllVariants, initializeVariants } from '@/data/variantManager';
 import { getPopularVariants } from '@/lib/api';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { getCollection } from '@/lib/collection';
@@ -20,8 +20,20 @@ interface CatalogPageProps {
 export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) => {
   const [variants, setVariants] = useState<Variant[]>([]);
   const [popularVariantIds, setPopularVariantIds] = useState<Set<string>>(new Set());
-  const [showCollectionStatus, setShowCollectionStatus] = useState(false);
+  const [showCollectionStatus, setShowCollectionStatus] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('showCollectionStatus') === 'true';
+    }
+    return false;
+  });
   const [userCollection, setUserCollection] = useState<Set<string>>(new Set());
+  const location = useLocation();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('showCollectionStatus', String(showCollectionStatus));
+    }
+  }, [showCollectionStatus]);
 
   useEffect(() => {
     const loadVariantsAndPopularity = async () => {
@@ -53,6 +65,14 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
     setSortBy, 
     allSeries 
   } = useVariantFilters(variants, searchQuery);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const series = params.get('series');
+    if (series) {
+      setSelectedSeries(series);
+    }
+  }, [location.search, setSelectedSeries]);
 
   return (
     <div className="min-h-screen">

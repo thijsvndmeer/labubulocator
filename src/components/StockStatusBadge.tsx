@@ -8,13 +8,18 @@ interface StockStatusBadgeProps {
 
 export const StockStatusBadge = ({ status }: StockStatusBadgeProps) => {
   const config = {
-    in_stock: {
-      label: 'In Stock',
+    aftermarketorbb: {
+      label: 'Aftermarket or Blind Box',
       icon: CheckCircle2,
       className: 'bg-rarity-uncommon/10 text-rarity-uncommon border-rarity-uncommon/20',
     },
-    low_stock: {
-      label: 'Low Stock',
+    aftermarketorstore: {
+      label: 'Aftermarket or in Store',
+      icon: CheckCircle2,
+      className: 'bg-rarity-uncommon/10 text-rarity-uncommon border-rarity-uncommon/20',
+    },
+    aftermarket: {
+      label: 'Only on Aftermarket',
       icon: AlertCircle,
       className: 'bg-rarity-legendary/10 text-rarity-legendary border-rarity-legendary/20',
     },
@@ -44,7 +49,7 @@ export const StockStatusBadge = ({ status }: StockStatusBadgeProps) => {
   const { label, icon: Icon, className } = badgeConfig;
 
   return (
-    <Badge variant="outline" className={`${className} fade-in`}>
+    <Badge variant="outline" className={`${className}`}>
       <Icon className="h-3 w-3 mr-1" />
       {label}
     </Badge>

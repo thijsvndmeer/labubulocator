@@ -1,53 +1,19 @@
 import { useEffect, useState } from 'react';
-import { getCollection } from '@/lib/collection';
 import { getVariantBySku, initializeVariants } from '@/data/variantManager';
 import { Variant } from '@/types/variant';
-import { Link, useLocation } from 'react-router-dom';
-import { Share2, Boxes } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useLocation } from 'react-router-dom';
+import { Heart } from 'lucide-react';
 import { SearchFilters } from '@/components/SearchFilters';
 import { useVariantFilters } from '@/hooks/useVariantFilters';
 import { VariantCard } from '@/components/VariantCard';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function Collection() {
-  const [collectedVariants, setCollectedVariants] = useState<Variant[]>([]);
-  const [totalCollectionValue, setTotalCollectionValue] = useState<number>(0);
+export default function SharedFavorites() {
+  const [favoritedVariants, setFavoritedVariants] = useState<Variant[]>([]);
+  const [totalFavoritesValue, setTotalFavoritesValue] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const location = useLocation();
-  const [searchQuery, setSearchQuery] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('collectionSearchQuery') || '';
-    }
-    return '';
-  });
-  const { toast } = useToast();
-
-  const handleShare = async () => {
-    const collectionSkus = collectedVariants.map(v => v.sku);
-    const shareableLink = `${window.location.origin}/sharedcollection?skus=${collectionSkus.join(',')}`;
-    try {
-      await navigator.clipboard.writeText(shareableLink);
-      toast({
-        title: "Collection link copied!",
-        description: "Share this link with others to show off your collection.",
-      });
-    } catch (err) {
-      console.error("Failed to copy: ", err);
-      toast({
-        title: "Failed to copy link",
-        description: "Please copy the URL manually.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('collectionSearchQuery', searchQuery);
-    }
-  }, [searchQuery]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -55,16 +21,12 @@ export default function Collection() {
     if (search) {
       setSearchQuery(search);
     } else {
-      // Only clear search query if it's not coming from localStorage
-      const storedSearchQuery = localStorage.getItem('collectionSearchQuery');
-      if (!storedSearchQuery) {
-        setSearchQuery('');
-      }
+      setSearchQuery("");
     }
-  }, [location.search, setSearchQuery]);
+  }, [location.search]);
 
   useEffect(() => {
-    const loadCollection = async () => {
+    const loadFavorites = async () => {
       setIsLoading(true);
       try {
         await initializeVariants();
@@ -75,29 +37,27 @@ export default function Collection() {
         if (sharedSkusParam) {
           skusToLoad = sharedSkusParam.split(',');
         } else {
-          skusToLoad = getCollection();
+          skusToLoad = [];
         }
 
-        console.log('Collection SKUs to load:', skusToLoad);
         const variants = skusToLoad.map(sku => {
           const foundVariant = getVariantBySku(sku);
           if (!foundVariant) {
-            console.warn('Collection: Variant not found for SKU:', sku);
+            console.warn('Favorites: Variant not found for SKU:', sku);
           }
           return foundVariant;
         }).filter(Boolean) as Variant[];
-        console.log('Collected variants after filtering:', variants);
-        setCollectedVariants(variants);
+        setFavoritedVariants(variants);
         const totalValue = variants.reduce((sum, variant) => sum + (variant.estimatedValue || 0), 0);
-        setTotalCollectionValue(totalValue);
+        setTotalFavoritesValue(totalValue);
       } catch (error) {
-        console.error('Collection: Error initializing variants or loading collection:', error);
-        setCollectedVariants([]);
-        setTotalCollectionValue(0);
+        console.error('Favorites: Error initializing variants or loading favorites:', error);
+        setFavoritedVariants([]);
+        setTotalFavoritesValue(0);
       }
       setIsLoading(false);
     };
-    loadCollection();
+    loadFavorites();
   }, [location.search]);
 
   const { 
@@ -109,25 +69,7 @@ export default function Collection() {
     sortBy, 
     setSortBy, 
     allSeries 
-  } = useVariantFilters(collectedVariants, searchQuery);
-
-  const getImageUrl = (variant: Variant) => {
-    let skuToMatch = variant.sku.toLowerCase();
-
-    if (skuToMatch.includes('lbb-bii-')) {
-      skuToMatch = skuToMatch.replace('lbb-bii-', 'lbb-bie-');
-    }
-
-    const foundImagePath = Object.keys(assetImages).find(path => {
-      const filename = path.split('/').pop()?.toLowerCase() || '';
-      return filename.includes(skuToMatch);
-    });
-
-    if (foundImagePath && assetImages[foundImagePath]) {
-      return assetImages[foundImagePath];
-    }
-    return '/placeholder.svg';
-  };
+  } = useVariantFilters(favoritedVariants, searchQuery);
 
   if (isLoading) {
     return (
@@ -135,10 +77,10 @@ export default function Collection() {
         <div className="container mx-auto px-4 py-12 space-y-16">
           <section>
             <div className="flex items-center gap-3 mb-8">
-              <Boxes className="h-8 w-8 text-primary" />
+              <Heart className="h-8 w-8 text-red-500" />
               <div>
-                <h2 className="text-3xl font-bold">My Collection</h2>
-                <p className="text-muted-foreground">Loading your collected Labubu variants...</p>
+                <h2 className="text-3xl font-bold">Shared Favorites</h2>
+                <p className="text-muted-foreground">Loading shared Labubu variants...</p>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -158,20 +100,14 @@ export default function Collection() {
         <section>
           <div className="flex items-center justify-between gap-3 mb-8">
             <div className="flex items-center gap-3">
-              <Boxes className="h-8 w-8 text-primary" />
+              <Heart className="h-8 w-8 text-red-500" />
               <div>
-                <h2 className="text-3xl font-bold">Your Collection</h2>
+                <h2 className="text-3xl font-bold">Shared Favorites</h2>
                 <p className="text-muted-foreground">
-                  {collectedVariants.length} collected Labubu variants. Estimated Value: <span className="font-bold text-primary">${totalCollectionValue.toFixed(2)}</span>
+                  {favoritedVariants.length} shared Labubu variants.
                 </p>
               </div>
             </div>
-            {collectedVariants.length > 0 && (
-              <Button variant="outline" onClick={handleShare}>
-                <Share2 className="h-4 w-4 mr-2" />
-                Share Collection
-              </Button>
-            )}
           </div>
 
           <div className="mb-8">
@@ -190,13 +126,14 @@ export default function Collection() {
 
           {filteredVariants.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No Labubus found in your collection matching the current filters.</p>
+              <p className="text-muted-foreground">No Labubus found in this shared favorite list matching the current filters.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {filteredVariants.map((variant) => (
                 <VariantCard key={variant.sku} variant={variant} hideStockStatus={true} />
-              ))}            </div>
+              ))}
+            </div>
           )}
         </section>
 

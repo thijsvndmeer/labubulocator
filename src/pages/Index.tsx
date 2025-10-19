@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Header } from '@/components/Header';
 import { VariantCard } from '@/components/VariantCard';
-import { SearchFilters } from '@/components/SearchFilters';
-import { useVariantFilters } from '@/hooks/useVariantFilters';
 import heroBanner from '@/assets/hero-banner.jpg';
 import { TrendingUp } from 'lucide-react';
 import { Variant } from '@/types/variant';
 import { getAllVariants, initializeVariants } from '@/data/variantManager';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 
 const Index = () => {
   const [variants, setVariants] = useState<Variant[]>([]);
@@ -19,20 +23,9 @@ const Index = () => {
     loadVariants();
   }, []);
 
-  const {
-    filteredVariants,
-    selectedRarity,
-    setSelectedRarity,
-    selectedSeries,
-    setSelectedSeries,
-    sortBy,
-    setSortBy,
-    allSeries
-  } = useVariantFilters(variants, ""); // Pass empty string for search query
-
   const trendingVariants = variants
     .sort((a, b) => Math.abs(b.priceChange24h || 0) - Math.abs(a.priceChange24h || 0))
-    .slice(0, 4);
+    .slice(0, 15);
 
   return (
     <div className="min-h-screen">
@@ -69,11 +62,25 @@ const Index = () => {
             </div>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {trendingVariants.map((variant) => (
-              <VariantCard key={variant.id} variant={variant} />
-            ))}
-          </div>
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            className="w-full"
+          >
+            <CarouselContent>
+              {trendingVariants.map((variant) => (
+                <CarouselItem key={variant.id} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                  <div className="p-1">
+                    <VariantCard variant={variant} />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
         </section>
 
         {/* Footer */}

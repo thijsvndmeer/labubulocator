@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getVariantBySku, initializeVariants } from '@/data/variantManager';
 import { Variant } from '@/types/variant';
 import { Card } from '@/components/ui/card';
@@ -264,7 +264,9 @@ export default function VariantDetail() {
               <div className="flex items-start justify-between gap-4 mb-2">
                 <div className="flex-1">
                   <h1 className="text-3xl font-bold mb-1">{mergedVariant.name}</h1>
-                  <p className="text-lg text-muted-foreground">{mergedVariant.series}</p>
+                  <Link to={`/catalog?series=${encodeURIComponent(mergedVariant.series)}`} className="text-lg text-muted-foreground hover:text-primary transition-colors">
+                    {mergedVariant.series}
+                  </Link>
                   {mergedVariant.variant && (
                     <p className="text-sm text-muted-foreground">{mergedVariant.variant}</p>
                   )}

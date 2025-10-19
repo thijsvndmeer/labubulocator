@@ -97,9 +97,9 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
             </p>
           </div>
         </Link>
-
-        <div className="flex items-center justify-between gap-2 pt-2">
           {!hideStockStatus && <StockStatusBadge status={variant.stockStatus} />}
+        <div className="flex items-center justify-between gap-0 pt-0">
+
           {variant.affiliateLinks.length > 0 && (
             <Button
               size="sm"

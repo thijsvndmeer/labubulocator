@@ -5,6 +5,8 @@ import { Search, SlidersHorizontal } from 'lucide-react';
 import { Rarity } from '@/types/variant';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { getCollection } from '@/lib/collection';
+import { useEffect, useState } from 'react';
 
 interface SearchFiltersProps {
   searchQuery: string;
@@ -16,8 +18,8 @@ interface SearchFiltersProps {
   sortBy: string;
   onSortChange: (value: string) => void;
   allSeries: string[];
-  showCollectionStatus: boolean;
-  onShowCollectionStatusChange: (checked: boolean) => void;
+  showCollectionStatus?: boolean;
+  onShowCollectionStatusChange?: (checked: boolean) => void;
 }
 
 export const SearchFilters = ({
@@ -33,6 +35,12 @@ export const SearchFilters = ({
   showCollectionStatus,
   onShowCollectionStatusChange,
 }: SearchFiltersProps) => {
+  const [collectionCount, setCollectionCount] = useState(0);
+
+  useEffect(() => {
+    setCollectionCount(getCollection().length);
+  }, []);
+
   return (
     <div className="space-y-4">
       {/* Search */}
@@ -108,14 +116,16 @@ export const SearchFilters = ({
           </Button>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="show-collection-status"
-            checked={showCollectionStatus}
-            onCheckedChange={onShowCollectionStatusChange}
-          />
-          <Label htmlFor="show-collection-status">Show Collection Status</Label>
-        </div>
+        {showCollectionStatus !== undefined && onShowCollectionStatusChange && collectionCount > 0 && (
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="show-collection-status"
+              checked={showCollectionStatus}
+              onCheckedChange={onShowCollectionStatusChange}
+            />
+            <Label htmlFor="show-collection-status">Show Collection Status</Label>
+          </div>
+        )}
       </div>
     </div>
   );

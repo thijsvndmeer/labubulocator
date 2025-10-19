@@ -139,9 +139,9 @@ All colors MUST be HSL.
 }
 
 .glow-collected {
-  box-shadow: 0 0 15px 5px hsla(123, 86%, 72%, 0.7);
+  border: 1px solid hsl(147, 89%, 65%);
 }
 
 .glow-uncollected {
-  box-shadow: 0 0 15px 5px hsl(0 84.2% 60.2% / 0.7);
+  border: 1px solid hsl(0, 86%, 72%);
 }
