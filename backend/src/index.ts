@@ -26,7 +26,7 @@ syncLabubus();
 //============================================================================================================================================================================================
 
 app.use((req, res, next) => {
-  const allowedOrigins = ["http://localhost:4173", "https://id-preview--f24f2b88-4446-4219-a252-e77251f3c13d.lovable.app", "https://preview--labubu-value-tracker.lovable.app/"];
+  const allowedOrigins = ["http://localhost:4173", "https://id-preview--f24f2b88-4446-4219-a252-e77251f3c13d.lovable.app/"];
   const origin = req.headers.origin;
   if (origin && allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);

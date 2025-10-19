@@ -8,8 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Labubu } from '@labubu/common/src/types/labubu';
 
-const assetImages = import.meta.glob('/src/assets/**/*.png', { eager: true, query: '?url', import: 'default' });
-
 interface VariantCardProps {
   variant: Labubu;
   isPopular?: boolean;
@@ -22,21 +20,6 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
   const lowestPrice = variant.lowestPrice || 0;
 
   const getImageUrl = (variant: Labubu) => {
-    let skuToMatch = variant.sku.toLowerCase();
-
-    // Normalize SKU for 'Big Into Energy' series if necessary
-    if (skuToMatch.includes('lbb-bii-')) {
-      skuToMatch = skuToMatch.replace('lbb-bii-', 'lbb-bie-');
-    }
-
-    const foundImagePath = Object.keys(assetImages).find(path => {
-      const filename = path.split('/').pop()?.toLowerCase() || '';
-      return filename.includes(skuToMatch);
-    });
-
-    if (foundImagePath && assetImages[foundImagePath]) {
-      return assetImages[foundImagePath] as string;
-    }
     return variant.image || '/placeholder.svg';
   };
 
