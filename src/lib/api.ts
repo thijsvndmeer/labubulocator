@@ -1,6 +1,47 @@
 import { HttpOptions, Labubu, Listing, PriceEntry } from "@labubu/common/src/types/labubu";
+import Papa from 'papaparse';
 
 const API_BASE_URL = "http://localhost:3001/api";
+
+// Caching the parsed data to avoid re-fetching and re-parsing on every call
+let labubuCache: Labubu[] | null = null;
+
+async function getLabubusFromCsv(options?: any): Promise<Labubu[]> {
+  if (labubuCache) {
+    // TODO: Add filtering logic from options if needed
+    return Promise.resolve(labubuCache);
+  }
+
+  const response = await fetch('/labubus.csv');
+  const csvText = await response.text();
+
+  return new Promise((resolve, reject) => {
+    Papa.parse(csvText, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        if (results.errors.length) {
+          return reject(new Error('Error parsing CSV file'));
+        }
+
+        let labubus = results.data as any[];
+
+        // The CSV parsing will return strings, so we need to convert types where necessary
+        labubus = labubus.map(labubu => ({
+          ...labubu,
+          msrp: labubu.msrp ? parseFloat(labubu.msrp) : null,
+          // Ensure other numeric or boolean fields are converted if they exist
+        }));
+
+        labubuCache = labubus; // Cache the result
+
+        // TODO: Add filtering logic from options if needed
+        resolve(labubus);
+      }
+    });
+  });
+}
+
 
 function toUrlSearchParams(obj: any, prefix = ''): URLSearchParams {
   const params = new URLSearchParams();
@@ -46,8 +87,15 @@ async function fetchFromApi<T>(path: string, options?: HttpOptions<T>): Promise<
 
 export const api = {
   labubus: {
-    get: (options?: any) => fetchFromApi<Labubu[]>("/labubus", options),
-    getBySku: (sku: string) => fetchFromApi<Labubu>(`/labubus/${sku}`),
+    get: (options?: any) => getLabubusFromCsv(options),
+    getBySku: async (sku: string) => {
+      const labubus = await getLabubusFromCsv();
+      const labubu = labubus.find(l => l.sku === sku);
+      if (!labubu) {
+        throw new Error(`Labubu with SKU ${sku} not found`);
+      }
+      return labubu;
+    },
   },
   listings: {
     get: (options?: any) => fetchFromApi<Listing[]>("/listings", options),
