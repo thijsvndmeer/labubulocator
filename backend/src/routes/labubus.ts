@@ -1,11 +1,6 @@
 import { Router } from "express";
 import { labubuRepository } from "../index";
-import {
-  HttpOptions,
-  Labubu,
-  labubuSchema,
-  makeHttpOptionsSchema,
-} from "@labubu/common/src/types/labubu";
+import { HttpOptions, Labubu, labubuSchema, makeHttpOptionsSchema } from "@labubu/common/src/types/labubu";
 
 const router = Router();
 const labubuHttpOptionsSchema = makeHttpOptionsSchema(labubuSchema);
@@ -33,7 +28,7 @@ router.get("/", async (req, res) => {
 
 router.get("/:sku/", async (req, res) => {
   try {
-    const result = await labubuRepository.get({ filter: { sku: req.params.sku }});
+    const result = await labubuRepository.get({ filter: { sku: req.params.sku } });
     if (result.length > 0) {
       res.status(200).json(result[0]);
     } else {
@@ -49,4 +44,3 @@ router.get("/:sku/", async (req, res) => {
 //============================================================================================================================================================================================
 
 export default router;
-
