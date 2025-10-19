@@ -3,10 +3,43 @@ import { Labubu } from '@labubu/common/src/types/labubu';
 import { shuffleArray } from '@/lib/utils';
 
 export const useVariantFilters = (variants: Labubu[], searchQuery: string) => {
-  const [selectedRarity, setSelectedRarity] = useState<string | 'all'>('all');
-  const [selectedSeries, setSelectedSeries] = useState('all');
-  const [sortBy, setSortBy] = useState('newest');
+  const [selectedRarity, setSelectedRarity] = useState<string | 'all'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('selectedRarity') as string | 'all') || 'all';
+    }
+    return 'all';
+  });
+  const [selectedSeries, setSelectedSeries] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('selectedSeries') || 'all';
+    }
+    return 'all';
+  });
+  const [sortBy, setSortBy] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('sortBy') || 'newest';
+    }
+    return 'newest';
+  });
   const [randomOrderSkus, setRandomOrderSkus] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedRarity', selectedRarity);
+    }
+  }, [selectedRarity]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('selectedSeries', selectedSeries);
+    }
+  }, [selectedSeries]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sortBy', sortBy);
+    }
+  }, [sortBy]);
 
   useEffect(() => {
     if (sortBy === 'random') {
@@ -53,6 +86,9 @@ export const useVariantFilters = (variants: Labubu[], searchQuery: string) => {
           arr.sort((a, b) => rarityOrder.indexOf(a.rarity!) - rarityOrder.indexOf(b.rarity!));
           break;
         }
+        case 'most-popular':
+          // This will be implemented later
+          break;
         case 'random':
           if (randomOrderSkus.length > 0) {
             const orderMap = new Map(randomOrderSkus.map((sku, index) => [sku, index]));
