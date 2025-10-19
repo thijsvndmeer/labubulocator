@@ -8,13 +8,13 @@
     "common"
   ],
   "scripts": {
-    "dev": "concurrently \"npm:dev:frontend\" \"npm:dev:backend\"",
+    "dev": "node start-dev.cjs",
     "dev:frontend": "vite",
     "dev:backend": "npm run dev --workspace=backend",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview && exit 1",
+    "preview": "vite preview",
     "test": "vitest"
   },
   "dependencies": {
