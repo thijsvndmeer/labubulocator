@@ -21,7 +21,7 @@ export const labubuSchema = z.object({
   stockStatus: z.string().optional(),
   confidenceScore: z.coerce.number().optional(),
   affiliateLinks: z.array(z.object({ id: z.string(), displayName: z.string(), url: z.string() })).optional(),
-  attributes: z.record(z.string()).optional(),
+  attributes: z.record(z.string(), z.string()).optional(),
   recentSales: z.array(z.object({ source: z.string(), price: z.coerce.number(), currency: z.string(), date: z.string(), url: z.string() })).optional(),
 });
 export type Labubu = z.infer<typeof labubuSchema>;

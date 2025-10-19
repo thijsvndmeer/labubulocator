@@ -26,8 +26,11 @@ syncLabubus();
 //============================================================================================================================================================================================
 
 app.use((req, res, next) => {
-  // Allow requests from the frontend
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:4173");
+  const allowedOrigins = ["http://localhost:4173", "https://id-preview--f24f2b88-4446-4219-a252-e77251f3c13d.lovable.app/"];
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
   next();
 });
 
