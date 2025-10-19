@@ -46,11 +46,11 @@ async function fetchFromApi<T>(path: string, options?: HttpOptions<T>): Promise<
 
 export const api = {
   labubus: {
-    get: (options?: HttpOptions<Labubu>) => fetchFromApi<Labubu[]>("/labubus", options),
+    get: (options?: any) => fetchFromApi<Labubu[]>("/labubus", options),
     getBySku: (sku: string) => fetchFromApi<Labubu>(`/labubus/${sku}`),
   },
   listings: {
-    get: (options?: HttpOptions<Listing>) => fetchFromApi<Listing[]>("/listings", options),
+    get: (options?: any) => fetchFromApi<Listing[]>("/listings", options),
     getById: (id: number) => fetchFromApi<Listing>(`/listings/${id}`),
     getPriceHistory: (id: number) => fetchFromApi<PriceEntry[]>(`/listings/${id}/priceHistory`),
   },

@@ -96,8 +96,8 @@ export const FavoritesPage = () => {
             <SearchFilters
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
-              selectedRarity={selectedRarity}
-              onRarityChange={setSelectedRarity}
+              selectedRarity={selectedRarity as any}
+              onRarityChange={setSelectedRarity as any}
               selectedSeries={selectedSeries}
               onSeriesChange={setSelectedSeries}
               sortBy={sortBy}

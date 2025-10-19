@@ -33,32 +33,33 @@ export default function VariantDetail() {
       return baseVariantData;
     },
     enabled: !!sku,
-    keepPreviousData: true,
   });
 
   useEffect(() => {
     if (variant) {
-      setIsFavorited(isFavorite(variant.sku));
-      setIsCollectedState(isCollected(variant.sku));
+      setIsFavorited(isFavorite((variant as Labubu).sku));
+      setIsCollectedState(isCollected((variant as Labubu).sku));
     }
   }, [variant]);
 
   const handleFavoriteToggle = () => {
     if (!variant) return;
+    const v = variant as Labubu;
     if (isFavorited) {
-      removeFavorite(variant.sku);
+      removeFavorite(v.sku);
     } else {
-      addFavorite(variant.sku);
+      addFavorite(v.sku);
     }
     setIsFavorited(!isFavorited);
   };
 
   const handleCollectionToggle = () => {
     if (!variant) return;
+    const v = variant as Labubu;
     if (isCollectedState) {
-      removeCollection(variant.sku);
+      removeCollection(v.sku);
     } else {
-      addCollection(variant.sku);
+      addCollection(v.sku);
     }
     setIsCollectedState(!isCollectedState);
   };
@@ -67,15 +68,13 @@ export default function VariantDetail() {
     queryKey: ['listings', sku],
     queryFn: () => api.listings.get({ filter: { labubuSku: sku } }),
     enabled: !!sku && !!variant,
-    keepPreviousData: true,
     refetchInterval: 30000,
   });
 
   const { data: priceHistory, isFetching: isFetchingPriceHistory } = useQuery({
     queryKey: ['priceHistory', sku],
-    queryFn: () => listings && listings.length > 0 ? api.listings.getPriceHistory(listings[0].id) : Promise.resolve([]),
+    queryFn: () => listings && (listings as Listing[]).length > 0 ? api.listings.getPriceHistory((listings as Listing[])[0].id) : Promise.resolve([]),
     enabled: !!sku && !!variant && !!listings,
-    keepPreviousData: true,
     refetchInterval: 30000,
   });
 
@@ -83,9 +82,11 @@ export default function VariantDetail() {
 
   const mergedVariant = useMemo(() => {
     if (!variant) return null;
+    const v = variant as Labubu;
+    const l = listings as Listing[] | undefined;
     return {
-      ...variant,
-      estimatedValue: listings?.[0]?.currentPrice || variant.estimatedValue,
+      ...v,
+      estimatedValue: l?.[0]?.currentPrice || v.estimatedValue,
       priceHistory: priceHistory || [],
     };
   }, [variant, listings, priceHistory]);
@@ -263,7 +264,7 @@ export default function VariantDetail() {
                     <p className="text-sm text-muted-foreground">{mergedVariant.variant}</p>
                   )}
                 </div>
-                <RarityBadge rarity={mergedVariant.rarity} />
+                <RarityBadge rarity={mergedVariant.rarity as any} />
               </div>
               
               <div className="flex items-center gap-2 mt-3">
@@ -271,7 +272,7 @@ export default function VariantDetail() {
                   <Tag className="h-3 w-3 mr-1" />
                   {mergedVariant.sku}
                 </Badge>
-                <StockStatusBadge status={mergedVariant.stockStatus} />
+                <StockStatusBadge status={mergedVariant.stockStatus as any} />
               </div>
             </div>
 
@@ -381,7 +382,7 @@ export default function VariantDetail() {
                               <div key={key}>
 
                                                     <span className="text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}: </span>
-                                <span className="font-medium">{value}</span>
+                                <span className="font-medium">{String(value)}</span>
 
                               </div>
 
@@ -400,7 +401,7 @@ export default function VariantDetail() {
                     {/* Price History */}
 
                     <div className="mt-8">
-                      <PriceHistoryChart history={mergedVariant.priceHistory || []} currentPrice={mergedVariant.estimatedValue || 0} />
+                      <PriceHistoryChart history={mergedVariant.priceHistory || []} />
                     </div>
 
             

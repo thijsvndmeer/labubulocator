@@ -91,8 +91,8 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
             <SearchFilters
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
-              selectedRarity={selectedRarity}
-              onRarityChange={setSelectedRarity}
+              selectedRarity={selectedRarity as any}
+              onRarityChange={setSelectedRarity as any}
               selectedSeries={selectedSeries}
               onSeriesChange={setSelectedSeries}
               sortBy={sortBy}
@@ -107,7 +107,7 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {filteredVariants.map((variant) => (
                 <VariantCard
-                  key={variant.id}
+                  key={variant.sku}
                   variant={variant}
                   isPopular={popularVariantIds.has(variant.sku)}
                   showCollectionStatus={showCollectionStatus}

@@ -5,7 +5,6 @@ import { Labubu } from '@labubu/common/src/types/labubu';
 import { VariantCard } from '@/components/VariantCard';
 import Particles from "react-tsparticles";
 import { loadFull } from "tsparticles";
-import type { Engine } from "tsparticles-engine";
 import Confetti from 'react-confetti';
 
 // Define a color palette for the wheel
@@ -33,7 +32,7 @@ const Random: React.FC = () => {
   const spinSoundRef = useRef<HTMLAudioElement>(null);
   const winSoundRef = useRef<HTMLAudioElement>(null);
 
-  const particlesInit = useCallback(async (engine: Engine) => {
+  const particlesInit = useCallback(async (engine: any) => {
     await loadFull(engine);
   }, []);
 

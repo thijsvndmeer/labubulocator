@@ -55,7 +55,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
                 <p className="text-xs text-muted-foreground truncate">{variant.variant}</p>
               )}
             </div>
-            <RarityBadge rarity={variant.rarity} />
+            <RarityBadge rarity={variant.rarity as any} />
           </div>
         </Link>
 
@@ -85,7 +85,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
             </p>
           </div>
         </Link>
-          {!hideStockStatus && <StockStatusBadge status={variant.stockStatus} />}
+          {!hideStockStatus && <StockStatusBadge status={variant.stockStatus as any} />}
         <div className="flex items-center justify-between gap-0 pt-0">
 
           {variant.affiliateLinks && variant.affiliateLinks.length > 0 && (
