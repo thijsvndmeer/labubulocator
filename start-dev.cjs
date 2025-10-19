@@ -1,12 +1,20 @@
 const { spawn } = require('child_process');
+const fs = require('fs');
 
-const backend = spawn('npx --workspace=backend npm run dev', { stdio: 'inherit', shell: true });
-const frontend = spawn('npx vite', { stdio: 'inherit', shell: true });
+const logStream = fs.createWriteStream('log.txt', { flags: 'a' });
+
+const backend = spawn('npx --workspace=backend npm run dev', { shell: true });
+const frontend = spawn('npx vite', { shell: true });
+
+backend.stdout.pipe(logStream);
+backend.stderr.pipe(logStream);
+frontend.stdout.pipe(logStream);
+frontend.stderr.pipe(logStream);
 
 backend.on('close', (code) => {
-  console.log(`Backend process exited with code ${code}`);
+  logStream.write(`Backend process exited with code ${code}\n`);
 });
 
 frontend.on('close', (code) => {
-  console.log(`Frontend process exited with code ${code}`);
+  logStream.write(`Frontend process exited with code ${code}\n`);
 });
