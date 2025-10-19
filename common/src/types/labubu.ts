@@ -14,15 +14,6 @@ export const labubuSchema = z.object({
   description: z.string().optional(),
   msrp: z.coerce.number().optional(),
   lowestPrice: z.coerce.number().optional(),
-  variant: z.string().optional(),
-  estimatedValue: z.coerce.number().optional(),
-  priceChange24h: z.coerce.number().optional(),
-  priceRange: z.object({ low: z.coerce.number(), high: z.coerce.number() }).optional(),
-  stockStatus: z.string().optional(),
-  confidenceScore: z.coerce.number().optional(),
-  affiliateLinks: z.array(z.object({ id: z.string(), displayName: z.string(), url: z.string() })).optional(),
-  attributes: z.record(z.string(), z.string()).optional(),
-  recentSales: z.array(z.object({ source: z.string(), price: z.coerce.number(), currency: z.string(), date: z.string(), url: z.string() })).optional(),
 });
 export type Labubu = z.infer<typeof labubuSchema>;
 
