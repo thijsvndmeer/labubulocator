@@ -1,7 +1,7 @@
 import { parse } from "csv-parse";
 import fs from "fs";
 import { labubuRepository } from "../index";
-import { Labubu } from "@common/types/labubu";
+import { Labubu } from "@labubu/common/src/types/labubu";
 import path from "path";
 
 const csvPath = path.resolve("src", "data", "labubus.csv");

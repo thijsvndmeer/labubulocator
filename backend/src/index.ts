@@ -1,13 +1,14 @@
 import express, { Request, Response } from "express";
 import labubuRoutes from "./routes/labubus";
+import listingRoutes from "./routes/listings";
 import { LabubuRepository } from "./repositories/labubuRepository";
 import { ListingRepository } from "./repositories/listingRepository";
 import { PriceHistoryRepository } from "./repositories/priceHistoryRepository";
 import db from "./lib/database";
 import { syncLabubus } from "./services/labubuSyncService";
-import { LabubuPriceService } from "./services/labubuPriceService";
 
 const app = express();
+app.set("query parser", "extended");
 const port = 3001;
 
 //============================================================================================================================================================================================
@@ -18,8 +19,6 @@ export const labubuRepository = new LabubuRepository(db);
 export const listingRepository = new ListingRepository(db);
 export const priceHistoryRepository = new PriceHistoryRepository(db);
 
-export const labubuPriceService = new LabubuPriceService(labubuRepository);
-
 syncLabubus();
 
 //============================================================================================================================================================================================
@@ -28,7 +27,7 @@ syncLabubus();
 
 app.use((req, res, next) => {
   // Allow requests from the frontend
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:4000/");
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:4000");
   next();
 });
 
@@ -42,6 +41,8 @@ app.use((req, res, next) => {
 //============================================================================================================================================================================================
 
 app.use("/api/labubus", labubuRoutes);
+
+app.use("/api/listings", listingRoutes);
 
 //============================================================================================================================================================================================
 // Start the server

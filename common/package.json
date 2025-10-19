@@ -1,0 +1,10 @@
+{
+  "name": "@labubu/common",
+  "version": "1.0.0",
+  "private": true,
+  "main": "types/index.ts",
+  "types": "types/index.ts",
+  "dependencies": {
+    "zod": "^4.1.12"
+  }
+}

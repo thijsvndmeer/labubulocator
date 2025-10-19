@@ -1,26 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "ES2020",
     "module": "commonjs",
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-
-    /* New settings for monorepo structure */
-    "baseUrl": ".",
-    "paths": {
-      "@common/*": ["../common/*"]
-    },
-    "rootDirs": [
-      "src",
-      "../common"
-    ]
+    "forceConsistentCasingInFileNames": true
   },
-  "include": [
-    "src/**/*.ts",
-    "../common/**/*.ts"
-  ],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }
+

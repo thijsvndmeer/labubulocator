@@ -1,7 +1,6 @@
 import { Database } from "sqlite3";
-import { PersistedPriceEntry, PriceEntryData } from "../types/labubu";
+import { PersistedPriceEntry, PriceEntryData, QueryCriteria, QueryOptions } from "../types/labubu";
 import { BaseRepository } from "./baseRepository";
-import { QueryOptions } from "../types/labubu";
 
 export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> {
   //============================================================================================================================================================================================
@@ -9,7 +8,7 @@ export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> 
   //============================================================================================================================================================================================
 
   constructor(db: Database) {
-    super(db, "price_history", ["id", "listingId", "price", "date"]);
+    super(db, "price_history");
   }
 
   //============================================================================================================================================================================================
@@ -26,7 +25,7 @@ export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> 
 
   public async get<K extends keyof PersistedPriceEntry>(
     options: QueryOptions<PersistedPriceEntry> = {},
-    fields: K[] = []
+    fields?: K[]
   ): Promise<Pick<PersistedPriceEntry, K>[]> {
     return await super.get(options, fields);
   }
@@ -34,15 +33,15 @@ export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> 
   // update
 
   public async update(
-    options: Pick<QueryOptions<PersistedPriceEntry>, "filter" | "ranges"> = {},
+    criteria: QueryCriteria<PersistedPriceEntry> = {},
     data: Partial<PriceEntryData>
   ): Promise<number> {
-    return await super.update(options, data);
+    return await super.update(criteria, data);
   }
 
   // delete
 
-  public async delete(options: Pick<QueryOptions<PersistedPriceEntry>, "filter" | "ranges"> = {}): Promise<number> {
-    return await super.delete(options);
+  public async delete(criteria: QueryCriteria<PersistedPriceEntry> = {}): Promise<number> {
+    return await super.delete(criteria);
   }
 }

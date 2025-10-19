@@ -54,15 +54,15 @@ db.serialize(() => {
     `
     CREATE TABLE IF NOT EXISTS listings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      labubuId INTEGER NOT NULL,
-      vendorName TEXT NOT NULL,
       productUrl TEXT UNIQUE NOT NULL,
+      labubuSku TEXT NOT NULL,
+      vendorName TEXT NOT NULL,
       listingTitle TEXT NOT NULL,
       currentPrice REAL,
       inStock INTEGER DEFAULT 1,
       lastCheckedAt TEXT,
 
-      FOREIGN KEY (labubuId) REFERENCES labubus (id)
+      FOREIGN KEY (labubuSku) REFERENCES labubus (sku)
     )
   `,
     (err) => {

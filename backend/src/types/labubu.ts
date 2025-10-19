@@ -1,31 +1,42 @@
-import { HttpOptions, Labubu, Listing, PriceEntry } from "@common/types/labubu";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { z, ZodObject } from "zod";
+import {
+  HttpOptions,
+  labubuSchema,
+  listingSchema,
+  makeHttpOptionsSchema,
+  priceEntrySchema,
+} from "@labubu/common/src/types/labubu";
 
 //============================================================================================================================================================================================
 // Database entity types
 //============================================================================================================================================================================================
 
-export interface PersistedLabubu extends Labubu {
-  id: number;
-}
+export const persistedLabubuSchema = labubuSchema.extend({
+  id: z.coerce.number(),
+});
+export type PersistedLabubu = z.infer<typeof persistedLabubuSchema>;
 
-export interface ListingData extends Omit<Listing, "labubu_sku"> {
-  labubuId: number;
-}
+export const priceEntryDataSchema = priceEntrySchema.extend({
+  listingId: z.coerce.number(),
+});
+export type PriceEntryData = z.infer<typeof priceEntryDataSchema>;
 
-export interface PersistedListing extends ListingData {
-  id: number;
-}
-
-export interface PriceEntryData extends PriceEntry {
-  listingId: number;
-}
-
-export interface PersistedPriceEntry extends PriceEntryData {
-  id: number;
-}
+export const persistedPriceEntrySchema = priceEntryDataSchema.extend({
+  id: z.coerce.number(),
+});
+export type PersistedPriceEntry = z.infer<typeof persistedPriceEntrySchema>;
 
 //============================================================================================================================================================================================
-// Query parameter types
+// Database Options
 //============================================================================================================================================================================================
 
-export type QueryOptions<T> = Omit<HttpOptions<T>, 'fields'>;
+export const makeQueryCriteriaSchema = <T extends ZodObject<any>>(schema: T) => {
+  return makeQueryOptionsSchema(schema).pick({ filter: true, ranges: true });
+};
+export type QueryCriteria<T> = Pick<QueryOptions<T>, "filter" | "ranges">;
+
+export const makeQueryOptionsSchema = <T extends ZodObject<any>>(schema: T) => {
+  return makeHttpOptionsSchema(schema).pick({ filter: true, ranges: true, order: true, limit: true, offset: true });
+};
+export type QueryOptions<T> = Pick<HttpOptions<T>, "filter" | "ranges" | "order" | "limit" | "offset">;
