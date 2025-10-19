@@ -14,7 +14,7 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview && exit 1",
+    "preview": "vite preview",
     "test": "vitest"
   },
   "dependencies": {
