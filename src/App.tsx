@@ -14,6 +14,7 @@ import SharedFavorites from "./pages/SharedFavorites";
 import Random from "./pages/Random";
 import { Header } from "./components/Header";
 import { useState, useEffect } from "react";
+import ErrorThrower from './components/ErrorThrower';
 
 const queryClient = new QueryClient();
 
@@ -66,6 +67,7 @@ export const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <ErrorThrower />
       <Toaster />
       <Sonner />
       <div className="min-h-screen bg-gradient-subtle">
@@ -76,5 +78,3 @@ const App = () => (
 );
 
 export default App;
-
-
