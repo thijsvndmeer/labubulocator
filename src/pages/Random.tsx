@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Wheel } from 'react-custom-roulette';
-import { getAllVariants, initializeVariants } from '@/data/variantManager';
-import { Variant } from '@/types/variant';
+import { api } from '@/lib/api';
+import { Labubu } from '@labubu/common/src/types/labubu';
 import { VariantCard } from '@/components/VariantCard';
 import Particles from "react-tsparticles";
 import { loadFull } from "tsparticles";
@@ -25,8 +25,8 @@ const colorPalette = [
 const Random: React.FC = () => {
   const [mustSpin, setMustSpin] = useState(false);
   const [prizeNumber, setPrizeNumber] = useState(0);
-  const [variants, setVariants] = useState<Variant[]>([]);
-  const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
+  const [variants, setVariants] = useState<Labubu[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<Labubu | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
   // Sound effect placeholders
@@ -39,8 +39,7 @@ const Random: React.FC = () => {
 
   useEffect(() => {
     const fetchVariants = async () => {
-      await initializeVariants();
-      const allVariants = getAllVariants();
+      const allVariants = await api.labubus.get();
       setVariants(allVariants);
     };
 

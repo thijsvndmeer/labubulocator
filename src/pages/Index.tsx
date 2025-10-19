@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { VariantCard } from '@/components/VariantCard';
 import heroBanner from '@/assets/hero-banner.jpg';
 import { TrendingUp } from 'lucide-react';
-import { Variant } from '@/types/variant';
-import { getAllVariants, initializeVariants } from '@/data/variantManager';
+import { api } from '@/lib/api';
+import { Labubu } from '@labubu/common/src/types/labubu';
 import {
   Carousel,
   CarouselContent,
@@ -13,18 +13,22 @@ import {
 } from "@/components/ui/carousel"
 
 const Index = () => {
-  const [variants, setVariants] = useState<Variant[]>([]);
+  const [variants, setVariants] = useState<Labubu[]>([]);
 
   useEffect(() => {
     const loadVariants = async () => {
-      await initializeVariants();
-      setVariants(getAllVariants());
+      try {
+        const variants = await api.labubus.get();
+        setVariants(variants);
+      } catch (error) {
+        console.error("Error fetching variants:", error);
+      }
     };
     loadVariants();
   }, []);
 
   const trendingVariants = variants
-    .sort((a, b) => Math.abs(b.priceChange24h || 0) - Math.abs(a.priceChange24h || 0))
+    .sort((a, b) => (b.lowestPrice || 0) - (a.lowestPrice || 0))
     .slice(0, 15);
 
   return (
@@ -58,7 +62,7 @@ const Index = () => {
             <TrendingUp className="h-8 w-8 text-primary" />
             <div>
               <h2 className="text-3xl font-bold">Trending Now</h2>
-              <p className="text-muted-foreground">Biggest price movers in the last 24 hours</p>
+              <p className="text-muted-foreground">Highest value Labubus</p>
             </div>
           </div>
           
@@ -71,7 +75,7 @@ const Index = () => {
           >
             <CarouselContent>
               {trendingVariants.map((variant) => (
-                <CarouselItem key={variant.id} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                <CarouselItem key={variant.sku} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
                   <div className="p-1">
                     <VariantCard variant={variant} />
                   </div>

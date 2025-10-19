@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import { getCollection } from '@/lib/collection';
-import { getVariantBySku, initializeVariants } from '@/data/variantManager';
-import { Variant } from '@/types/variant';
 import { Link, useLocation } from 'react-router-dom';
 import { Share2, Boxes } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,10 +8,11 @@ import { SearchFilters } from '@/components/SearchFilters';
 import { useVariantFilters } from '@/hooks/useVariantFilters';
 import { VariantCard } from '@/components/VariantCard';
 import { Skeleton } from '@/components/ui/skeleton';
+import { api } from '@/lib/api';
+import { Labubu } from '@labubu/common/src/types/labubu';
 
 export default function Collection() {
-  const [collectedVariants, setCollectedVariants] = useState<Variant[]>([]);
-  const [totalCollectionValue, setTotalCollectionValue] = useState<number>(0);
+  const [collectedVariants, setCollectedVariants] = useState<Labubu[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState<string>(() => {
@@ -55,7 +54,6 @@ export default function Collection() {
     if (search) {
       setSearchQuery(search);
     } else {
-      // Only clear search query if it's not coming from localStorage
       const storedSearchQuery = localStorage.getItem('collectionSearchQuery');
       if (!storedSearchQuery) {
         setSearchQuery('');
@@ -67,38 +65,18 @@ export default function Collection() {
     const loadCollection = async () => {
       setIsLoading(true);
       try {
-        await initializeVariants();
-        const params = new URLSearchParams(location.search);
-        const sharedSkusParam = params.get("skus");
-        let skusToLoad: string[] = [];
-
-        if (sharedSkusParam) {
-          skusToLoad = sharedSkusParam.split(',');
-        } else {
-          skusToLoad = getCollection();
-        }
-
-        console.log('Collection SKUs to load:', skusToLoad);
-        const variants = skusToLoad.map(sku => {
-          const foundVariant = getVariantBySku(sku);
-          if (!foundVariant) {
-            console.warn('Collection: Variant not found for SKU:', sku);
-          }
-          return foundVariant;
-        }).filter(Boolean) as Variant[];
-        console.log('Collected variants after filtering:', variants);
+        const allVariants = await api.labubus.get();
+        const collectionSkus = getCollection();
+        const variants = allVariants.filter(variant => collectionSkus.includes(variant.sku));
         setCollectedVariants(variants);
-        const totalValue = variants.reduce((sum, variant) => sum + (variant.estimatedValue || 0), 0);
-        setTotalCollectionValue(totalValue);
       } catch (error) {
-        console.error('Collection: Error initializing variants or loading collection:', error);
+        console.error('Collection: Error loading collection:', error);
         setCollectedVariants([]);
-        setTotalCollectionValue(0);
       }
       setIsLoading(false);
     };
     loadCollection();
-  }, [location.search]);
+  }, []);
 
   const { 
     filteredVariants, 
@@ -110,24 +88,6 @@ export default function Collection() {
     setSortBy, 
     allSeries 
   } = useVariantFilters(collectedVariants, searchQuery);
-
-  const getImageUrl = (variant: Variant) => {
-    let skuToMatch = variant.sku.toLowerCase();
-
-    if (skuToMatch.includes('lbb-bii-')) {
-      skuToMatch = skuToMatch.replace('lbb-bii-', 'lbb-bie-');
-    }
-
-    const foundImagePath = Object.keys(assetImages).find(path => {
-      const filename = path.split('/').pop()?.toLowerCase() || '';
-      return filename.includes(skuToMatch);
-    });
-
-    if (foundImagePath && assetImages[foundImagePath]) {
-      return assetImages[foundImagePath];
-    }
-    return '/placeholder.svg';
-  };
 
   if (isLoading) {
     return (
@@ -162,7 +122,7 @@ export default function Collection() {
               <div>
                 <h2 className="text-3xl font-bold">Your Collection</h2>
                 <p className="text-muted-foreground">
-                  {collectedVariants.length} collected Labubu variants. Estimated Value: <span className="font-bold text-primary">${totalCollectionValue.toFixed(2)}</span>
+                  {collectedVariants.length} collected Labubu variants.
                 </p>
               </div>
             </div>
@@ -195,8 +155,9 @@ export default function Collection() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {filteredVariants.map((variant) => (
-                <VariantCard key={variant.sku} variant={variant} hideStockStatus={true} />
-              ))}            </div>
+                <VariantCard key={variant.sku} variant={variant} />
+              ))}
+            </div>
           )}
         </section>
 

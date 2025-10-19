@@ -5,12 +5,12 @@ import { SearchFilters } from '@/components/SearchFilters';
 import { useVariantFilters } from '@/hooks/useVariantFilters';
 import { Package } from 'lucide-react';
 import { Variant } from '@/types/variant';
-import { getAllVariants, initializeVariants } from '@/data/variantManager';
-import { getPopularVariants } from '@/lib/api';
+import { api } from '@/lib/api';
 import { Link, useLocation } from 'react-router-dom';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { getCollection } from '@/lib/collection';
+import { Labubu } from '@labubu/common/src/types/labubu';
 
 interface CatalogPageProps {
   searchQuery: string;
@@ -18,7 +18,7 @@ interface CatalogPageProps {
 }
 
 export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) => {
-  const [variants, setVariants] = useState<Variant[]>([]);
+  const [variants, setVariants] = useState<Labubu[]>([]);
   const [popularVariantIds, setPopularVariantIds] = useState<Set<string>>(new Set());
   const [showCollectionStatus, setShowCollectionStatus] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -36,19 +36,15 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
   }, [showCollectionStatus]);
 
   useEffect(() => {
-    const loadVariantsAndPopularity = async () => {
-      await initializeVariants();
-      setVariants(getAllVariants());
-
+    const loadVariants = async () => {
       try {
-        const popular = await getPopularVariants();
-        const ids = new Set(popular.map(v => v.variantId));
-        setPopularVariantIds(ids);
+        const variants = await api.labubus.get();
+        setVariants(variants);
       } catch (error) {
-        console.error("Error fetching popular variants:", error);
+        console.error("Error fetching variants:", error);
       }
     };
-    loadVariantsAndPopularity();
+    loadVariants();
   }, []);
 
   useEffect(() => {

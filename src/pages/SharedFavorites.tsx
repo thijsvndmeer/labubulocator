@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react';
-import { getVariantBySku, initializeVariants } from '@/data/variantManager';
-import { Variant } from '@/types/variant';
 import { useLocation } from 'react-router-dom';
 import { Heart } from 'lucide-react';
 import { SearchFilters } from '@/components/SearchFilters';
 import { useVariantFilters } from '@/hooks/useVariantFilters';
 import { VariantCard } from '@/components/VariantCard';
 import { Skeleton } from '@/components/ui/skeleton';
+import { api } from '@/lib/api';
+import { Labubu } from '@labubu/common/src/types/labubu';
 
 export default function SharedFavorites() {
-  const [favoritedVariants, setFavoritedVariants] = useState<Variant[]>([]);
-  const [totalFavoritesValue, setTotalFavoritesValue] = useState<number>(0);
+  const [favoritedVariants, setFavoritedVariants] = useState<Labubu[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,31 +28,20 @@ export default function SharedFavorites() {
     const loadFavorites = async () => {
       setIsLoading(true);
       try {
-        await initializeVariants();
+        const allVariants = await api.labubus.get();
         const params = new URLSearchParams(location.search);
         const sharedSkusParam = params.get("skus");
         let skusToLoad: string[] = [];
 
         if (sharedSkusParam) {
           skusToLoad = sharedSkusParam.split(',');
-        } else {
-          skusToLoad = [];
         }
 
-        const variants = skusToLoad.map(sku => {
-          const foundVariant = getVariantBySku(sku);
-          if (!foundVariant) {
-            console.warn('Favorites: Variant not found for SKU:', sku);
-          }
-          return foundVariant;
-        }).filter(Boolean) as Variant[];
+        const variants = allVariants.filter(variant => skusToLoad.includes(variant.sku));
         setFavoritedVariants(variants);
-        const totalValue = variants.reduce((sum, variant) => sum + (variant.estimatedValue || 0), 0);
-        setTotalFavoritesValue(totalValue);
       } catch (error) {
-        console.error('Favorites: Error initializing variants or loading favorites:', error);
+        console.error('Favorites: Error loading favorites:', error);
         setFavoritedVariants([]);
-        setTotalFavoritesValue(0);
       }
       setIsLoading(false);
     };
@@ -131,7 +119,7 @@ export default function SharedFavorites() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {filteredVariants.map((variant) => (
-                <VariantCard key={variant.sku} variant={variant} hideStockStatus={true} />
+                <VariantCard key={variant.sku} variant={variant} />
               ))}
             </div>
           )}

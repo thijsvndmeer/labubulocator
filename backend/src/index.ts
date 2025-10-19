@@ -27,7 +27,7 @@ syncLabubus();
 
 app.use((req, res, next) => {
   // Allow requests from the frontend
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:4000");
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:4173");
   next();
 });
 

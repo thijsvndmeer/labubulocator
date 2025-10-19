@@ -2,16 +2,15 @@ import { useState, useEffect } from 'react';
 import { VariantCard } from '@/components/VariantCard';
 import { useVariantFilters } from '@/hooks/useVariantFilters';
 import { Heart, Share2 } from 'lucide-react';
-import { Variant } from '@/types/variant';
-import { getVariantBySku, initializeVariants } from '@/data/variantManager';
 import { getFavorites } from '@/lib/favorites';
 import { useToast } from '@/components/ui/use-toast';
 import { SearchFilters } from '@/components/SearchFilters';
 import { Button } from '@/components/ui/button';
+import { api } from '@/lib/api';
+import { Labubu } from '@labubu/common/src/types/labubu';
 
 export const FavoritesPage = () => {
-  const [favoritedVariants, setFavoritedVariants] = useState<Variant[]>([]);
-  const [totalFavoritesValue, setTotalFavoritesValue] = useState<number>(0);
+  const [favoritedVariants, setFavoritedVariants] = useState<Labubu[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>(
     localStorage.getItem('favoritesSearchQuery') || ''
   );
@@ -23,12 +22,10 @@ export const FavoritesPage = () => {
 
   useEffect(() => {
     const loadFavoritedVariants = async () => {
-      await initializeVariants();
+      const allVariants = await api.labubus.get();
       const favoriteSkus = getFavorites();
-      const variants = favoriteSkus.map(sku => getVariantBySku(sku)).filter(Boolean) as Variant[];
+      const variants = allVariants.filter(variant => favoriteSkus.includes(variant.sku));
       setFavoritedVariants(variants.reverse());
-      const totalValue = variants.reduce((sum, variant) => sum + (variant.estimatedValue || 0), 0);
-      setTotalFavoritesValue(totalValue);
     };
 
     loadFavoritedVariants();
@@ -112,7 +109,7 @@ export const FavoritesPage = () => {
           {filteredVariants.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {filteredVariants.map((variant) => (
-                <VariantCard key={variant.id} variant={variant} />
+                <VariantCard key={variant.sku} variant={variant} />
               ))}
             </div>
           ) : (

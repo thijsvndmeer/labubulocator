@@ -1,36 +1,15 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
-import { PriceData } from '@/types/variant';
 import { Badge } from '@/components/ui/badge';
-import { useQuery } from '@tanstack/react-query';
-import { getAmazonPrice, getStockXPrice, getEbayPrice } from '@/lib/api';
+import { Listing } from '@labubu/common/src/types/labubu';
 
 interface PriceComparisonProps {
-  variantName: string;
-  msrp: number;
+  listings: Listing[];
 }
 
-export const PriceComparison = ({ variantName, msrp }: PriceComparisonProps) => {
-  const { data: amazonPrice, isLoading: amazonLoading, isError: amazonError } = useQuery({
-    queryKey: ['amazonPrice', variantName],
-    queryFn: () => getAmazonPrice(variantName),
-  });
-
-  const { data: stockxPrice, isLoading: stockxLoading, isError: stockxError } = useQuery({
-    queryKey: ['stockxPrice', variantName],
-    queryFn: () => getStockXPrice(variantName),
-  });
-
-  const { data: ebayPrice, isLoading: ebayLoading, isError: ebayError } = useQuery({
-    queryKey: ['ebayPrice', variantName],
-    queryFn: () => getEbayPrice(variantName),
-  });
-
-  const isLoading = amazonLoading || stockxLoading || ebayLoading;
-
-  const prices = [amazonPrice, stockxPrice, ebayPrice].filter((p): p is PriceData => !!p);
-  const sortedPrices = [...prices].sort((a, b) => a.price - b.price);
+export const PriceComparison = ({ listings }: PriceComparisonProps) => {
+  const sortedPrices = [...listings].sort((a, b) => (a.currentPrice || 0) - (b.currentPrice || 0));
   const lowestPrice = sortedPrices[0];
 
   return (
@@ -38,12 +17,9 @@ export const PriceComparison = ({ variantName, msrp }: PriceComparisonProps) => 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Price Comparison</h3>
-          <Badge variant="outline" className="text-xs">
-            MSRP: ${msrp.toFixed(2)}
-          </Badge>
         </div>
 
-        {isLoading && <div>Loading prices...</div>}
+        {listings.length === 0 && <div>No listings found.</div>}
 
         <div className="space-y-3">
           {sortedPrices.map((source, index) => (
@@ -58,7 +34,7 @@ export const PriceComparison = ({ variantName, msrp }: PriceComparisonProps) => 
               <div className="flex items-center gap-3 flex-1">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">{source.site}</span>
+                    <span className="font-medium">{source.vendorName}</span>
                     {source === lowestPrice && (
                       <Badge className="bg-rarity-uncommon text-white text-xs">
                         Best Price
@@ -71,13 +47,8 @@ export const PriceComparison = ({ variantName, msrp }: PriceComparisonProps) => 
               <div className="flex items-center gap-3">
                 <div className="text-right">
                   <div className="text-xl font-bold">
-                    ${source.price.toFixed(2)}
+                    ${source.currentPrice?.toFixed(2)}
                   </div>
-                  {source.price > msrp && (
-                    <div className="text-xs text-muted-foreground">
-                      +{(((source.price - msrp) / msrp) * 100).toFixed(0)}% vs MSRP
-                    </div>
-                  )}
                 </div>
                 <Button
                   size="sm"
@@ -85,7 +56,7 @@ export const PriceComparison = ({ variantName, msrp }: PriceComparisonProps) => 
                   asChild
                 >
                   <a
-                    href={source.url}
+                    href={source.productUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-1"
