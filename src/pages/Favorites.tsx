@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { VariantCard } from '@/components/VariantCard';
+import { CardSkeleton } from '@/components/CardSkeleton';
 import { useVariantFilters } from '@/hooks/useVariantFilters';
 import { Heart, Share2 } from 'lucide-react';
 import { getFavorites } from '@/lib/favorites';
@@ -8,8 +9,14 @@ import { SearchFilters } from '@/components/SearchFilters';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
 import { Labubu } from '@labubu/common/src/types/labubu';
+import { useQuery } from '@tanstack/react-query';
 
 export const FavoritesPage = () => {
+  const { data: allVariants = [], isLoading } = useQuery<Labubu[]>({
+    queryKey: ['variants'],
+    queryFn: () => api.labubus.get(),
+  });
+
   const [favoritedVariants, setFavoritedVariants] = useState<Labubu[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>(
     localStorage.getItem('favoritesSearchQuery') || ''
@@ -21,24 +28,21 @@ export const FavoritesPage = () => {
   }, [searchQuery]);
 
   useEffect(() => {
-    const loadFavoritedVariants = async () => {
-      const allVariants = await api.labubus.get();
-      const favoriteSkus = getFavorites();
-      const variants = allVariants.filter(variant => favoriteSkus.includes(variant.sku));
-      setFavoritedVariants(variants.reverse());
-    };
-
-    loadFavoritedVariants();
+    const favoriteSkus = getFavorites();
+    const variants = allVariants.filter(variant => favoriteSkus.includes(variant.sku));
+    setFavoritedVariants(variants.reverse());
 
     const handleStorageChange = () => {
-      loadFavoritedVariants();
+        const favoriteSkus = getFavorites();
+        const variants = allVariants.filter(variant => favoriteSkus.includes(variant.sku));
+        setFavoritedVariants(variants.reverse());
     };
 
     window.addEventListener('storage', handleStorageChange);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, []);
+  }, [allVariants]);
 
   const { 
     filteredVariants, 
@@ -106,7 +110,13 @@ export const FavoritesPage = () => {
             />
           </div>
 
-          {filteredVariants.length > 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Array.from({ length: favoritedVariants.length || 4 }).map((_, index) => (
+                <CardSkeleton key={index} />
+              ))}
+            </div>
+          ) : filteredVariants.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {filteredVariants.map((variant) => (
                 <VariantCard key={variant.sku} variant={variant} />

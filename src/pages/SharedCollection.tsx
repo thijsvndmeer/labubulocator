@@ -4,15 +4,22 @@ import { Boxes } from 'lucide-react';
 import { SearchFilters } from '@/components/SearchFilters';
 import { useVariantFilters } from '@/hooks/useVariantFilters';
 import { VariantCard } from '@/components/VariantCard';
-import { Skeleton } from '@/components/ui/skeleton';
+import { CardSkeleton } from '@/components/CardSkeleton';
 import { api } from '@/lib/api';
 import { Labubu } from '@labubu/common/src/types/labubu';
+import { useQuery } from '@tanstack/react-query';
 
 export default function SharedCollection() {
-  const [collectedVariants, setCollectedVariants] = useState<Labubu[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+
+  const { data: allVariants = [], isLoading } = useQuery<Labubu[]>({
+    queryKey: ['variants'],
+    queryFn: () => api.labubus.get(),
+    keepPreviousData: true,
+  });
+
+  const [collectedVariants, setCollectedVariants] = useState<Labubu[]>([]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -25,28 +32,17 @@ export default function SharedCollection() {
   }, [location.search]);
 
   useEffect(() => {
-    const loadCollection = async () => {
-      setIsLoading(true);
-      try {
-        const allVariants = await api.labubus.get();
-        const params = new URLSearchParams(location.search);
-        const sharedSkusParam = params.get("skus");
-        let skusToLoad: string[] = [];
+    const params = new URLSearchParams(location.search);
+    const sharedSkusParam = params.get("skus");
+    let skusToLoad: string[] = [];
 
-        if (sharedSkusParam) {
-          skusToLoad = sharedSkusParam.split(',');
-        }
+    if (sharedSkusParam) {
+      skusToLoad = sharedSkusParam.split(',');
+    }
 
-        const variants = allVariants.filter(variant => skusToLoad.includes(variant.sku));
-        setCollectedVariants(variants);
-      } catch (error) {
-        console.error('Collection: Error loading collection:', error);
-        setCollectedVariants([]);
-      }
-      setIsLoading(false);
-    };
-    loadCollection();
-  }, [location.search]);
+    const variants = allVariants.filter(variant => skusToLoad.includes(variant.sku));
+    setCollectedVariants(variants);
+  }, [location.search, allVariants]);
 
   const { 
     filteredVariants, 
@@ -58,29 +54,6 @@ export default function SharedCollection() {
     setSortBy, 
     allSeries 
   } = useVariantFilters(collectedVariants, searchQuery);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen">
-        <div className="container mx-auto px-4 py-12 space-y-16">
-          <section>
-            <div className="flex items-center gap-3 mb-8">
-              <Boxes className="h-8 w-8 text-primary" />
-              <div>
-                <h2 className="text-3xl font-bold">Shared Collection</h2>
-                <p className="text-muted-foreground">Loading shared Labubu variants...</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, index) => (
-                <div key={index} className="h-64 bg-muted rounded-lg animate-pulse"></div>
-              ))}
-            </div>
-          </section>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen">
@@ -112,7 +85,13 @@ export default function SharedCollection() {
             />
           </div>
 
-          {filteredVariants.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <CardSkeleton key={index} />
+              ))}
+            </div>
+          ) : filteredVariants.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No Labubus found in this shared collection matching the current filters.</p>
             </div>

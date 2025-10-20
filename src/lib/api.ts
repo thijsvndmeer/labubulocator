@@ -44,6 +44,8 @@ async function fetchFromApi<T>(path: string, options?: HttpOptions<T>): Promise<
   return response.json();
 }
 
+
+
 export const api = {
   labubus: {
     get: (options?: any) => fetchFromApi<Labubu[]>("/labubus", options),

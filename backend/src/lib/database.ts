@@ -72,6 +72,16 @@ db.serialize(() => {
     }
   );
 
+  // Create index on labubuSku in listings table
+  db.run(
+    `CREATE INDEX IF NOT EXISTS idx_listings_labubuSku ON listings (labubuSku)`,
+    (err) => {
+      if (err) {
+        console.error("Error creating index on listings(labubuSku)", err.message);
+      }
+    }
+  );
+
   // Create the price_history table
   db.run(
     `
@@ -87,6 +97,16 @@ db.serialize(() => {
     (err) => {
       if (err) {
         console.error("Error creating price_history table", err.message);
+      }
+    }
+  );
+
+  // Create index on listingId in price_history table
+  db.run(
+    `CREATE INDEX IF NOT EXISTS idx_price_history_listingId ON price_history (listingId)`,
+    (err) => {
+      if (err) {
+        console.error("Error creating index on price_history(listingId)", err.message);
       }
     }
   );

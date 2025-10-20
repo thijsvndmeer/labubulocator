@@ -1,19 +1,24 @@
 import { useEffect, useState } from 'react';
 import { getCollection } from '@/lib/collection';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Share2, Boxes } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { SearchFilters } from '@/components/SearchFilters';
 import { useVariantFilters } from '@/hooks/useVariantFilters';
 import { VariantCard } from '@/components/VariantCard';
-import { Skeleton } from '@/components/ui/skeleton';
+import { CardSkeleton } from '@/components/CardSkeleton';
 import { api } from '@/lib/api';
 import { Labubu } from '@labubu/common/src/types/labubu';
+import { useQuery } from '@tanstack/react-query';
 
 export default function Collection() {
+  const { data: allVariants = [], isLoading } = useQuery<Labubu[]>({
+    queryKey: ['variants'],
+    queryFn: () => api.labubus.get(),
+  });
+
   const [collectedVariants, setCollectedVariants] = useState<Labubu[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -62,21 +67,10 @@ export default function Collection() {
   }, [location.search, setSearchQuery]);
 
   useEffect(() => {
-    const loadCollection = async () => {
-      setIsLoading(true);
-      try {
-        const allVariants = await api.labubus.get();
-        const collectionSkus = getCollection();
-        const variants = allVariants.filter(variant => collectionSkus.includes(variant.sku));
-        setCollectedVariants(variants);
-      } catch (error) {
-        console.error('Collection: Error loading collection:', error);
-        setCollectedVariants([]);
-      }
-      setIsLoading(false);
-    };
-    loadCollection();
-  }, []);
+    const collectionSkus = getCollection();
+    const variants = allVariants.filter(variant => collectionSkus.includes(variant.sku));
+    setCollectedVariants(variants);
+  }, [allVariants]);
 
   const { 
     filteredVariants, 
@@ -88,29 +82,6 @@ export default function Collection() {
     setSortBy, 
     allSeries 
   } = useVariantFilters(collectedVariants, searchQuery);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen">
-        <div className="container mx-auto px-4 py-12 space-y-16">
-          <section>
-            <div className="flex items-center gap-3 mb-8">
-              <Boxes className="h-8 w-8 text-primary" />
-              <div>
-                <h2 className="text-3xl font-bold">My Collection</h2>
-                <p className="text-muted-foreground">Loading your collected Labubu variants...</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, index) => (
-                <div key={index} className="h-64 bg-muted rounded-lg animate-pulse"></div>
-              ))}
-            </div>
-          </section>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen">
@@ -148,7 +119,13 @@ export default function Collection() {
             />
           </div>
 
-          {filteredVariants.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Array.from({ length: collectedVariants.length || 8 }).map((_, index) => (
+                <CardSkeleton key={index} />
+              ))}
+            </div>
+          ) : filteredVariants.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No Labubus found in your collection matching the current filters.</p>
             </div>

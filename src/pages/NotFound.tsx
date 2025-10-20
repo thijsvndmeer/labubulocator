@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import labuNotFound from "@/assets/labunotfound.png";
+const labuNotFound = "http://localhost:3001/images/labunotfound.png";
 
 const NotFound = () => {
   const location = useLocation();

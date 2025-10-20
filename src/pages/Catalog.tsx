@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Header } from '@/components/Header';
 import { VariantCard } from '@/components/VariantCard';
+import { CardSkeleton } from '@/components/CardSkeleton';
 import { SearchFilters } from '@/components/SearchFilters';
 import { useVariantFilters } from '@/hooks/useVariantFilters';
 import { Package } from 'lucide-react';
-import { Variant } from '@/types/variant';
 import { api } from '@/lib/api';
-import { Link, useLocation } from 'react-router-dom';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import { useLocation } from 'react-router-dom';
 import { getCollection } from '@/lib/collection';
 import { Labubu } from '@labubu/common/src/types/labubu';
+import { useQuery } from '@tanstack/react-query';
 
 interface CatalogPageProps {
   searchQuery: string;
@@ -18,7 +16,11 @@ interface CatalogPageProps {
 }
 
 export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) => {
-  const [variants, setVariants] = useState<Labubu[]>([]);
+  const { data: variants = [], isLoading } = useQuery<Labubu[]>({ 
+    queryKey: ['variants'], 
+    queryFn: () => api.labubus.get(),
+  });
+
   const [popularVariantIds, setPopularVariantIds] = useState<Set<string>>(new Set());
   const [showCollectionStatus, setShowCollectionStatus] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -34,18 +36,6 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
       localStorage.setItem('showCollectionStatus', String(showCollectionStatus));
     }
   }, [showCollectionStatus]);
-
-  useEffect(() => {
-    const loadVariants = async () => {
-      try {
-        const variants = await api.labubus.get();
-        setVariants(variants);
-      } catch (error) {
-        console.error("Error fetching variants:", error);
-      }
-    };
-    loadVariants();
-  }, []);
 
   useEffect(() => {
     setUserCollection(new Set(getCollection()));
@@ -72,10 +62,7 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
 
   return (
     <div className="min-h-screen">
-      {/* Header is now handled by App.tsx */}
-
       <div className="container mx-auto px-4 py-12 space-y-16">
-        {/* All Variants Section */}
         <section>
           <div className="flex items-center gap-3 mb-8">
             <Package className="h-8 w-8 text-primary" />
@@ -103,7 +90,13 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
             />
           </div>
 
-          {filteredVariants.length > 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 12 }).map((_, index) => (
+                <CardSkeleton key={index} />
+              ))}
+            </div>
+          ) : filteredVariants.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {filteredVariants.map((variant) => (
                 <VariantCard
@@ -122,7 +115,6 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
           )}
         </section>
 
-        {/* Footer */}
         <footer className="text-center py-8 border-t">
           <p className="text-sm text-muted-foreground">
             <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through our links.

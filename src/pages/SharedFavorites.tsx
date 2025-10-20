@@ -4,15 +4,22 @@ import { Heart } from 'lucide-react';
 import { SearchFilters } from '@/components/SearchFilters';
 import { useVariantFilters } from '@/hooks/useVariantFilters';
 import { VariantCard } from '@/components/VariantCard';
-import { Skeleton } from '@/components/ui/skeleton';
+import { CardSkeleton } from '@/components/CardSkeleton';
 import { api } from '@/lib/api';
 import { Labubu } from '@labubu/common/src/types/labubu';
+import { useQuery } from '@tanstack/react-query';
 
 export default function SharedFavorites() {
-  const [favoritedVariants, setFavoritedVariants] = useState<Labubu[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+
+  const { data: allVariants = [], isLoading } = useQuery<Labubu[]>({
+    queryKey: ['variants'],
+    queryFn: () => api.labubus.get(),
+    keepPreviousData: true,
+  });
+
+  const [favoritedVariants, setFavoritedVariants] = useState<Labubu[]>([]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -25,28 +32,17 @@ export default function SharedFavorites() {
   }, [location.search]);
 
   useEffect(() => {
-    const loadFavorites = async () => {
-      setIsLoading(true);
-      try {
-        const allVariants = await api.labubus.get();
-        const params = new URLSearchParams(location.search);
-        const sharedSkusParam = params.get("skus");
-        let skusToLoad: string[] = [];
+    const params = new URLSearchParams(location.search);
+    const sharedSkusParam = params.get("skus");
+    let skusToLoad: string[] = [];
 
-        if (sharedSkusParam) {
-          skusToLoad = sharedSkusParam.split(',');
-        }
+    if (sharedSkusParam) {
+      skusToLoad = sharedSkusParam.split(',');
+    }
 
-        const variants = allVariants.filter(variant => skusToLoad.includes(variant.sku));
-        setFavoritedVariants(variants);
-      } catch (error) {
-        console.error('Favorites: Error loading favorites:', error);
-        setFavoritedVariants([]);
-      }
-      setIsLoading(false);
-    };
-    loadFavorites();
-  }, [location.search]);
+    const variants = allVariants.filter(variant => skusToLoad.includes(variant.sku));
+    setFavoritedVariants(variants);
+  }, [location.search, allVariants]);
 
   const { 
     filteredVariants, 
@@ -58,29 +54,6 @@ export default function SharedFavorites() {
     setSortBy, 
     allSeries 
   } = useVariantFilters(favoritedVariants, searchQuery);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen">
-        <div className="container mx-auto px-4 py-12 space-y-16">
-          <section>
-            <div className="flex items-center gap-3 mb-8">
-              <Heart className="h-8 w-8 text-red-500" />
-              <div>
-                <h2 className="text-3xl font-bold">Shared Favorites</h2>
-                <p className="text-muted-foreground">Loading shared Labubu variants...</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, index) => (
-                <div key={index} className="h-64 bg-muted rounded-lg animate-pulse"></div>
-              ))}
-            </div>
-          </section>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen">
@@ -112,7 +85,13 @@ export default function SharedFavorites() {
             />
           </div>
 
-          {filteredVariants.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, index) => (
+                <CardSkeleton key={index} />
+              ))}
+            </div>
+          ) : filteredVariants.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No Labubus found in this shared favorite list matching the current filters.</p>
             </div>

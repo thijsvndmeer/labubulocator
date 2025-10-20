@@ -8,9 +8,12 @@ import {
   listingSchema,
   makeHttpOptionsSchema,
 } from "@labubu/common/src/types/labubu";
+import crypto from "crypto";
 
 const router = Router();
 const labubuHttpOptionsSchema = makeHttpOptionsSchema(labubuSchema);
+
+const cache = new Map<string, { etag: string; data: any }>();
 
 //============================================================================================================================================================================================
 // Get requests
@@ -26,7 +29,20 @@ router.get("/", async (req, res) => {
       return;
     }
 
+    const cacheKey = JSON.stringify(options);
+    const cached = cache.get(cacheKey);
+
+    if (cached && req.headers["if-none-match"] === cached.etag) {
+      res.status(304).send();
+      return;
+    }
+
     const result = await labubuRepository.get(options, options.fields);
+    const etag = crypto.createHash("md5").update(JSON.stringify(result)).digest("hex");
+
+    cache.set(cacheKey, { etag, data: result });
+
+    res.setHeader("ETag", etag);
     res.status(200).json(result);
   } catch (err) {
     res.status(500).json({ error: "An error occurred while fetching labubus.", details: err });
@@ -46,9 +62,10 @@ router.get("/:sku/", async (req, res) => {
   }
 });
 
+
+
 //============================================================================================================================================================================================
 // Default export
 //============================================================================================================================================================================================
 
 export default router;
-

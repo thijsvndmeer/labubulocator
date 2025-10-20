@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
 import { VariantCard } from '@/components/VariantCard';
-import heroBanner from '@/assets/hero-banner.jpg';
+import { CardSkeleton } from '@/components/CardSkeleton';
+const heroBanner = "http://localhost:3001/images/hero-banner.jpg";
 import { TrendingUp } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Labubu } from '@labubu/common/src/types/labubu';
+import { useQuery } from '@tanstack/react-query';
 import {
   Carousel,
   CarouselContent,
@@ -13,19 +14,11 @@ import {
 } from "@/components/ui/carousel"
 
 const Index = () => {
-  const [variants, setVariants] = useState<Labubu[]>([]);
-
-  useEffect(() => {
-    const loadVariants = async () => {
-      try {
-        const variants = await api.labubus.get();
-        setVariants(variants);
-      } catch (error) {
-        console.error("Error fetching variants:", error);
-      }
-    };
-    loadVariants();
-  }, []);
+  const { data: variants = [], isLoading } = useQuery<Labubu[]>({
+    queryKey: ['variants'],
+    queryFn: () => api.labubus.get(),
+    keepPreviousData: true,
+  });
 
   const trendingVariants = variants
     .sort((a, b) => (b.lowestPrice || 0) - (a.lowestPrice || 0))
@@ -74,13 +67,23 @@ const Index = () => {
             className="w-full"
           >
             <CarouselContent>
-              {trendingVariants.map((variant) => (
-                <CarouselItem key={variant.sku} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                  <div className="p-1">
-                    <VariantCard variant={variant} />
-                  </div>
-                </CarouselItem>
-              ))}
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, index) => (
+                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                    <div className="p-1">
+                      <CardSkeleton />
+                    </div>
+                  </CarouselItem>
+                ))
+              ) : (
+                trendingVariants.map((variant) => (
+                  <CarouselItem key={variant.sku} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                    <div className="p-1">
+                      <VariantCard variant={variant} />
+                    </div>
+                  </CarouselItem>
+                ))
+              )}
             </CarouselContent>
             <CarouselPrevious />
             <CarouselNext />

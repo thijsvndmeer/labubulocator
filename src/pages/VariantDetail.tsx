@@ -17,7 +17,7 @@ import { isFavorite, addFavorite, removeFavorite } from '@/lib/favorites';
 import { isCollected, addCollection, removeCollection } from '@/lib/collection';
 import { Labubu, Listing, PriceEntry } from '@labubu/common/src/types/labubu';
 
-const assetImages = import.meta.glob('/src/assets/**/*.png', { eager: true, query: '?url', import: 'default' });
+
 
 export default function VariantDetail() {
   const navigate = useNavigate();
@@ -207,24 +207,7 @@ export default function VariantDetail() {
     return null; // Should not happen based on the logic above, but as a safeguard.
   }
 
-  const getImageUrl = (variant: Labubu) => {
-    let skuToMatch = variant.sku.toLowerCase();
 
-    // Normalize SKU for 'Big Into Energy' series if necessary
-    if (skuToMatch.includes('lbb-bii-')) {
-      skuToMatch = skuToMatch.replace('lbb-bii-', 'lbb-bie-');
-    }
-
-    const foundImagePath = Object.keys(assetImages).find(path => {
-      const filename = path.split('/').pop()?.toLowerCase() || '';
-      return filename.includes(skuToMatch);
-    });
-
-    if (foundImagePath && assetImages[foundImagePath]) {
-      return assetImages[foundImagePath] as string;
-    }
-    return variant.image || '/placeholder.svg';
-  };
 
   return (
     <div className="min-h-screen">
@@ -244,7 +227,7 @@ export default function VariantDetail() {
           <Card className="overflow-hidden">
             <div className="aspect-square bg-muted p-8">
               <img
-                src={getImageUrl(mergedVariant)}
+                src={mergedVariant.image || '/placeholder.svg'}
                 alt={mergedVariant.name}
                 className="w-full h-full object-cover rounded-lg"
               />

@@ -3,19 +3,28 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, useLocation } from "react-router-dom";
-import Index from "./pages/Index";
-import VariantDetail from "./pages/VariantDetail";
-import NotFound from "./pages/NotFound";
-import { CatalogPage } from "./pages/Catalog";
-import { FavoritesPage } from "./pages/Favorites";
-import Collection from "./pages/Collection";
-import SharedCollection from "./pages/SharedCollection";
-import SharedFavorites from "./pages/SharedFavorites";
-import Random from "./pages/Random";
+import Spinner from "./components/Spinner";
 import { Header } from "./components/Header";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 
-const queryClient = new QueryClient();
+const Index = lazy(() => import("./pages/Index"));
+const VariantDetail = lazy(() => import("./pages/VariantDetail"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const CatalogPage = lazy(() => import("./pages/Catalog").then(module => ({ default: module.CatalogPage })));
+const FavoritesPage = lazy(() => import("./pages/Favorites").then(module => ({ default: module.FavoritesPage })));
+const Collection = lazy(() => import("./pages/Collection"));
+const SharedCollection = lazy(() => import("./pages/SharedCollection"));
+const SharedFavorites = lazy(() => import("./pages/SharedFavorites"));
+const Random = lazy(() => import("./pages/Random"));
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60, // 1 minute
+      cacheTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+});
 
 export const AppContent = () => {
   const [searchQuery, setSearchQuery] = useState(() => {
@@ -47,18 +56,20 @@ export const AppContent = () => {
   return (
     <>
       {showHeader && <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />}
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/catalog" element={<CatalogPage searchQuery={searchQuery} setSearchQuery={setSearchQuery} />} />
-        <Route path="/variant/:sku" element={<VariantDetail />} />
-        <Route path="/favorites" element={<FavoritesPage />} />
-        <Route path="/collection" element={<Collection />} />
-        <Route path="/sharedcollection" element={<SharedCollection />} />
-        <Route path="/sharedfavorites" element={<SharedFavorites />} />
-        <Route path="/random" element={<Random />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <Suspense fallback={<Spinner />}>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/catalog" element={<CatalogPage searchQuery={searchQuery} setSearchQuery={setSearchQuery} />} />
+          <Route path="/variant/:sku" element={<VariantDetail />} />
+          <Route path="/favorites" element={<FavoritesPage />} />
+          <Route path="/collection" element={<Collection />} />
+          <Route path="/sharedcollection" element={<SharedCollection />} />
+          <Route path="/sharedfavorites" element={<SharedFavorites />} />
+          <Route path="/random" element={<Random />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </>
   );
 };

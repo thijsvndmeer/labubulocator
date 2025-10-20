@@ -25,6 +25,8 @@ syncLabubus();
 // Middleware
 //============================================================================================================================================================================================
 
+
+
 app.use((req, res, next) => {
   const allowedOrigins = ["http://localhost:4173", "https://id-preview--f24f2b88-4446-4219-a252-e77251f3c13d.lovable.app/"];
   const origin = req.headers.origin;
@@ -38,6 +40,13 @@ app.use((req, res, next) => {
   console.log(`Request received: ${req.method} ${req.path}`);
   next();
 });
+
+app.use("/images", (req, res, next) => {
+  res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
+  next();
+});
+
+app.use("/images", express.static("public/images"));
 
 //============================================================================================================================================================================================
 // Routing
