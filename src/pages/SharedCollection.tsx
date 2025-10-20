@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Boxes } from 'lucide-react';
 import { SearchFilters } from '@/components/SearchFilters';
@@ -13,13 +13,23 @@ export default function SharedCollection() {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: allVariants = [], isLoading } = useQuery<Labubu[]>({
+  const { data: allVariants = [], isLoading, isFetching } = useQuery<Labubu[]>({
     queryKey: ['variants'],
     queryFn: () => api.labubus.get(),
     keepPreviousData: true,
   });
 
-  const [collectedVariants, setCollectedVariants] = useState<Labubu[]>([]);
+  const collectedVariants = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const sharedSkusParam = params.get("skus");
+    let skusToLoad: string[] = [];
+
+    if (sharedSkusParam) {
+      skusToLoad = sharedSkusParam.split(',');
+    }
+
+    return allVariants.filter(variant => skusToLoad.includes(variant.sku));
+  }, [location.search, allVariants]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -31,19 +41,6 @@ export default function SharedCollection() {
     }
   }, [location.search]);
 
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const sharedSkusParam = params.get("skus");
-    let skusToLoad: string[] = [];
-
-    if (sharedSkusParam) {
-      skusToLoad = sharedSkusParam.split(',');
-    }
-
-    const variants = allVariants.filter(variant => skusToLoad.includes(variant.sku));
-    setCollectedVariants(variants);
-  }, [location.search, allVariants]);
-
   const { 
     filteredVariants, 
     selectedRarity, 
@@ -54,6 +51,8 @@ export default function SharedCollection() {
     setSortBy, 
     allSeries 
   } = useVariantFilters(collectedVariants, searchQuery);
+
+  const showSkeletons = isLoading || (isFetching && collectedVariants.length === 0);
 
   return (
     <div className="min-h-screen">
@@ -85,7 +84,7 @@ export default function SharedCollection() {
             />
           </div>
 
-          {isLoading ? (
+          {showSkeletons ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {Array.from({ length: 8 }).map((_, index) => (
                 <CardSkeleton key={index} />

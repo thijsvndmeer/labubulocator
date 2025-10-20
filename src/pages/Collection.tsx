@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { getCollection } from '@/lib/collection';
 import { useLocation } from 'react-router-dom';
 import { Share2, Boxes } from 'lucide-react';
@@ -13,12 +13,28 @@ import { Labubu } from '@labubu/common/src/types/labubu';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Collection() {
-  const { data: allVariants = [], isLoading } = useQuery<Labubu[]>({
+  const { data: allVariants = [], isLoading, isFetching } = useQuery<Labubu[]>({
     queryKey: ['variants'],
     queryFn: () => api.labubus.get(),
+    keepPreviousData: true,
   });
 
-  const [collectedVariants, setCollectedVariants] = useState<Labubu[]>([]);
+  const [collectionSkus, setCollectionSkus] = useState(getCollection());
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setCollectionSkus(getCollection());
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  const collectedVariants = useMemo(() => {
+    return allVariants.filter(variant => collectionSkus.includes(variant.sku));
+  }, [allVariants, collectionSkus]);
+
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -29,7 +45,6 @@ export default function Collection() {
   const { toast } = useToast();
 
   const handleShare = async () => {
-    const collectionSkus = collectedVariants.map(v => v.sku);
     const shareableLink = `${window.location.origin}/sharedcollection?skus=${collectionSkus.join(',')}`;
     try {
       await navigator.clipboard.writeText(shareableLink);
@@ -66,12 +81,6 @@ export default function Collection() {
     }
   }, [location.search, setSearchQuery]);
 
-  useEffect(() => {
-    const collectionSkus = getCollection();
-    const variants = allVariants.filter(variant => collectionSkus.includes(variant.sku));
-    setCollectedVariants(variants);
-  }, [allVariants]);
-
   const { 
     filteredVariants, 
     selectedRarity, 
@@ -82,6 +91,8 @@ export default function Collection() {
     setSortBy, 
     allSeries 
   } = useVariantFilters(collectedVariants, searchQuery);
+
+  const showSkeletons = isLoading || (isFetching && collectedVariants.length === 0);
 
   return (
     <div className="min-h-screen">
@@ -119,9 +130,9 @@ export default function Collection() {
             />
           </div>
 
-          {isLoading ? (
+          {showSkeletons ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {Array.from({ length: collectedVariants.length || 8 }).map((_, index) => (
+              {Array.from({ length: collectionSkus.length || 8 }).map((_, index) => (
                 <CardSkeleton key={index} />
               ))}
             </div>

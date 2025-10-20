@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { VariantCard } from '@/components/VariantCard';
 import { CardSkeleton } from '@/components/CardSkeleton';
 import { useVariantFilters } from '@/hooks/useVariantFilters';
@@ -12,12 +12,28 @@ import { Labubu } from '@labubu/common/src/types/labubu';
 import { useQuery } from '@tanstack/react-query';
 
 export const FavoritesPage = () => {
-  const { data: allVariants = [], isLoading } = useQuery<Labubu[]>({
+  const { data: allVariants = [], isLoading, isFetching } = useQuery<Labubu[]>({
     queryKey: ['variants'],
     queryFn: () => api.labubus.get(),
+    keepPreviousData: true,
   });
 
-  const [favoritedVariants, setFavoritedVariants] = useState<Labubu[]>([]);
+  const [favoriteSkus, setFavoriteSkus] = useState(getFavorites());
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setFavoriteSkus(getFavorites());
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  const favoritedVariants = useMemo(() => {
+    return allVariants.filter(variant => favoriteSkus.includes(variant.sku)).reverse();
+  }, [allVariants, favoriteSkus]);
+
   const [searchQuery, setSearchQuery] = useState<string>(
     localStorage.getItem('favoritesSearchQuery') || ''
   );
@@ -26,23 +42,6 @@ export const FavoritesPage = () => {
   useEffect(() => {
     localStorage.setItem('favoritesSearchQuery', searchQuery);
   }, [searchQuery]);
-
-  useEffect(() => {
-    const favoriteSkus = getFavorites();
-    const variants = allVariants.filter(variant => favoriteSkus.includes(variant.sku));
-    setFavoritedVariants(variants.reverse());
-
-    const handleStorageChange = () => {
-        const favoriteSkus = getFavorites();
-        const variants = allVariants.filter(variant => favoriteSkus.includes(variant.sku));
-        setFavoritedVariants(variants.reverse());
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [allVariants]);
 
   const { 
     filteredVariants, 
@@ -56,7 +55,6 @@ export const FavoritesPage = () => {
   } = useVariantFilters(favoritedVariants, searchQuery);
 
   const handleShare = async () => {
-    const favoriteSkus = favoritedVariants.map(v => v.sku);
     const shareableLink = `${window.location.origin}/sharedfavorites?skus=${favoriteSkus.join(',')}`;
     try {
       await navigator.clipboard.writeText(shareableLink);
@@ -73,6 +71,8 @@ export const FavoritesPage = () => {
       });
     }
   };
+
+  const showSkeletons = isLoading || (isFetching && favoritedVariants.length === 0);
 
   return (
     <div className="min-h-screen">
@@ -110,9 +110,9 @@ export const FavoritesPage = () => {
             />
           </div>
 
-          {isLoading ? (
+          {showSkeletons ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {Array.from({ length: favoritedVariants.length || 4 }).map((_, index) => (
+              {Array.from({ length: favoriteSkus.length || 4 }).map((_, index) => (
                 <CardSkeleton key={index} />
               ))}
             </div>

@@ -16,9 +16,10 @@ interface CatalogPageProps {
 }
 
 export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) => {
-  const { data: variants = [], isLoading } = useQuery<Labubu[]>({ 
+  const { data: variants = [], isLoading, isFetching } = useQuery<Labubu[]>({ 
     queryKey: ['variants'], 
     queryFn: () => api.labubus.get(),
+    keepPreviousData: true,
   });
 
   const [popularVariantIds, setPopularVariantIds] = useState<Set<string>>(new Set());
@@ -90,7 +91,7 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
             />
           </div>
 
-          {isLoading ? (
+          {isFetching && variants.length === 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {Array.from({ length: 12 }).map((_, index) => (
                 <CardSkeleton key={index} />
