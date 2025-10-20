@@ -91,7 +91,7 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
             />
           </div>
 
-          {isFetching && variants.length === 0 ? (
+          {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {Array.from({ length: 12 }).map((_, index) => (
                 <CardSkeleton key={index} />

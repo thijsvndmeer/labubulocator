@@ -72,7 +72,7 @@ export const FavoritesPage = () => {
     }
   };
 
-  const showSkeletons = isLoading || (isFetching && favoritedVariants.length === 0);
+  const showSkeletons = isLoading;
 
   return (
     <div className="min-h-screen">

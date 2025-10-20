@@ -92,7 +92,7 @@ export default function Collection() {
     allSeries 
   } = useVariantFilters(collectedVariants, searchQuery);
 
-  const showSkeletons = isLoading || (isFetching && collectedVariants.length === 0);
+  const showSkeletons = isLoading;
 
   return (
     <div className="min-h-screen">
