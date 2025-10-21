@@ -316,6 +316,55 @@ export default function VariantDetail() {
 
             
 
+                        {/* StockX and eBay Windows */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* StockX Window */}
+                          <Card className="p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-semibold">StockX</h4>
+                              {mergedVariant.msrp && mergedVariant.lowestPrice && (
+                                <span className={`text-sm font-medium ${
+                                  mergedVariant.lowestPrice > mergedVariant.msrp ? 'text-green-500' : 'text-red-500'
+                                }`}>
+                                  {((mergedVariant.lowestPrice - mergedVariant.msrp) / mergedVariant.msrp * 100).toFixed(0)}% vs MSRP
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-2xl font-bold">${mergedVariant.lowestPrice?.toFixed(2) || '--.--'}</span>
+                              <Button size="sm" asChild>
+                                <a href={mergedVariant.stockxUrl || `https://stockx.com/search?s=${encodeURIComponent(mergedVariant.name || '')}`} target="_blank" rel="noopener noreferrer">
+                                  View on StockX
+                                  <ExternalLink className="h-3 w-3 ml-1" />
+                                </a>
+                              </Button>
+                            </div>
+                          </Card>
+
+                          {/* eBay Window (Placeholder) */}
+                          <Card className="p-4">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-semibold">eBay</h4>
+                              {mergedVariant.msrp && (
+                                <span className={`text-sm font-medium text-gray-500`}>
+                                  --% vs MSRP
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-2xl font-bold">--.--</span>
+                              <Button size="sm" asChild>
+                                <a href={`https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(mergedVariant.name || '')}`} target="_blank" rel="noopener noreferrer">
+                                  Search on eBay
+                                  <ExternalLink className="h-3 w-3 ml-1" />
+                                </a>
+                              </Button>
+                            </div>
+                          </Card>
+                        </div>
+
+            
+
                         <div className="flex gap-3">
 
                           <Button variant="outline" size="lg" className="flex-1">

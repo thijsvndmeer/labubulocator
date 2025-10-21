@@ -40,12 +40,23 @@ db.serialize(() => {
       image TEXT,
       msrp REAL,
       lowestPrice REAL,
-      stockxUrl TEXT
+      stockxUrl TEXT,
+      lastRefreshed TEXT
     )
   `,
     (err) => {
       if (err) {
         console.error("Error creating labubus table", err.message);
+      }
+    }
+  );
+
+  // Add lastRefreshed column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN lastRefreshed TEXT`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding lastRefreshed column to labubus table", err.message);
       }
     }
   );
