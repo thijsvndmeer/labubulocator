@@ -13,8 +13,14 @@
   "type": "commonjs",
   "dependencies": {
     "@labubu/common": "1.0.0",
+    "@types/cheerio": "^0.22.35",
+    "axios": "^1.12.2",
+    "cheerio": "^1.1.2",
     "csv-parse": "^6.1.0",
     "express": "^5.1.0",
+    "puppeteer": "^24.25.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "sqlite3": "^5.1.7",
     "zod": "^4.1.12"
   },

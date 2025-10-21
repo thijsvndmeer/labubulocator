@@ -39,7 +39,8 @@ db.serialize(() => {
       rarity TEXT,
       image TEXT,
       msrp REAL,
-      lowestPrice REAL
+      lowestPrice REAL,
+      stockxUrl TEXT
     )
   `,
     (err) => {

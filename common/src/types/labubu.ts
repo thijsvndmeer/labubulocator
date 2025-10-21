@@ -16,6 +16,7 @@ export const labubuSchema = z.object({
   lowestPrice: z.coerce.number().optional(),
   variant: z.string().optional(),
   estimatedValue: z.coerce.number().optional(),
+  stockxUrl: z.string().optional(),
   priceChange24h: z.coerce.number().optional(),
   priceRange: z.object({ low: z.coerce.number(), high: z.coerce.number() }).optional(),
   stockStatus: z.string().optional(),
