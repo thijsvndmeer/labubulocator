@@ -68,6 +68,7 @@ export const processStockxLabubu = async (labubu: Labubu) => {
             if (!title.toLowerCase().includes('blind box')) {
               lowestAsk = product.variants?.[0]?.lowest_ask;
               stockxLink = product.link;
+              console.log(`STOCKX: Extracted link for ${labubu.name} (SKU: ${labubu.sku}): ${stockxLink}`);
               break; // Found a valid product, exit loop
             }
           }
