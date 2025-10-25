@@ -14,11 +14,12 @@ export const labubuSchema = z.object({
   description: z.string().optional(),
   msrp: z.coerce.number().optional(),
   lowestPrice: z.coerce.number().optional(),
-  ebayLowestPrice: z.coerce.number().optional(),
+  ebayLowestPrice: z.coerce.number().optional().nullable(),
   variant: z.string().optional(),
   estimatedValue: z.coerce.number().optional(),
   stockxUrl: z.string().optional(),
-  ebayUrl: z.string().optional(),
+
+
   priceChange24h: z.coerce.number().optional(),
   priceRange: z.object({ low: z.coerce.number(), high: z.coerce.number() }).optional(),
   stockStatus: z.string().optional(),

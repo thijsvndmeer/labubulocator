@@ -57,8 +57,8 @@ const retry = async <T>(fn: () => Promise<T>, retries = 5, delay = 2000): Promis
   }
 };
 
-export const getEbayListing = async (labubu: Labubu): Promise<{ lowestPrice?: number; ebayUrl?: string }> => {
-  let ebaySearchUrl: string = ''; // Declare ebaySearchUrl here
+export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit: number = 10): Promise<{ lowestPrice?: number; ebayUrl?: string | null }> => {
+  let ebaySearchUrl: string | null = null; // Declare ebaySearchUrl here and initialize to null
   try {
     const token = await getAccessToken();
 
@@ -69,7 +69,7 @@ export const getEbayListing = async (labubu: Labubu): Promise<{ lowestPrice?: nu
       baseEbayQuery += " labubu";
     }
 
-    const performEbaySearch = async (query: string) => {
+    const performEbaySearch = async (query: string, currentLimit: number, stockxPrice?: number) => {
       const encodedEbayQuery = encodeURIComponent(query);
       const currentEbaySearchUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodedEbayQuery}`;
 
@@ -83,7 +83,7 @@ export const getEbayListing = async (labubu: Labubu): Promise<{ lowestPrice?: nu
             q: query,
             category_ids: '246',
             item_conditions: 'NEW',
-            limit: 10, // Fetch up to 10 items
+            limit: currentLimit, // Use the passed limit
             sort: 'price',
           }
         });
@@ -91,31 +91,42 @@ export const getEbayListing = async (labubu: Labubu): Promise<{ lowestPrice?: nu
 
       const items = response.data.itemSummaries;
       if (items && items.length > 0) {
+        let validPrices: { price: number; url: string }[] = [];
         for (const item of items) {
           const price = parseFloat(item.price.value);
           if (price >= 20) {
-            return { lowestPrice: price, ebayUrl: currentEbaySearchUrl };
+            // Apply reliability filter if stockxPrice is available
+            if (stockxPrice && price < stockxPrice * 0.5) {
+              console.log(`EBAY: Discarding eBay listing for ${labubu.name} due to price (${price}) being too low compared to StockX (${stockxPrice}).`);
+              continue; // Skip this listing
+            }
+            validPrices.push({ price: price, url: item.itemWebUrl || currentEbaySearchUrl });
           }
         }
+
+        if (validPrices.length > 0) {
+          validPrices.sort((a, b) => a.price - b.price);
+          return { lowestPrice: validPrices[0].price, ebayUrl: validPrices[0].url };
+        }
       }
-      return { lowestPrice: labubu.msrp || 0, ebayUrl: currentEbaySearchUrl };
+      return { lowestPrice: undefined, ebayUrl: currentEbaySearchUrl }; // Return undefined if no valid price found
     };
 
     // First attempt with 'authentic'
     let ebayQueryWithAuthentic = baseEbayQuery + " authentic";
-    let searchResult = await performEbaySearch(ebayQueryWithAuthentic);
+    let searchResult = await performEbaySearch(ebayQueryWithAuthentic, limit, stockxPrice);
 
     // If no valid price found, try again without 'authentic'
-    if (searchResult.lowestPrice === (labubu.msrp || 0) && searchResult.lowestPrice < 20) { // Check if it fell back to MSRP or a very low price
+    if (searchResult.lowestPrice === undefined) { 
       console.log(`EBAY: No valid price found with 'authentic' for ${labubu.name}. Retrying without 'authentic'.`);
-      searchResult = await performEbaySearch(baseEbayQuery);
+      searchResult = await performEbaySearch(baseEbayQuery, limit, stockxPrice);
     }
 
     return searchResult;
   } catch (error) {
     console.error(`EBAY: Error fetching eBay listing for ${labubu.name}:`, error);
   }
-  return { lowestPrice: labubu.msrp || 0, ebayUrl: ebaySearchUrl };
+  return { lowestPrice: undefined, ebayUrl: null }; // Return undefined for price and null for URL on error
 };
 
 export const ebayLimit = pLimit(1); // Limit to 1 concurrent eBay request
@@ -125,7 +136,15 @@ export const processEbayLabubu = async (labubu: Labubu) => {
 
   if (labubu.name) {
     try {
-      let ebayListing = await getEbayListing(labubu);
+      let stockxPrice = labubu.lowestPrice; // Assuming lowestPrice is the StockX price
+      let ebayListing = await getEbayListing(labubu, stockxPrice);
+
+      // If eBay price is significantly lower than StockX price, try to find a more reliable listing
+      if (stockxPrice && ebayListing.lowestPrice && ebayListing.lowestPrice < stockxPrice * 0.5) {
+        console.log(`EBAY: eBay price for ${labubu.name} is significantly lower than StockX. Attempting to find a more reliable listing.`);
+        // Re-run getEbayListing with a higher limit to get more options
+        ebayListing = await getEbayListing(labubu, stockxPrice, 20); // Pass a higher limit
+      }
 
       if (ebayListing.lowestPrice === labubu.msrp && labubu.msrp !== undefined && labubu.msrp < 25) {
         // If fallback to MSRP happened and MSRP is < 25, try a less strict eBay search
@@ -133,18 +152,18 @@ export const processEbayLabubu = async (labubu: Labubu) => {
         if (lessStrictQuery !== labubu.name) {
           console.log(`EBAY: Retrying eBay search for ${labubu.name} with less strict query: ${lessStrictQuery} labubu`);
           await sleep(30000); // Another delay for the retry
-          ebayListing = await getEbayListing(labubu); // Pass labubu object
+          ebayListing = await getEbayListing(labubu, stockxPrice); // Pass labubu object and stockxPrice
         }
       }
 
       const updateData: Partial<Labubu> = { ebayLastRefreshed: new Date().toISOString() };
 
-      if (ebayListing.lowestPrice !== undefined) {
+      if (ebayListing.lowestPrice !== undefined && ebayListing.lowestPrice !== labubu.msrp) {
         updateData.ebayLowestPrice = ebayListing.lowestPrice;
+      } else {
+        updateData.ebayLowestPrice = null; // Set to null if no reliable price found or it's just MSRP
       }
-      if (ebayListing.ebayUrl) {
-        updateData.ebayUrl = ebayListing.ebayUrl;
-      }
+
 
       const priceRange = await priceHistoryRepository.getMinMaxPriceForLabubuLastWeek(labubu.sku);
       if (priceRange) {

@@ -108,6 +108,28 @@ db.serialize(() => {
     }
   );
 
+  // Add stockStatus column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN stockStatus TEXT`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding stockStatus column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Create the listings table
+
+  // Add stockStatus column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN stockStatus TEXT`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding stockStatus column to labubus table", err.message);
+      }
+    }
+  );
+
   // Create the listings table
   db.run(
     `

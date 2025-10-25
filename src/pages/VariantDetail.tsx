@@ -271,10 +271,10 @@ export default function VariantDetail() {
                               <p className="text-sm text-primary-foreground/80 mb-1">Estimated Market Value</p>
                               <div className="flex items-baseline gap-3">
                                 <span className="text-4xl font-bold text-primary-foreground">
-                                  ${mergedVariant.estimatedValue?.toFixed(2) || '--.--'}
+                                  {typeof mergedVariant.estimatedValue === 'number' ? `$${mergedVariant.estimatedValue.toFixed(2)}` : '--.--'}
                                 </span>
                                 <span className="text-sm text-primary-foreground/80">
-                                  Floor: ${mergedVariant.lowestPrice?.toFixed(2) || '--.--'}
+                                  Floor: {typeof mergedVariant.lowestPrice === 'number' ? `$${mergedVariant.lowestPrice.toFixed(2)}` : '--.--'}
                                 </span>
                               </div>
                             </div>
@@ -283,7 +283,7 @@ export default function VariantDetail() {
                               <div className="flex items-center gap-4 text-sm text-primary-foreground/90">
                                 <div>
                                   <span className="text-primary-foreground/70">Past Week Range: </span>
-                                  <span className="font-semibold">${mergedVariant.priceRange.low.toFixed(2)} - ${mergedVariant.priceRange.high.toFixed(2)}</span>
+                                  <span className="font-semibold">{typeof mergedVariant.priceRange.low === 'number' ? `$${mergedVariant.priceRange.low.toFixed(2)}` : '--.--'} - {typeof mergedVariant.priceRange.high === 'number' ? `$${mergedVariant.priceRange.high.toFixed(2)}` : '--.--'}</span>
                                 </div>
                               </div>
                             )}
@@ -291,7 +291,7 @@ export default function VariantDetail() {
                             <div className="flex items-center gap-4 text-sm text-primary-foreground/90">
                               <div>
                                 <span className="text-primary-foreground/70">MSRP: </span>
-                                <span className="font-semibold">${mergedVariant.msrp?.toFixed(2)}</span>
+                                <span className="font-semibold">{typeof mergedVariant.msrp === 'number' ? `$${mergedVariant.msrp.toFixed(2)}` : '--.--'}</span>
                               </div>
                             </div>
           
@@ -333,12 +333,12 @@ export default function VariantDetail() {
                               <h4 className="font-semibold">StockX</h4>
                               {mergedVariant.msrp && mergedVariant.lowestPrice && (
                                 <span className={`text-sm font-medium text-gray-500`}>
-                                  {((mergedVariant.lowestPrice - mergedVariant.msrp) / mergedVariant.msrp * 100).toFixed(0)}% vs MSRP
+                                  {typeof mergedVariant.lowestPrice === 'number' && typeof mergedVariant.msrp === 'number' ? `${((mergedVariant.lowestPrice - mergedVariant.msrp) / mergedVariant.msrp * 100).toFixed(0)}% vs MSRP` : '--.--'}
                                 </span>
                               )}
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-2xl font-bold">${mergedVariant.lowestPrice?.toFixed(2) || '--.--'}</span>
+                              <span className="text-2xl font-bold">{typeof mergedVariant.lowestPrice === 'number' ? `$${mergedVariant.lowestPrice.toFixed(2)}` : '--.--'}</span>
                               <Button size="sm" asChild>
                                 <a href={mergedVariant.stockxUrl || `https://stockx.com/search?s=${encodeURIComponent((mergedVariant.name || '') + ' labubu')}`} target="_blank" rel="noopener noreferrer">
                                   View on StockX
@@ -359,9 +359,9 @@ export default function VariantDetail() {
                               )}
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-2xl font-bold">${mergedVariant.ebayLowestPrice?.toFixed(2) || '--.--'}</span>
+                              <span className="text-2xl font-bold">{typeof mergedVariant.ebayLowestPrice === 'number' ? `$${mergedVariant.ebayLowestPrice.toFixed(2)}` : 'Not Found'}</span>
                               <Button size="sm" asChild>
-                                <a href={mergedVariant.ebayUrl || `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent((mergedVariant.name || '') + ' labubu')}&_sacat=246&LH_ItemCondition=1000&_sop=15&mkcid=1&mkrid=711-53200-19255-0&siteid=0&numpt=0&toolid=10001&campid=5339126898&customid=&mkevt=1`} target="_blank" rel="noopener noreferrer">
+                                <a href={`https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent((mergedVariant.name || '') + ' labubu')}&_sacat=246&LH_ItemCondition=1000&_sop=15&mkcid=1&mkrid=711-53200-19255-0&siteid=0&numpt=0&toolid=10001&campid=5339126898&customid=&mkevt=1`} target="_blank" rel="noopener noreferrer">
                                   Search on eBay
                                   <ExternalLink className="h-3 w-3 ml-1" />
                                 </a>
