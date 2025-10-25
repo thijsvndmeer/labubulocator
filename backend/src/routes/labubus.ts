@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { labubuRepository } from "../index";
 import { HttpOptions, Labubu, labubuSchema, makeHttpOptionsSchema } from "@labubu/common/src/types/labubu";
-import { getStockxData } from "../services/stockxService";
 
 const router = Router();
 const labubuHttpOptionsSchema = makeHttpOptionsSchema(labubuSchema);
@@ -32,29 +31,6 @@ router.get("/:sku/", async (req, res) => {
     const result = await labubuRepository.get({ filter: { sku: req.params.sku } });
     if (result.length > 0) {
       res.status(200).json(result[0]);
-    } else {
-      res.status(404).json({ error: `Labubu with sku "${req.params.sku}" not found` });
-    }
-  } catch (err) {
-    res.status(500).json({ error: "An error occurred while fetching the labubu.", details: err });
-  }
-});
-
-router.get("/scrape/:sku", async (req, res) => {
-  try {
-    const result = await labubuRepository.get({ filter: { sku: req.params.sku } });
-    if (result.length > 0) {
-      const labubu = result[0];
-      if (labubu.stockxUrl) {
-        const stockxData = await getStockxData(labubu.stockxUrl);
-        if (stockxData) {
-          res.status(200).json(stockxData);
-        } else {
-          res.status(500).json({ error: "Failed to scrape StockX data." });
-        }
-      } else {
-        res.status(404).json({ error: `Labubu with sku "${req.params.sku}" does not have a StockX URL.` });
-      }
     } else {
       res.status(404).json({ error: `Labubu with sku "${req.params.sku}" not found` });
     }

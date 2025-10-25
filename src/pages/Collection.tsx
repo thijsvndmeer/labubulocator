@@ -150,13 +150,18 @@ export default function Collection() {
         </section>
 
         <footer className="text-center py-8 border-t">
-          <p className="text-sm text-muted-foreground">
-            <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through our links.
-          </p>
-          <p className="text-sm text-muted-foreground mt-2">
-            Price data aggregated from Pop Mart, Amazon, eBay, StockX, and verified resellers.
-            Updated every 30 minutes. All prices in USD unless noted.
-          </p>
+          <p className="text-xs text-muted-foreground mt-4">
+          <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through these links.
+          Prices and availability are subject to change.
+          <br></br>
+          <br></br>Estimated values shown on Labubu Locator are generated using an algorithm that analyzes historical sales, current listings, and market trends. These figures are approximations and not guaranteed market prices.
+          <br></br>
+          <br></br>
+          StockX prices are algorithmically estimated. Labubu Locator does not communicate with or receive data directly from StockX. eBay data is retrieved via the official eBay Browse API.
+          <br></br>
+          <br></br>
+          While we strive for accuracy, estimates may vary due to limited data, market volatility, item uniqueness, or other factors. Values provided are for informational purposes only and should not be relied upon as financial or investment advice.
+        </p>
         </footer>
       </div>
     </div>

@@ -279,6 +279,15 @@ export default function VariantDetail() {
                               </div>
                             </div>
           
+                            {mergedVariant.priceRange && (
+                              <div className="flex items-center gap-4 text-sm text-primary-foreground/90">
+                                <div>
+                                  <span className="text-primary-foreground/70">Past Week Range: </span>
+                                  <span className="font-semibold">${mergedVariant.priceRange.low.toFixed(2)} - ${mergedVariant.priceRange.high.toFixed(2)}</span>
+                                </div>
+                              </div>
+                            )}
+
                             <div className="flex items-center gap-4 text-sm text-primary-foreground/90">
                               <div>
                                 <span className="text-primary-foreground/70">MSRP: </span>
@@ -323,9 +332,7 @@ export default function VariantDetail() {
                             <div className="flex items-center justify-between mb-2">
                               <h4 className="font-semibold">StockX</h4>
                               {mergedVariant.msrp && mergedVariant.lowestPrice && (
-                                <span className={`text-sm font-medium ${
-                                  mergedVariant.lowestPrice > mergedVariant.msrp ? 'text-green-500' : 'text-red-500'
-                                }`}>
+                                <span className={`text-sm font-medium text-gray-500`}>
                                   {((mergedVariant.lowestPrice - mergedVariant.msrp) / mergedVariant.msrp * 100).toFixed(0)}% vs MSRP
                                 </span>
                               )}
@@ -333,7 +340,7 @@ export default function VariantDetail() {
                             <div className="flex items-center justify-between">
                               <span className="text-2xl font-bold">${mergedVariant.lowestPrice?.toFixed(2) || '--.--'}</span>
                               <Button size="sm" asChild>
-                                <a href={mergedVariant.stockxUrl || `https://stockx.com/search?s=${encodeURIComponent(mergedVariant.name || '')}`} target="_blank" rel="noopener noreferrer">
+                                <a href={mergedVariant.stockxUrl || `https://stockx.com/search?s=${encodeURIComponent((mergedVariant.name || '') + ' labubu')}`} target="_blank" rel="noopener noreferrer">
                                   View on StockX
                                   <ExternalLink className="h-3 w-3 ml-1" />
                                 </a>
@@ -341,20 +348,20 @@ export default function VariantDetail() {
                             </div>
                           </Card>
 
-                          {/* eBay Window (Placeholder) */}
+                          {/* eBay Window */}
                           <Card className="p-4">
                             <div className="flex items-center justify-between mb-2">
                               <h4 className="font-semibold">eBay</h4>
-                              {mergedVariant.msrp && (
+                              {mergedVariant.msrp && mergedVariant.ebayLowestPrice && (
                                 <span className={`text-sm font-medium text-gray-500`}>
-                                  --% vs MSRP
+                                  {((mergedVariant.ebayLowestPrice - mergedVariant.msrp) / mergedVariant.msrp * 100).toFixed(0)}% vs MSRP
                                 </span>
                               )}
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-2xl font-bold">--.--</span>
+                              <span className="text-2xl font-bold">${mergedVariant.ebayLowestPrice?.toFixed(2) || '--.--'}</span>
                               <Button size="sm" asChild>
-                                <a href={`https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent(mergedVariant.name || '')}`} target="_blank" rel="noopener noreferrer">
+                                <a href={mergedVariant.ebayUrl || `https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent((mergedVariant.name || '') + ' labubu')}&_sacat=246&LH_ItemCondition=1000&_sop=15&mkcid=1&mkrid=711-53200-19255-0&siteid=0&numpt=0&toolid=10001&campid=5339126898&customid=&mkevt=1`} target="_blank" rel="noopener noreferrer">
                                   Search on eBay
                                   <ExternalLink className="h-3 w-3 ml-1" />
                                 </a>
@@ -508,7 +515,7 @@ export default function VariantDetail() {
 
                       <p className="text-xs text-muted-foreground mt-4">
 
-                        Sales data aggregated from eBay, StockX, Mercari, and verified resellers. All prices converted to USD.
+                        
 
                       </p>
 

@@ -47,6 +47,28 @@ export const getQuery = <T>(db: Database, sql: string, params: unknown[] = []): 
   });
 };
 
+/**
+ * Creates an index on a specified table and column if it doesn't already exist.
+ * @param db The database connection object.
+ * @param tableName The name of the table.
+ * @param columnName The name of the column to index.
+ * @param indexName Optional. The name of the index. If not provided, a default name will be generated.
+ * @returns A promise that resolves when the index is created or if it already exists.
+ */
+export const createIndex = (db: Database, tableName: string, columnName: string, indexName?: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    const name = indexName || `idx_${tableName}_${columnName}`;
+    const sql = `CREATE INDEX IF NOT EXISTS ${name} ON ${tableName} (${columnName})`;
+    db.run(sql, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+};
+
 //============================================================================================================================================================================================
 // Clause builders
 //============================================================================================================================================================================================

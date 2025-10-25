@@ -73,6 +73,12 @@ export const PriceComparison = ({ listings }: PriceComparisonProps) => {
         <p className="text-xs text-muted-foreground mt-4">
           <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through these links.
           Prices and availability are subject to change.
+
+          <strong>About our data:</strong> Estimated values shown on Labubu Locator are generated using an algorithm that analyzes historical sales, current listings, and market trends. These figures are approximations and not guaranteed market prices.
+
+          StockX prices are algorithmically estimated — Labubu Locator does not communicate with or receive data directly from StockX. eBay data is retrieved via the official eBay Browse API.
+
+          While we strive for accuracy and transparency, estimates may vary due to limited data, market volatility, or item uniqueness. Values provided are for informational purposes only and should not be relied upon as financial or investment advice.
         </p>
       </div>
     </Card>

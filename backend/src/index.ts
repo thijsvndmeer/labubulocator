@@ -7,7 +7,7 @@ import { ListingRepository } from "./repositories/listingRepository";
 import { PriceHistoryRepository } from "./repositories/priceHistoryRepository";
 import db from "./lib/database";
 import { syncLabubus } from "./services/labubuSyncService";
-import { syncLabubuValues } from "./services/kicksDevSyncService";
+import { startApiSync } from "./services/scheduler";
 
 const app = express();
 app.set("query parser", "extended");
@@ -22,7 +22,7 @@ export const listingRepository = new ListingRepository(db);
 export const priceHistoryRepository = new PriceHistoryRepository(db);
 
 syncLabubus();
-syncLabubuValues();
+startApiSync();
 
 //============================================================================================================================================================================================
 // Middleware

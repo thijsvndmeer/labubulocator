@@ -40,8 +40,11 @@ db.serialize(() => {
       image TEXT,
       msrp REAL,
       lowestPrice REAL,
+      ebayLowestPrice REAL,
       stockxUrl TEXT,
-      lastRefreshed TEXT
+      ebayUrl TEXT,
+      stockxLastRefreshed TEXT,
+      ebayLastRefreshed TEXT
     )
   `,
     (err) => {
@@ -51,12 +54,56 @@ db.serialize(() => {
     }
   );
 
-  // Add lastRefreshed column if it doesn't exist
+  // Create index on sku in labubus table
   db.run(
-    `ALTER TABLE labubus ADD COLUMN lastRefreshed TEXT`,
+    `CREATE INDEX IF NOT EXISTS idx_labubus_sku ON labubus (sku)`,
+    (err) => {
+      if (err) {
+        console.error("Error creating index on labubus(sku)", err.message);
+      }
+    }
+  );
+
+  // Add stockxLastRefreshed column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN stockxLastRefreshed TEXT`,
     (err) => {
       if (err && !err.message.includes("duplicate column name")) {
-        console.error("Error adding lastRefreshed column to labubus table", err.message);
+        console.error("Error adding stockxLastRefreshed column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Add ebayLastRefreshed column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN ebayLastRefreshed TEXT`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding ebayLastRefreshed column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Remove lastRefreshed column if it exists (optional, for cleanup)
+  // Note: SQLite does not support dropping columns directly. This would require a more complex migration.
+  // For simplicity, we'll just stop using it and add the new columns.
+
+  // Add ebayLowestPrice column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN ebayLowestPrice REAL`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding ebayLowestPrice column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Add ebayUrl column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN ebayUrl TEXT`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding ebayUrl column to labubus table", err.message);
       }
     }
   );
