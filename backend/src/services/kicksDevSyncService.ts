@@ -3,22 +3,22 @@ import { Labubu } from "@labubu/common/src/types/labubu";
 import axios from "axios";
 import pLimit from "p-limit";
 
-const KICKS_DEV_API_KEY = process.env.KICKS_DEV_API_KEY || "sd_r796CnCR9yo8earZQezqQsOh2e60Zqxb"; // Fallback for development
-const KICKS_DEV_API_BASE_URL = "https://api.kicks.dev/v3/stockx/products"; // Changed API endpoint
+const KICKS_DEV_API_KEY = process.env.KICKS_DEV_API_KEY || "sd_r796CnCR9yo8earZQezqQsOh2e60Zqxb";
+const KICKS_DEV_API_BASE_URL = "https://api.kicks.dev/v3/stockx/products";
 
 // Helper function for rate limiting
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 interface KicksDevProductVariant {
   lowest_ask: number;
-  // ... other variant properties if needed
 }
 
 interface KicksDevApiResponse {
   data: Array<{
-    link?: string; // Add link property
-    variants?: KicksDevProductVariant[]; // Direct variants for stockx products
-    // ... other fields
+    link?: string;
+    variants?: KicksDevProductVariant[];
+    title?: string;
+    primary_title?: string;
   }>;
 }
 
@@ -29,46 +29,84 @@ export const processStockxLabubu = async (labubu: Labubu) => {
   threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
   if (labubu.name) {
-    if (labubu.lastRefreshed) {
-      const lastRefreshedDate = new Date(labubu.lastRefreshed);
+    // Only skip if refreshed recently AND lowestPrice is a valid positive number
+    if (labubu.stockxLastRefreshed && labubu.lowestPrice && labubu.lowestPrice > 0) {
+      const lastRefreshedDate = new Date(labubu.stockxLastRefreshed);
       if (lastRefreshedDate > threeDaysAgo) {
-        console.log(`Skipping StockX update for Labubu ${labubu.name} (SKU: ${labubu.sku}) - already refreshed recently.`);
+        console.log(`STOCKX: Skipping StockX update for Labubu ${labubu.name} (SKU: ${labubu.sku}) - already refreshed recently and has a valid price.`);
         return;
       }
     }
 
     try {
+      console.log(`STOCKX: Starting 10-second delay for Labubu ${labubu.name} (SKU: ${labubu.sku})...`);
       await sleep(10000); // 10-second delay between Kicks.dev API calls
-      const response = await axios.get<KicksDevApiResponse>(KICKS_DEV_API_BASE_URL, {
-        headers: {
-          Authorization: `Bearer ${KICKS_DEV_API_KEY}`,
-        },
-        params: {
-          query: labubu.name,
-          "display[variants]": true,
-        },
-      });
-      const stockxData = response.data.data;
-      const updateData: Partial<Labubu> = { lastRefreshed: new Date().toISOString() };
+      console.log(`STOCKX: Delay finished for Labubu ${labubu.name} (SKU: ${labubu.sku}). Fetching data...`);
 
-      if (stockxData && stockxData.length > 0) {
-        const lowestAsk = stockxData[0].variants?.[0]?.lowest_ask;
-        let stockxLink = stockxData[0].link;
+      let currentLowestAsk: number | undefined;
+      let currentStockxLink: string | undefined;
 
-        if (!stockxLink) {
-          stockxLink = `https://stockx.com/search?s=${encodeURIComponent(labubu.name)}`;
-        }
+      const performSearch = async (query: string) => {
+        const response = await axios.get<KicksDevApiResponse>(KICKS_DEV_API_BASE_URL, {
+          headers: {
+            Authorization: `Bearer ${KICKS_DEV_API_KEY}`,
+          },
+          params: {
+            query: query,
+            "display[variants]": true,
+            brand: 'Pop Mart',
+          },
+        });
+        const stockxData = response.data.data;
 
-        if (lowestAsk !== undefined) {
-          updateData.lowestPrice = lowestAsk;
+        let lowestAsk: number | undefined;
+        let stockxLink: string | undefined;
+
+        if (stockxData && stockxData.length > 0) {
+          for (const product of stockxData) {
+            const title = product.title || product.primary_title || '';
+            if (!title.toLowerCase().includes('blind box')) {
+              lowestAsk = product.variants?.[0]?.lowest_ask;
+              stockxLink = product.link;
+              break; // Found a valid product, exit loop
+            }
+          }
+
+          if (!stockxLink && stockxData.length > 0) {
+            // Fallback to the first product's link if no specific match was found but data exists
+            // This fallback is only if no non-blind box product was found with a link
+            const firstNonBlindBoxProduct = stockxData.find(product => {
+              const title = product.title || product.primary_title || '';
+              return !title.toLowerCase().includes('blind box');
+            });
+            if (firstNonBlindBoxProduct) {
+              stockxLink = firstNonBlindBoxProduct.link;
+            }
+          }
         }
-        if (stockxLink) {
-          updateData.stockxUrl = stockxLink;
-        }
-      } else {
-        const stockxLink = `https://stockx.com/search?s=${encodeURIComponent(labubu.name)}`;
-        updateData.stockxUrl = stockxLink;
-        console.log(`No product data found for Labubu ${labubu.name} (SKU: ${labubu.sku}) from Kicks.dev API. Created search link: ${stockxLink}`);
+        return { lowestAsk, stockxLink };
+      };
+
+      // Initial search
+      let initialSearchQuery = labubu.name;
+      const dashIndex = labubu.name.indexOf(' - ');
+      if (dashIndex !== -1) {
+        initialSearchQuery = labubu.name.substring(0, dashIndex) + ' pin for love';
+      }
+      console.log(`STOCKX: Performing search for Labubu ${labubu.name} (SKU: ${labubu.sku}) with query: "${initialSearchQuery}"`);
+      let searchResult = await performSearch(initialSearchQuery);
+      currentLowestAsk = searchResult.lowestAsk;
+      currentStockxLink = searchResult.stockxLink;
+
+      const updateData: Partial<Labubu> = { stockxLastRefreshed: new Date().toISOString() };
+
+      if (currentLowestAsk !== undefined) {
+        const adjustedLowestAsk = currentLowestAsk + 7;
+        updateData.lowestPrice = adjustedLowestAsk;
+        console.log(`STOCKX: Adjusted lowest ask for Labubu ${labubu.name} (SKU: ${labubu.sku}) from ${currentLowestAsk} to ${adjustedLowestAsk} (+7).`);
+      }
+      if (currentStockxLink) {
+        updateData.stockxUrl = currentStockxLink;
       }
 
       if (Object.keys(updateData).length > 1) {
@@ -76,24 +114,12 @@ export const processStockxLabubu = async (labubu: Labubu) => {
           { filter: { sku: labubu.sku } },
           updateData
         );
-        console.log(`Updated Labubu ${labubu.name} (SKU: ${labubu.sku}) with StockX data: lowest ask: ${updateData.lowestPrice}`);
+        console.log(`STOCKX: Updated Labubu ${labubu.name} (SKU: ${labubu.sku}) with StockX data: lowest ask: ${updateData.lowestPrice}`);
       } else {
-        console.log(`No new StockX data found for Labubu ${labubu.name} (SKU: ${labubu.sku})`);
+        console.log(`STOCKX: No new StockX data found for Labubu ${labubu.name} (SKU: ${labubu.sku})`);
       }
     } catch (apiError) {
-      console.error(`Error fetching StockX data for Labubu ${labubu.name} (SKU: ${labubu.sku}):`, apiError);
+      console.error(`STOCKX: Error fetching StockX data for Labubu ${labubu.name} (SKU: ${labubu.sku}):`, apiError);
     }
-  }
-};
-
-export const syncLabubuValues = async () => {
-  console.log("Starting Labubu value synchronization with Kicks.dev API...");
-  try {
-    const allLabubus = await labubuRepository.get({});
-    const promises = allLabubus.map(labubu => stockxLimit(() => processStockxLabubu(labubu)));
-    await Promise.all(promises);
-    console.log("Labubu value synchronization completed.");
-  } catch (error) {
-    console.error("Error during Labubu value synchronization:", error);
   }
 };
