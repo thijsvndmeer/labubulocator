@@ -31,21 +31,12 @@ export const syncLabubus = async () => {
     );
 
     for await (const record of parser) {
-      if (!record.image) {
-        const seriesFolder = getSeriesFolderName(record.series);
-        let sku = record.sku;
-        if (sku.includes('lbb-bii-')) {
-          sku = sku.replace('lbb-bii-', 'lbb-bie-');
-        }
-        record.image = `http://localhost:3001/images/${seriesFolder}/${sku.toUpperCase()}.png`;
-      }
       const labubuData: Partial<Labubu> = {
         sku: record.sku,
         name: record.name,
         series: record.series,
         description: record.description,
         rarity: record.rarity,
-        image: record.image,
         msrp: record.msrp,
         stockStatus: record.stockStatus,
       };

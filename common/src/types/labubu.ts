@@ -10,7 +10,6 @@ export const labubuSchema = z.object({
   name: z.string(),
   series: z.string(),
   rarity: z.string().optional(),
-  image: z.string().optional(),
   description: z.string().optional(),
   msrp: z.coerce.number().optional(),
   lowestPrice: z.coerce.number().optional(),

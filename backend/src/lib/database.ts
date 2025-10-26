@@ -37,7 +37,6 @@ db.serialize(() => {
       series TEXT NOT NULL,
       description TEXT,
       rarity TEXT,
-      image TEXT,
       msrp REAL,
       lowestPrice REAL,
       ebayLowestPrice REAL,
