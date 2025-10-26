@@ -152,7 +152,7 @@ export const processEbayLabubu = async (labubu: Labubu) => {
 
   if (labubu.name) {
     try {
-      let stockxPrice = labubu.lowestPrice; // Assuming lowestPrice is the StockX price
+      let stockxPrice = labubu.stockxPrice; // Use stockxPrice
       let ebayListing = await getEbayListing(labubu, stockxPrice);
 
       // If eBay price is significantly lower than StockX price, try to find a more reliable listing
@@ -176,6 +176,15 @@ export const processEbayLabubu = async (labubu: Labubu) => {
 
       if (ebayListing.lowestPrice !== undefined && ebayListing.lowestPrice !== labubu.msrp) {
         updateData.ebayLowestPrice = ebayListing.lowestPrice;
+
+        const existingLabubu = await labubuRepository.get({ filter: { sku: labubu.sku } }, ["stockxPrice"]);
+        const currentStockxPrice = existingLabubu[0]?.stockxPrice;
+
+        if (currentStockxPrice !== undefined && currentStockxPrice !== null) {
+          updateData.lowestPrice = Math.min(ebayListing.lowestPrice, currentStockxPrice);
+        } else {
+          updateData.lowestPrice = ebayListing.lowestPrice;
+        }
       }
 
 

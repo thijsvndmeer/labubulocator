@@ -118,6 +118,26 @@ db.serialize(() => {
     }
   );
 
+  // Add kicksdevId column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN kicksdevId TEXT`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding kicksdevId column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Add stockxPrice column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN stockxPrice REAL`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding stockxPrice column to labubus table", err.message);
+      }
+    }
+  );
+
   // Create the listings table
 
   // Add stockStatus column if it doesn't exist
