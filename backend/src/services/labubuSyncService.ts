@@ -22,6 +22,7 @@ const getSeriesFolderName = (series: string): string => {
 
 export const syncLabubus = async () => {
   try {
+    const csvSkus = new Set<string>();
     const parser = fs.createReadStream(csvPath).pipe(
       parse({
         columns: true,
@@ -31,6 +32,33 @@ export const syncLabubus = async () => {
     );
 
     for await (const record of parser) {
+      if (record.sku) {
+        csvSkus.add(record.sku);
+      }
+    }
+
+    const dbLabubus = await labubuRepository.get({});
+    const dbSkus = new Set(dbLabubus.map((l) => l.sku));
+
+    const skusToDelete = [...dbSkus].filter((sku) => !csvSkus.has(sku));
+    if (skusToDelete.length > 0) {
+      await labubuRepository.delete({ filter: { sku: { in: skusToDelete } } });
+      console.log(`Deleted ${skusToDelete.length} labubus from the database.`);
+    }
+
+    const secondParser = fs.createReadStream(csvPath).pipe(
+      parse({
+        columns: true,
+        trim: true,
+        skip_empty_lines: true,
+      })
+    );
+
+    for await (const record of secondParser) {
+      if (!record.sku || !record.name) {
+        continue;
+      }
+
       if (!record.image) {
         const seriesFolder = getSeriesFolderName(record.series);
         let sku = record.sku;
@@ -39,7 +67,13 @@ export const syncLabubus = async () => {
         }
         record.image = `http://localhost:3001/images/${seriesFolder}/${sku.toUpperCase()}.png`;
       }
-      await labubuRepository.updateOrCreate(record as Labubu);
+
+      const labubuData: Partial<Labubu> = { ...record };
+      if (!record.kicksdevId) {
+        delete labubuData.kicksdevId;
+      }
+
+      await labubuRepository.updateOrCreate(labubuData as Labubu);
     }
 
     console.log(`Succesfully synced ${csvPath} with the database`);

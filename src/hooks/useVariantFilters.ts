@@ -54,7 +54,7 @@ export const useVariantFilters = (variants: Labubu[], searchQuery: string) => {
     const series: string[] = [];
     const seenSeries = new Set<string>();
     variants.forEach(v => {
-      if (!seenSeries.has(v.series)) {
+      if (v.series && !seenSeries.has(v.series)) {
         series.push(v.series);
         seenSeries.add(v.series);
       }

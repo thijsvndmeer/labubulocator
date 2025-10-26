@@ -2,6 +2,7 @@ import { Database } from "sqlite3";
 import { Labubu } from "@labubu/common/src/types/labubu";
 import { PersistedLabubu, QueryCriteria, QueryOptions } from "../types/labubu";
 import { BaseRepository } from "./baseRepository";
+import { runQuery } from "../utils/databaseUtils";
 
 export class LabubuRepository extends BaseRepository<PersistedLabubu> {
   //============================================================================================================================================================================================

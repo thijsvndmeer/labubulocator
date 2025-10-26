@@ -122,10 +122,16 @@ export const makeHttpOptionsSchema = <T extends ZodObject<any>>(schema: T) => {
     offset: z.coerce.number().optional(),
   });
 };
-export interface HttpOptions<T> {
-  fields?: (keyof T)[];
-  filter?: Partial<T>;
+export type FilterValue<T> = T | { in: T[] };
+export type Filter<T> = { [K in keyof T]?: FilterValue<T[K]> };
+
+export interface QueryCriteria<T> {
+  filter?: Filter<T>;
   ranges?: Range<T>[];
+}
+
+export interface HttpOptions<T> extends QueryCriteria<T> {
+  fields?: (keyof T)[];
   order?: Sorting<T>[];
   limit?: number;
   offset?: number;

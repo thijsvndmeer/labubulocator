@@ -1,4 +1,4 @@
-import { labubuRepository } from "../index";
+import { labubuRepository, listingRepository, priceHistoryRepository } from "../index";
 import { Labubu } from "@labubu/common/src/types/labubu";
 import axios from "axios";
 import pLimit from "p-limit";
@@ -181,9 +181,6 @@ export const processStockxLabubu = async (labubu: Labubu) => {
           updateData.lowestPrice = adjustedLowestAsk;
         }
       }
-      if (currentStockxLink) {
-        updateData.stockxUrl = currentStockxLink;
-      }
       if (currentKicksdevId) {
         updateData.kicksdevId = currentKicksdevId;
       }
@@ -196,6 +193,24 @@ export const processStockxLabubu = async (labubu: Labubu) => {
           updateData
         );
         console.log(`STOCKX: Updated Labubu ${labubu.name} (SKU: ${labubu.sku}) with StockX data: stockxPrice: ${updateData.stockxPrice}, lowestPrice: ${updateData.lowestPrice}`);
+
+        if (currentLowestAsk && currentStockxLink) {
+          const listingId = await listingRepository.updateOrCreate({
+            productUrl: currentStockxLink,
+            labubuSku: labubu.sku,
+            vendorName: "StockX",
+            listingTitle: labubu.name, // Or a more descriptive title if available
+            currentPrice: currentLowestAsk,
+            inStock: true,
+            lastCheckedAt: new Date(),
+          });
+          await priceHistoryRepository.create({
+            listingId: listingId,
+            price: currentLowestAsk,
+            date: new Date(),
+          });
+        }
+
         const updatedLabubu = await labubuRepository.get({ filter: { sku: labubu.sku } });
         if (updatedLabubu.length > 0) {
           await calculateEstimatedValueForLabubu(updatedLabubu[0]);

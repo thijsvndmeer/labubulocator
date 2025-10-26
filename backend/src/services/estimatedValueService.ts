@@ -1,4 +1,4 @@
-import { labubuRepository, priceHistoryRepository } from "../index";
+import { labubuRepository, priceHistoryRepository, estimatedValueHistoryRepository } from "../index";
 import { Labubu } from "@labubu/common/src/types/labubu";
 
 const STOCKX_WEIGHT = 0.8;
@@ -49,8 +49,6 @@ const roundEstimatedValue = (value: number): number => {
 };
 
 export const calculateEstimatedValueForLabubu = async (labubu: Labubu) => {
-  const previousEstimatedValue = labubu.estimatedValue;
-
   const historicalValue = await calculateHistoricalValue(labubu.sku);
   const currentMarketValue = calculateCurrentMarketValue(labubu);
 
@@ -66,10 +64,21 @@ export const calculateEstimatedValueForLabubu = async (labubu: Labubu) => {
 
   if (estimatedValue) {
     const roundedValue = roundEstimatedValue(estimatedValue);
+
+    await estimatedValueHistoryRepository.create({
+      labubuSku: labubu.sku,
+      estimatedValue: roundedValue,
+      date: new Date().toISOString(),
+    });
+
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    const previousValueEntry = await estimatedValueHistoryRepository.getByLabubuSkuAndDate(labubu.sku, oneDayAgo.toISOString());
+
     let priceChange24h: number | undefined = undefined;
 
-    if (previousEstimatedValue) {
-      priceChange24h = ((roundedValue - previousEstimatedValue) / previousEstimatedValue) * 100;
+    if (previousValueEntry) {
+      priceChange24h = ((roundedValue - previousValueEntry.estimatedValue) / previousValueEntry.estimatedValue) * 100;
     }
 
     await labubuRepository.update(

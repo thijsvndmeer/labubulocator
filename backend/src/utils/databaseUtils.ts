@@ -127,12 +127,22 @@ export const buildOptionsClause = <T>(options: QueryOptions<T>): { clause: strin
 
   let whereClause = "";
   if (options.filter || options.ranges) {
-    const entries = Object.entries(options.filter || {}).filter(([, value]) => value !== undefined);
     const clauseList: string[] = [];
-    entries.forEach(([key, value]) => {
-      clauseList.push(`${key} = ?`);
-      params.push(value);
-    });
+    if (options.filter) {
+        for (const [key, value] of Object.entries(options.filter)) {
+            if (value && typeof value === 'object' && 'in' in value) {
+                const inValues = (value as any).in as any[];
+                if (inValues.length > 0) {
+                    const placeholders = inValues.map(() => '?').join(',');
+                    clauseList.push(`${key} IN (${placeholders})`);
+                    params.push(...inValues);
+                }
+            } else if (value !== undefined) {
+                clauseList.push(`${key} = ?`);
+                params.push(value);
+            }
+        }
+    }
 
     for (const range of options.ranges || []) {
       if ("min" in range) {

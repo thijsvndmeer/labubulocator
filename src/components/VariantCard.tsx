@@ -70,16 +70,15 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
               <span className="text-2xl font-bold text-primary">
                 ${(variant.estimatedValue || 0).toFixed(2)}
               </span>
-              {variant.priceChange24h !== undefined && (
+              {variant.priceChange24h !== undefined && variant.priceChange24h !== 0 && (
                 <PriceChangeBadge priceChange={variant.priceChange24h} />
               )}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Floor: ${lowestPrice > 0 && lowestPrice !== Infinity ? lowestPrice.toFixed(2) : 'N/A'} • Range: ${variant.priceRange?.low || 'N/A'}-${variant.priceRange?.high || 'N/A'}
-            </p>
+
           </div>
         </Link>
-          {!hideStockStatus && <StockStatusBadge status={variant.stockStatus as any} />}
+          {console.log("variant.stockStatus:", variant.stockStatus, "type:", typeof variant.stockStatus)}
+          {!hideStockStatus && typeof variant.stockStatus === 'string' && <StockStatusBadge status={variant.stockStatus as any} />}
         <div className="flex items-center justify-between gap-0 pt-0">
 
           {variant.affiliateLinks && variant.affiliateLinks.length > 0 && (

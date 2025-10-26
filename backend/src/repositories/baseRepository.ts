@@ -1,6 +1,6 @@
 import { Database } from "sqlite3";
-import { getQuery, runQuery, buildOptionsClause, buildSetClause } from "../utils/databaseUtils";
 import { QueryCriteria, QueryOptions } from "../types/labubu";
+import { buildOptionsClause, buildSetClause, getQuery, runQuery } from "../utils/databaseUtils";
 
 interface CacheEntry<T> {
   data: T[];
@@ -63,21 +63,27 @@ export abstract class BaseRepository<T> {
    * @returns A promise that resolves with an array of the found rows. Returns an empty array if no rows are found.
    * @throws Error - If any option field or value is invalid (validation performed by `ensureValidOptions`).
    */
-  protected async get<K extends keyof T>(options: QueryOptions<T> = {}, fields?: K[]): Promise<Pick<T, K>[]> {
-    const cacheKey = JSON.stringify({ options, fields });
-    const cached = this.cache.get(cacheKey);
-
-    if (cached && (Date.now() - cached.timestamp < this.cacheDuration)) {
-      return cached.data as Pick<T, K>[];
-    }
-
+  public async get<K extends keyof T>(
+    options: QueryOptions<T> = {},
+    fields?: K[]
+  ): Promise<Pick<T, K>[]> {
     const { clause, params } = buildOptionsClause(options);
-
-    const sql = `SELECT ${fields ? fields.join(", ") : "*"} FROM ${this.tableName} ${clause}`;
-    const result = await getQuery(this.db, sql, params);
-
-    this.cache.set(cacheKey, { data: result as T[], timestamp: Date.now() });
-    return result as Pick<T, K>[];
+    const selectFields = fields ? fields.join(', ') : '*';
+    const query = `SELECT ${selectFields} FROM ${this.tableName} ${clause}`;
+    const rows = await getQuery<Pick<T, K>>(this.db, query, params);
+    if (rows) {
+      rows.forEach((row: any) => {
+        if (row.priceRange && typeof row.priceRange === 'string') {
+          try {
+            row.priceRange = JSON.parse(row.priceRange);
+          } catch (error) {
+            console.error("Error parsing priceRange JSON:", error);
+            row.priceRange = null;
+          }
+        }
+      });
+    }
+    return rows || [];
   }
 
   // update

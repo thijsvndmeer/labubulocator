@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Labubu } from "@labubu/common/src/types/labubu";
-import { labubuRepository, priceHistoryRepository } from "../index";
+import { labubuRepository, priceHistoryRepository, listingRepository } from "../index";
 import pLimit from "p-limit";
 import { calculateEstimatedValueForLabubu } from './estimatedValueService';
 
@@ -204,7 +204,7 @@ export const processEbayLabubu = async (labubu: Labubu) => {
 
       const priceRange = await priceHistoryRepository.getMinMaxPriceForLabubuLast24h(labubu.sku);
       if (priceRange) {
-        updateData.priceRange = { low: priceRange.min, high: priceRange.max };
+        (updateData as any).priceRange = JSON.stringify({ low: priceRange.min, high: priceRange.max });
       }
 
       if (Object.keys(updateData).length > 1) {
@@ -213,6 +213,24 @@ export const processEbayLabubu = async (labubu: Labubu) => {
           updateData
         );
         console.log(`EBAY: Updated Labubu ${labubu.name} (SKU: ${labubu.sku}) with eBay data: lowest price: ${updateData.ebayLowestPrice}`);
+
+        if (ebayListing.lowestPrice && ebayListing.ebayUrl) {
+          const listingId = await listingRepository.updateOrCreate({
+            productUrl: ebayListing.ebayUrl,
+            labubuSku: labubu.sku,
+            vendorName: "eBay",
+            listingTitle: labubu.name, // Or a more descriptive title if available
+            currentPrice: ebayListing.lowestPrice,
+            inStock: true,
+            lastCheckedAt: new Date(),
+          });
+          await priceHistoryRepository.create({
+            listingId: listingId,
+            price: ebayListing.lowestPrice,
+            date: new Date(),
+          });
+        }
+
         const updatedLabubu = await labubuRepository.get({ filter: { sku: labubu.sku } });
         if (updatedLabubu.length > 0) {
           await calculateEstimatedValueForLabubu(updatedLabubu[0]);

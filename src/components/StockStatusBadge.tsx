@@ -6,7 +6,7 @@ interface StockStatusBadgeProps {
   status: StockStatus;
 }
 
-export const StockStatusBadge = ({ status }: StockStatusBadgeProps) => {
+export const StockStatusBadge = ({ status = 'unknown' }: StockStatusBadgeProps) => {
   const config = {
     aftermarketorbb: {
       label: 'Aftermarket or Blind Box',
@@ -38,13 +38,14 @@ export const StockStatusBadge = ({ status }: StockStatusBadgeProps) => {
       icon: Ban,
       className: 'bg-muted text-muted-foreground border-border',
     },
+    unknown: {
+      label: 'Unknown',
+      icon: AlertCircle,
+      className: 'bg-muted text-muted-foreground border-border',
+    },
   };
 
-  const badgeConfig = config[status] || {
-    label: 'Unknown',
-    icon: AlertCircle,
-    className: 'bg-muted text-muted-foreground border-border',
-  };
+  const badgeConfig = config[status] || config.unknown;
 
   const { label, icon: Icon, className } = badgeConfig;
 

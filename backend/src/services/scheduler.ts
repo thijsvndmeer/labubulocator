@@ -4,6 +4,8 @@ import { priceHistoryRepository } from "../index";
 import { processStockxLabubu, stockxLimit } from "./kicksDevSyncService";
 import { syncAllEbayLabubus } from "./ebayService"; // Import syncAllEbayLabubus from ebayService.ts
 import { calculateEstimatedValues } from "./estimatedValueService";
+import { syncLabubus } from "./labubuSyncService";
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const startApiSync = () => {
   console.log("SCHEDULER: Starting API synchronization scheduler...");
@@ -23,7 +25,9 @@ export const startApiSync = () => {
 
   // Run immediately on startup for initial sync
   (async () => {
+    await syncLabubus();
     console.log("SCHEDULER: Running initial API synchronization...");
+    await sleep(1000000);
     await Promise.all([
       (async () => {
         console.log("SCHEDULER: Starting initial Labubu value synchronization with Kicks.dev API...");
