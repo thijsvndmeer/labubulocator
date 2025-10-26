@@ -39,7 +39,22 @@ export const syncLabubus = async () => {
         }
         record.image = `http://localhost:3001/images/${seriesFolder}/${sku.toUpperCase()}.png`;
       }
-      await labubuRepository.updateOrCreate(record as Labubu);
+      const labubuData: Partial<Labubu> = {
+        sku: record.sku,
+        name: record.name,
+        series: record.series,
+        description: record.description,
+        rarity: record.rarity,
+        image: record.image,
+        msrp: record.msrp,
+        stockStatus: record.stockStatus,
+      };
+
+      if (record.kicksdevId && record.kicksdevId.trim() !== '') {
+        labubuData.kicksdevId = record.kicksdevId;
+      }
+
+      await labubuRepository.updateOrCreate(labubuData as Labubu);
     }
 
     console.log(`Succesfully synced ${csvPath} with the database`);
