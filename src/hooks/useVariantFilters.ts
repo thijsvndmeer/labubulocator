@@ -17,9 +17,9 @@ export const useVariantFilters = (variants: Labubu[], searchQuery: string) => {
   });
   const [sortBy, setSortBy] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('sortBy') || 'default';
+      return localStorage.getItem('sortBy') || 'price-change';
     }
-    return 'default';
+    return 'price-change';
   });
   const [randomOrderSkus, setRandomOrderSkus] = useState<string[]>([]);
 
@@ -81,6 +81,9 @@ export const useVariantFilters = (variants: Labubu[], searchQuery: string) => {
         case 'price-high':
           arr.sort((a, b) => (b.lowestPrice || 0) - (a.lowestPrice || 0));
           break;
+        case 'price-change':
+          arr.sort((a, b) => (b.priceChange24h || 0) - (a.priceChange24h || 0));
+          break;
         case 'rarity': {
           const rarityOrder: string[] = ['secret', 'legendary', 'epic', 'rare', 'uncommon', 'common'];
           arr.sort((a, b) => rarityOrder.indexOf(a.rarity!) - rarityOrder.indexOf(b.rarity!));
@@ -100,7 +103,7 @@ export const useVariantFilters = (variants: Labubu[], searchQuery: string) => {
             });
           }
           break;
-        case 'default':
+        case 'series':
           arr.sort((a, b) => a.series.localeCompare(b.series));
           break;
         default:

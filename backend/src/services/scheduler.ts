@@ -3,6 +3,7 @@ import { labubuRepository } from "../index";
 import { priceHistoryRepository } from "../index";
 import { processStockxLabubu, stockxLimit } from "./kicksDevSyncService";
 import { syncAllEbayLabubus } from "./ebayService"; // Import syncAllEbayLabubus from ebayService.ts
+import { calculateEstimatedValues } from "./estimatedValueService";
 
 export const startApiSync = () => {
   console.log("SCHEDULER: Starting API synchronization scheduler...");
@@ -41,5 +42,8 @@ export const startApiSync = () => {
 
     // Schedule eBay synchronization to run every 30 minutes after initial sync
     cron.schedule("*/30 * * * *", syncAllEbayLabubus);
+
+    // Schedule estimated value calculation to run once a day
+    cron.schedule("0 0 * * *", calculateEstimatedValues);
   })();
 };

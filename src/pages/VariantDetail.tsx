@@ -340,7 +340,7 @@ export default function VariantDetail() {
                             <div className="flex items-center justify-between">
                               <span className="text-2xl font-bold">{typeof mergedVariant.lowestPrice === 'number' ? `$${mergedVariant.lowestPrice.toFixed(2)}` : '--.--'}</span>
                               <Button size="sm" asChild>
-                                <a href={mergedVariant.stockxUrl || `https://stockx.com/search?s=${encodeURIComponent((mergedVariant.name || '') + ' labubu')}`} target="_blank" rel="noopener noreferrer">
+                                <a href={`https://stockx.com/${mergedVariant.kicksdevId}`} target="_blank" rel="noopener noreferrer">
                                   View on StockX
                                   <ExternalLink className="h-3 w-3 ml-1" />
                                 </a>

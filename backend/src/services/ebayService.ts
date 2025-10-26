@@ -2,6 +2,7 @@ import axios from 'axios';
 import { Labubu } from "@labubu/common/src/types/labubu";
 import { labubuRepository, priceHistoryRepository } from "../index";
 import pLimit from "p-limit";
+import { calculateEstimatedValueForLabubu } from './estimatedValueService';
 
 // Helper function for rate limiting
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -201,7 +202,7 @@ export const processEbayLabubu = async (labubu: Labubu) => {
       }
 
 
-      const priceRange = await priceHistoryRepository.getMinMaxPriceForLabubuLastWeek(labubu.sku);
+      const priceRange = await priceHistoryRepository.getMinMaxPriceForLabubuLast24h(labubu.sku);
       if (priceRange) {
         updateData.priceRange = { low: priceRange.min, high: priceRange.max };
       }
@@ -212,6 +213,10 @@ export const processEbayLabubu = async (labubu: Labubu) => {
           updateData
         );
         console.log(`EBAY: Updated Labubu ${labubu.name} (SKU: ${labubu.sku}) with eBay data: lowest price: ${updateData.ebayLowestPrice}`);
+        const updatedLabubu = await labubuRepository.get({ filter: { sku: labubu.sku } });
+        if (updatedLabubu.length > 0) {
+          await calculateEstimatedValueForLabubu(updatedLabubu[0]);
+        }
       } else {
         console.log(`EBAY: No new eBay data found for Labubu ${labubu.name} (SKU: ${labubu.sku})`);
       }

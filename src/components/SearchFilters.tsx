@@ -93,9 +93,10 @@ export const SearchFilters = ({
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="default">Default</SelectItem>
+              <SelectItem value="price-change">Price Change</SelectItem>
               <SelectItem value="price-low">Price: Low to High</SelectItem>
               <SelectItem value="price-high">Price: High to Low</SelectItem>
+              <SelectItem value="series">Series</SelectItem>
               <SelectItem value="rarity">Type</SelectItem>
               <SelectItem value="most-popular">Most Popular</SelectItem>
               <SelectItem value="random">Random</SelectItem>
@@ -109,7 +110,7 @@ export const SearchFilters = ({
               onSearchChange('');
               onRarityChange('all');
               onSeriesChange('all');
-              onSortChange('default');
+              onSortChange('price-change');
             }}
           >
             Clear Filters

@@ -2,6 +2,7 @@ import { labubuRepository } from "../index";
 import { Labubu } from "@labubu/common/src/types/labubu";
 import axios from "axios";
 import pLimit from "p-limit";
+import { calculateEstimatedValueForLabubu } from "./estimatedValueService";
 
 const KICKS_DEV_API_KEY = process.env.KICKS_DEV_API_KEY || "sd_r796CnCR9yo8earZQezqQsOh2e60Zqxb";
 const KICKS_DEV_API_BASE_URL = "https://api.kicks.dev/v3/stockx/products";
@@ -195,6 +196,10 @@ export const processStockxLabubu = async (labubu: Labubu) => {
           updateData
         );
         console.log(`STOCKX: Updated Labubu ${labubu.name} (SKU: ${labubu.sku}) with StockX data: stockxPrice: ${updateData.stockxPrice}, lowestPrice: ${updateData.lowestPrice}`);
+        const updatedLabubu = await labubuRepository.get({ filter: { sku: labubu.sku } });
+        if (updatedLabubu.length > 0) {
+          await calculateEstimatedValueForLabubu(updatedLabubu[0]);
+        }
       } else {
         console.log(`STOCKX: No new StockX data found for Labubu ${labubu.name} (SKU: ${labubu.sku})`);
       }

@@ -44,7 +44,10 @@ db.serialize(() => {
       stockxUrl TEXT,
       ebayUrl TEXT,
       stockxLastRefreshed TEXT,
-      ebayLastRefreshed TEXT
+      ebayLastRefreshed TEXT,
+      estimatedValue REAL,
+      estimatedValueLastCalculated TEXT,
+      priceChange24h REAL
     )
   `,
     (err) => {
@@ -134,6 +137,36 @@ db.serialize(() => {
     (err) => {
       if (err && !err.message.includes("duplicate column name")) {
         console.error("Error adding stockxPrice column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Add estimatedValue column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN estimatedValue REAL`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding estimatedValue column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Add estimatedValueLastCalculated column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN estimatedValueLastCalculated TEXT`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding estimatedValueLastCalculated column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Add priceChange24h column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN priceChange24h REAL`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding priceChange24h column to labubus table", err.message);
       }
     }
   );

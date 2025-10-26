@@ -46,10 +46,10 @@ export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> 
     return await super.delete(criteria);
   }
 
-  public async getMinMaxPriceForLabubuLastWeek(labubuSku: string): Promise<{ min: number; max: number } | null> {
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const oneWeekAgoISO = oneWeekAgo.toISOString();
+  public async getMinMaxPriceForLabubuLast24h(labubuSku: string): Promise<{ min: number; max: number } | null> {
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+    const oneDayAgoISO = oneDayAgo.toISOString();
 
     const sql = `
       SELECT MIN(ph.price) as minPrice, MAX(ph.price) as maxPrice
@@ -57,11 +57,22 @@ export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> 
       JOIN listings l ON ph.listingId = l.id
       WHERE l.labubuSku = ? AND ph.date >= ?
     `;
-    const result = await getQuery<{ minPrice: number; maxPrice: number }>(this.db, sql, [labubuSku, oneWeekAgoISO]);
+    const result = await getQuery<{ minPrice: number; maxPrice: number }>(this.db, sql, [labubuSku, oneDayAgoISO]);
 
     if (result && result.length > 0 && result[0].minPrice !== null && result[0].maxPrice !== null) {
       return { min: result[0].minPrice, max: result[0].maxPrice };
     }
     return null;
+  }
+
+  public async getAllByLabubuSku(labubuSku: string): Promise<{ price: number; date: string }[]> {
+    const sql = `
+      SELECT ph.price, ph.date
+      FROM price_history ph
+      JOIN listings l ON ph.listingId = l.id
+      WHERE l.labubuSku = ?
+    `;
+    const result = await getQuery<{ price: number; date: string }>(this.db, sql, [labubuSku]);
+    return result || [];
   }
 }
