@@ -181,10 +181,7 @@ export const processStockxLabubu = async (labubu: Labubu) => {
           updateData.lowestPrice = adjustedLowestAsk;
         }
       }
-      if (currentStockxLink) {
-        updateData.stockxUrl = currentStockxLink;
-      }
-      if (currentKicksdevId) {
+      if (currentKicksdevId && !labubu.kicksdevId) {
         updateData.kicksdevId = currentKicksdevId;
       }
 

@@ -41,8 +41,6 @@ db.serialize(() => {
       msrp REAL,
       lowestPrice REAL,
       ebayLowestPrice REAL,
-      stockxUrl TEXT,
-      ebayUrl TEXT,
       stockxLastRefreshed TEXT,
       ebayLastRefreshed TEXT,
       estimatedValue REAL,
@@ -97,16 +95,6 @@ db.serialize(() => {
     (err) => {
       if (err && !err.message.includes("duplicate column name")) {
         console.error("Error adding ebayLowestPrice column to labubus table", err.message);
-      }
-    }
-  );
-
-  // Add ebayUrl column if it doesn't exist
-  db.run(
-    `ALTER TABLE labubus ADD COLUMN ebayUrl TEXT`,
-    (err) => {
-      if (err && !err.message.includes("duplicate column name")) {
-        console.error("Error adding ebayUrl column to labubus table", err.message);
       }
     }
   );

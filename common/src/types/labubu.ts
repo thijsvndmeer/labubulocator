@@ -19,7 +19,6 @@ export const labubuSchema = z.object({
   variant: z.string().optional(),
   estimatedValue: z.coerce.number().optional(),
   estimatedValueLastCalculated: z.string().optional(),
-  stockxUrl: z.string().optional(),
   kicksdevId: z.string().optional(),
 
 

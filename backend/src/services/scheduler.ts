@@ -4,7 +4,7 @@ import { priceHistoryRepository } from "../index";
 import { processStockxLabubu, stockxLimit } from "./kicksDevSyncService";
 import { syncAllEbayLabubus } from "./ebayService"; // Import syncAllEbayLabubus from ebayService.ts
 import { calculateEstimatedValues } from "./estimatedValueService";
-
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 export const startApiSync = () => {
   console.log("SCHEDULER: Starting API synchronization scheduler...");
 
@@ -36,7 +36,7 @@ export const startApiSync = () => {
           console.error("SCHEDULER: Error during initial Labubu value synchronization:", error);
         }
       })(),
-      syncAllEbayLabubus()
+      // syncAllEbayLabubus()
     ]);
     console.log("SCHEDULER: Initial API synchronization completed.");
 
