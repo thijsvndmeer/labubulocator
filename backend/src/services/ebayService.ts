@@ -106,6 +106,22 @@ export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit
 
         if (validPrices.length > 0) {
           validPrices.sort((a, b) => a.price - b.price);
+
+          if (
+            labubu.rarity === 'common' &&
+            labubu.stockStatus === 'aftermarketorbb' &&
+            labubu.msrp &&
+            validPrices[0].price >= labubu.msrp * 2
+          ) {
+            if (validPrices.length > 1) {
+              console.log(`EBAY: Price for ${labubu.name} is >= 2 * MSRP. Using second best search result.`);
+              return { lowestPrice: validPrices[1].price, ebayUrl: validPrices[1].url };
+            } else {
+              console.log(`EBAY: Price for ${labubu.name} is >= 2 * MSRP, but no second best search result available.`);
+              return { lowestPrice: undefined, ebayUrl: validPrices[0].url };
+            }
+          }
+
           return { lowestPrice: validPrices[0].price, ebayUrl: validPrices[0].url };
         }
       }
@@ -160,8 +176,6 @@ export const processEbayLabubu = async (labubu: Labubu) => {
 
       if (ebayListing.lowestPrice !== undefined && ebayListing.lowestPrice !== labubu.msrp) {
         updateData.ebayLowestPrice = ebayListing.lowestPrice;
-      } else {
-        updateData.ebayLowestPrice = null; // Set to null if no reliable price found or it's just MSRP
       }
 
 

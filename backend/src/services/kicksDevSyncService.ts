@@ -63,25 +63,37 @@ export const processStockxLabubu = async (labubu: Labubu) => {
         let stockxLink: string | undefined;
 
         if (stockxData && stockxData.length > 0) {
+          const validAsks: { price: number; link?: string }[] = [];
           for (const product of stockxData) {
             const title = product.title || product.primary_title || '';
             if (!title.toLowerCase().includes('blind box')) {
-              lowestAsk = product.variants?.[0]?.lowest_ask;
-              stockxLink = product.link;
-              console.log(`STOCKX: Extracted link for ${labubu.name} (SKU: ${labubu.sku}): ${stockxLink}`);
-              break; // Found a valid product, exit loop
+              const ask = product.variants?.[0]?.lowest_ask;
+              if (ask) {
+                validAsks.push({ price: ask, link: product.link });
+              }
             }
           }
 
-          if (!stockxLink && stockxData.length > 0) {
-            // Fallback to the first product's link if no specific match was found but data exists
-            // This fallback is only if no non-blind box product was found with a link
-            const firstNonBlindBoxProduct = stockxData.find(product => {
-              const title = product.title || product.primary_title || '';
-              return !title.toLowerCase().includes('blind box');
-            });
-            if (firstNonBlindBoxProduct) {
-              stockxLink = firstNonBlindBoxProduct.link;
+          if (validAsks.length > 0) {
+            validAsks.sort((a, b) => a.price - b.price);
+            lowestAsk = validAsks[0].price;
+            stockxLink = validAsks[0].link;
+
+            if (
+              labubu.rarity === 'common' &&
+              labubu.stockStatus === 'aftermarketorbb' &&
+              labubu.msrp &&
+              lowestAsk >= labubu.msrp * 2
+            ) {
+              if (validAsks.length > 1) {
+                console.log(`STOCKX: Price for ${labubu.name} is >= 2 * MSRP. Using second best search result.`);
+                lowestAsk = validAsks[1].price;
+                stockxLink = validAsks[1].link;
+              } else {
+                console.log(`STOCKX: Price for ${labubu.name} is >= 2 * MSRP, but no second best search result available.`);
+                lowestAsk = undefined;
+                stockxLink = undefined;
+              }
             }
           }
         }
