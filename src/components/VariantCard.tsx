@@ -21,7 +21,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
   const lowestPrice = variant.lowestPrice || 0;
 
   const getImageUrl = (variant: Labubu) => {
-    return variant.image || '/placeholder.svg';
+    return `http://localhost:3001/images/${variant.sku}.png`;
   };
 
   const cardClasses = [

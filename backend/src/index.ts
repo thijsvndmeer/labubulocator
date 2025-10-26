@@ -8,6 +8,8 @@ import { PriceHistoryRepository } from "./repositories/priceHistoryRepository";
 import db from "./lib/database";
 import { syncLabubus } from "./services/labubuSyncService";
 import { startApiSync } from "./services/scheduler";
+import fs from 'fs';
+import path from 'path';
 
 const app = express();
 app.set("query parser", "extended");
@@ -28,7 +30,22 @@ startApiSync();
 // Middleware
 //============================================================================================================================================================================================
 
-
+// Helper function to find image recursively
+const findImageRecursively = (filename: string, currentDir: string): string | null => {
+  const files = fs.readdirSync(currentDir, { withFileTypes: true });
+  for (const file of files) {
+    const fullPath = path.join(currentDir, file.name);
+    if (file.isDirectory()) {
+      const foundPath = findImageRecursively(filename, fullPath);
+      if (foundPath) {
+        return foundPath;
+      }
+    } else if (file.isFile() && file.name === filename) {
+      return fullPath;
+    }
+  }
+  return null;
+};
 
 app.use((req, res, next) => {
   const allowedOrigins = ["http://localhost:4173", "https://id-preview--f24f2b88-4446-4219-a252-e77251f3c13d.lovable.app/"];
@@ -44,12 +61,19 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/images", (req, res, next) => {
-  res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
-  next();
-});
+// Custom middleware to handle flattened image URLs
+app.use("/images/:filename", (req, res, next) => {
+  const requestedFilename = req.params.filename;
+  const publicImagesPath = path.join(__dirname, '..', 'public', 'images');
 
-app.use("/images", express.static("public/images"));
+  const foundImagePath = findImageRecursively(requestedFilename, publicImagesPath);
+  if (foundImagePath) {
+    res.setHeader("Cache-Control", "public, max-age=31536000"); // Cache for 1 year
+    res.sendFile(foundImagePath);
+  } else {
+    next(); // File not found, pass to next middleware (e.g., 404 handler)
+  }
+});
 
 //============================================================================================================================================================================================
 // Routing
