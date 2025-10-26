@@ -9,7 +9,7 @@ const labubuHttpOptionsSchema = makeHttpOptionsSchema(labubuSchema);
 // Get requests
 //============================================================================================================================================================================================
 
-router.get("/", async (req, res) => {
+router.get("/labubus", async (req, res) => {
   try {
     let options;
     try {
@@ -26,7 +26,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:sku/", async (req, res) => {
+router.get("/labubus/:sku", async (req, res) => {
   try {
     const result = await labubuRepository.get({ filter: { sku: req.params.sku } });
     if (result.length > 0) {
