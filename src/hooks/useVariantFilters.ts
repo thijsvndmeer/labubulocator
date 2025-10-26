@@ -17,9 +17,9 @@ export const useVariantFilters = (variants: Labubu[], searchQuery: string) => {
   });
   const [sortBy, setSortBy] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('sortBy') || 'newest';
+      return localStorage.getItem('sortBy') || 'default';
     }
-    return 'newest';
+    return 'default';
   });
   const [randomOrderSkus, setRandomOrderSkus] = useState<string[]>([]);
 
@@ -100,7 +100,9 @@ export const useVariantFilters = (variants: Labubu[], searchQuery: string) => {
             });
           }
           break;
-        case 'newest':
+        case 'default':
+          arr.sort((a, b) => a.series.localeCompare(b.series));
+          break;
         default:
           break;
       }

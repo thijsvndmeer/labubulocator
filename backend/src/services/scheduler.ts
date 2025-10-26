@@ -2,7 +2,7 @@ import cron from "node-cron";
 import { labubuRepository } from "../index";
 import { priceHistoryRepository } from "../index";
 import { processStockxLabubu, stockxLimit } from "./kicksDevSyncService";
-import { processEbayLabubu, ebayLimit } from "./ebayService"; // Import processEbayLabubu and ebayLimit from ebayService.ts
+import { syncAllEbayLabubus } from "./ebayService"; // Import syncAllEbayLabubus from ebayService.ts
 
 export const startApiSync = () => {
   console.log("SCHEDULER: Starting API synchronization scheduler...");
@@ -35,35 +35,11 @@ export const startApiSync = () => {
           console.error("SCHEDULER: Error during initial Labubu value synchronization:", error);
         }
       })(),
-      (async () => {
-        console.log("EBAY: Starting initial eBay value synchronization...");
-        try {
-          const allLabubus = await labubuRepository.get({}); // Fetch all Labubus
-          console.log(`EBAY: Found ${allLabubus.length} Labubus for initial eBay synchronization.`);
-          for (const labubu of allLabubus) {
-            await ebayLimit(() => processEbayLabubu(labubu));
-            await new Promise(resolve => setTimeout(resolve, 1000)); // 1-second delay
-          }
-          console.log("EBAY: Initial eBay value synchronization completed.");
-        } catch (error) {
-          console.error("EBAY: Error during initial eBay value synchronization:", error);
-        }
-      })()
+      syncAllEbayLabubus()
     ]);
     console.log("SCHEDULER: Initial API synchronization completed.");
 
     // Schedule eBay synchronization to run every 30 minutes after initial sync
-    cron.schedule("*/30 * * * *", async () => {
-      console.log("EBAY: Starting eBay value synchronization...");
-      try {
-        const allLabubus = await labubuRepository.get({}); // Fetch all Labubus
-        console.log(`EBAY: Found ${allLabubus.length} Labubus for eBay synchronization.`);
-        const promises = allLabubus.map(labubu => ebayLimit(() => processEbayLabubu(labubu)));
-        await Promise.all(promises);
-        console.log("EBAY: eBay value synchronization completed.");
-      } catch (error) {
-        console.error("EBAY: Error during eBay value synchronization:", error);
-      }
-    });
+    cron.schedule("*/30 * * * *", syncAllEbayLabubus);
   })();
 };

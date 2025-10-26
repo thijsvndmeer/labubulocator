@@ -58,6 +58,7 @@ const retry = async <T>(fn: () => Promise<T>, retries = 5, delay = 2000): Promis
 };
 
 export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit: number = 10): Promise<{ lowestPrice?: number; ebayUrl?: string | null }> => {
+  console.log(`--- START getEbayListing for ${labubu.name} ---`);
   let ebaySearchUrl: string | null = null; // Declare ebaySearchUrl here and initialize to null
   try {
     const token = await getAccessToken();
@@ -70,6 +71,7 @@ export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit
     }
 
     const performEbaySearch = async (query: string, currentLimit: number, stockxPrice?: number) => {
+      console.log(`Performing eBay search with query: "${query}"`);
       const encodedEbayQuery = encodeURIComponent(query);
       const currentEbaySearchUrl = `https://www.ebay.com/sch/i.html?_nkw=${encodedEbayQuery}`;
 
@@ -81,7 +83,7 @@ export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit
           },
           params: {
             q: query,
-            category_ids: '246',
+            category_ids: '220',
             item_conditions: 'NEW',
             limit: currentLimit, // Use the passed limit
             sort: 'price',
@@ -131,17 +133,38 @@ export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit
     // First attempt with 'authentic'
     let ebayQueryWithAuthentic = baseEbayQuery + " authentic";
     let searchResult = await performEbaySearch(ebayQueryWithAuthentic, limit, stockxPrice);
+    console.log("Search result with 'authentic':", searchResult);
 
     // If no valid price found, try again without 'authentic'
     if (searchResult.lowestPrice === undefined) { 
       console.log(`EBAY: No valid price found with 'authentic' for ${labubu.name}. Retrying without 'authentic'.`);
       searchResult = await performEbaySearch(baseEbayQuery, limit, stockxPrice);
+      console.log("Search result without 'authentic':", searchResult);
     }
 
+    // If still no valid price found, try a less strict query
+    if (searchResult.lowestPrice === undefined) {
+      const lessStrictQuery = labubu.name.replace(/\s*\(.*?\)/g, '').trim();
+      if (lessStrictQuery !== labubu.name) {
+        console.log(`EBAY: No valid price found. Retrying with less strict query: ${lessStrictQuery} labubu`);
+        await sleep(30000); // Delay for the retry
+        searchResult = await performEbaySearch(lessStrictQuery + " labubu", limit, stockxPrice);
+        console.log("Search result with less strict query:", searchResult);
+      } else {
+        // As a last resort, try searching with just the name, without "labubu" or "Mokoko"
+        console.log(`EBAY: No valid price found. Retrying with just the name: ${labubu.name}`);
+        await sleep(30000); // Delay for the retry
+        searchResult = await performEbaySearch(labubu.name, limit, stockxPrice);
+        console.log("Search result with just the name:", searchResult);
+      }
+    }
+
+    console.log(`--- END getEbayListing for ${labubu.name} ---`);
     return searchResult;
   } catch (error) {
     console.error(`EBAY: Error fetching eBay listing for ${labubu.name}:`, error);
   }
+  console.log(`--- END getEbayListing for ${labubu.name} with error ---`);
   return { lowestPrice: undefined, ebayUrl: null }; // Return undefined for price and null for URL on error
 };
 
@@ -162,19 +185,9 @@ export const processEbayLabubu = async (labubu: Labubu) => {
         ebayListing = await getEbayListing(labubu, stockxPrice, 20); // Pass a higher limit
       }
 
-      if (ebayListing.lowestPrice === labubu.msrp && labubu.msrp !== undefined && labubu.msrp < 25) {
-        // If fallback to MSRP happened and MSRP is < 25, try a less strict eBay search
-        const lessStrictQuery = labubu.name.replace(/\s*\(.*?\)/g, '').trim(); // Remove text in parentheses
-        if (lessStrictQuery !== labubu.name) {
-          console.log(`EBAY: Retrying eBay search for ${labubu.name} with less strict query: ${lessStrictQuery} labubu`);
-          await sleep(30000); // Another delay for the retry
-          ebayListing = await getEbayListing(labubu, stockxPrice); // Pass labubu object and stockxPrice
-        }
-      }
-
       const updateData: Partial<Labubu> = { ebayLastRefreshed: new Date().toISOString() };
 
-      if (ebayListing.lowestPrice !== undefined && ebayListing.lowestPrice !== labubu.msrp) {
+      if (ebayListing.lowestPrice !== undefined) {
         updateData.ebayLowestPrice = ebayListing.lowestPrice;
 
         const existingLabubu = await labubuRepository.get({ filter: { sku: labubu.sku } }, ["stockxPrice"]);
@@ -205,5 +218,20 @@ export const processEbayLabubu = async (labubu: Labubu) => {
     } catch (apiError) {
       console.error(`EBAY: Error fetching eBay data for Labubu ${labubu.name} (SKU: ${labubu.sku}):`, apiError);
     }
+  }
+};
+
+export const syncAllEbayLabubus = async () => {
+  console.log("EBAY: Starting eBay value synchronization...");
+  try {
+    const allLabubus = await labubuRepository.get({}); // Fetch all Labubus
+    console.log(`EBAY: Found ${allLabubus.length} Labubus for eBay synchronization.`);
+    for (const labubu of allLabubus) {
+      await ebayLimit(() => processEbayLabubu(labubu));
+      await new Promise(resolve => setTimeout(resolve, 1000)); // 1-second delay
+    }
+    console.log("EBAY: eBay value synchronization completed.");
+  } catch (error) {
+    console.error("EBAY: Error during eBay value synchronization:", error);
   }
 };
