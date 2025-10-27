@@ -6,7 +6,7 @@ import { ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Labubu } from '@labubu/common/src/types/labubu';
+import { Labubu } from '@labubu/common';
 import { PriceChangeBadge } from './PriceChangeBadge';
 
 interface VariantCardProps {
@@ -21,7 +21,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
   const lowestPrice = variant.lowestPrice || 0;
 
   const getImageUrl = (variant: Labubu) => {
-    return `http://localhost:3001/images/${variant.sku}.png`;
+    return `https://api.labubulocator.me/images/${variant.sku}.png`;
   };
 
   const cardClasses = [

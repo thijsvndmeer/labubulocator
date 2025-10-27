@@ -1,6 +1,6 @@
-import { HttpOptions, Labubu, Listing, PriceEntry } from "@labubu/common/src/types/labubu";
+import { HttpOptions, Labubu, Listing, PriceEntry } from "@labubu/common";
 
-const API_BASE_URL = "http://localhost:3001/api";
+const API_BASE_URL = "https://api.labubulocator.me/api";
 
 function toUrlSearchParams(obj: any, prefix = ''): URLSearchParams {
   const params = new URLSearchParams();

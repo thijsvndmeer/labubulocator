@@ -48,7 +48,7 @@ const findImageRecursively = (filename: string, currentDir: string): string | nu
 };
 
 app.use((req, res, next) => {
-  const allowedOrigins = ["http://localhost:4173", "https://id-preview--f24f2b88-4446-4219-a252-e77251f3c13d.lovable.app/"];
+  const allowedOrigins = ["https://labubulocator.me"];
   const origin = req.headers.origin;
   if (origin && allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
