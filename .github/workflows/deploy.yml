@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - stockx-implementation
 
 jobs:
   build-and-deploy:
