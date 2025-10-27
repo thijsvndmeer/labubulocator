@@ -17,12 +17,16 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'
+          cache: 'yarn'
 
       - name: Install dependencies
         run: yarn install
 
       - name: Build
         run: yarn workspace vite_react_shadcn_ts build
+
+      - name: Copy CNAME
+        run: cp CNAME ./frontend/dist
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
