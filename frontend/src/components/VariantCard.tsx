@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Labubu } from '@labubu/common';
 import { PriceChangeBadge } from './PriceChangeBadge';
+import { API_ROOT_URL } from '@/lib/api';
 
 interface VariantCardProps {
   variant: Labubu;
@@ -21,7 +22,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
   const lowestPrice = variant.lowestPrice || 0;
 
   const getImageUrl = (variant: Labubu) => {
-    return `https://api.labubulocator.me/images/${variant.sku}.png`;
+    return `${API_ROOT_URL}/images/${variant.sku}.png`;
   };
 
   const cardClasses = [

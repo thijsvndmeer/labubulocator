@@ -1,9 +1,9 @@
 import { VariantCard } from '@/components/VariantCard';
 import { CardSkeleton } from '@/components/CardSkeleton';
-const heroBanner = "http://localhost:3001/images/hero-banner.jpg";
 import { Gem, Flame, TrendingDown } from 'lucide-react';
-import { api } from '@/lib/api';
-import { Labubu } from '@labubu/common/src/types/labubu';
+import { api, API_ROOT_URL } from '@/lib/api';
+const heroBanner = `${API_ROOT_URL}/images/hero-banner.jpg`;
+import { Labubu } from '@labubu/common';
 import { useQuery } from '@tanstack/react-query';
 import {
   Carousel,

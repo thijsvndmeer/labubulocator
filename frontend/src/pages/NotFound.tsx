@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
-const labuNotFound = "http://localhost:3001/images/labunotfound.png";
+import { API_ROOT_URL } from "@/lib/api";
+const labuNotFound = `${API_ROOT_URL}/images/labunotfound.png`;
 
 const NotFound = () => {
   const location = useLocation();

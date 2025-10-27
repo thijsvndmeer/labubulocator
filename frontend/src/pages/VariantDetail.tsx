@@ -12,10 +12,10 @@ import { ArrowLeft, Bell, Heart, ExternalLink, Package, Tag, RefreshCw } from 'l
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { api, API_ROOT_URL } from '@/lib/api';
 import { isFavorite, addFavorite, removeFavorite } from '@/lib/favorites';
 import { isCollected, addCollection, removeCollection } from '@/lib/collection';
-import { Labubu, Listing, PriceEntry } from '@labubu/common/src/types/labubu';
+import { Labubu, Listing, PriceEntry } from '@labubu/common';
 
 
 
@@ -227,7 +227,7 @@ export default function VariantDetail() {
           <Card className="overflow-hidden">
             <div className="aspect-square bg-muted p-8">
               <img
-                src={mergedVariant.image || '/placeholder.svg'}
+                src={`${API_ROOT_URL}/images/${mergedVariant.sku}.png`}
                 alt={mergedVariant.name}
                 className="w-full h-full object-cover rounded-lg"
               />
