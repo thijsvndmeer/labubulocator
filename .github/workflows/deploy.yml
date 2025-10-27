@@ -13,20 +13,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Set up Node.js and Yarn
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      - name: Remove package-lock.json
-        run: rm ./frontend/package-lock.json
-
       - name: Install dependencies
-        run: npm install
+        run: yarn install
         working-directory: ./frontend
 
       - name: Build
-        run: npm run build
+        run: yarn build
         working-directory: ./frontend
 
       - name: Create .nojekyll file
