@@ -13,7 +13,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@labubu/common": "1.0.0",
+    "@labubu/common": "file:../common",
     "@types/node-cron": "^3.0.11",
     "axios": "^1.12.2",
     "csv-parse": "^6.1.0",
