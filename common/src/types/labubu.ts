@@ -10,10 +10,26 @@ export const labubuSchema = z.object({
   name: z.string(),
   series: z.string(),
   rarity: z.string().optional(),
-  image: z.string().optional(),
   description: z.string().optional(),
   msrp: z.coerce.number().optional(),
   lowestPrice: z.coerce.number().optional(),
+  stockxPrice: z.coerce.number().optional(),
+  ebayLowestPrice: z.coerce.number().optional().nullable(),
+  variant: z.string().optional(),
+  estimatedValue: z.coerce.number().optional(),
+  estimatedValueLastCalculated: z.string().optional(),
+  kicksdevId: z.string().optional(),
+
+
+  priceChange24h: z.coerce.number().optional(),
+  priceRange: z.object({ low: z.coerce.number(), high: z.coerce.number() }).optional(),
+  stockStatus: z.string().optional(),
+  confidenceScore: z.coerce.number().optional(),
+  affiliateLinks: z.array(z.object({ id: z.string(), displayName: z.string(), url: z.string() })).optional(),
+  attributes: z.record(z.string(), z.string()).optional(),
+  recentSales: z.array(z.object({ source: z.string(), price: z.coerce.number(), currency: z.string(), date: z.string(), url: z.string() })).optional(),
+  stockxLastRefreshed: z.string().optional(),
+  ebayLastRefreshed: z.string().optional(),
 });
 export type Labubu = z.infer<typeof labubuSchema>;
 

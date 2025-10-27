@@ -2,9 +2,16 @@ import { Database } from "sqlite3";
 import { getQuery, runQuery, buildOptionsClause, buildSetClause } from "../utils/databaseUtils";
 import { QueryCriteria, QueryOptions } from "../types/labubu";
 
+interface CacheEntry<T> {
+  data: T[];
+  timestamp: number;
+}
+
 export abstract class BaseRepository<T> {
   protected readonly db: Database;
   protected readonly tableName: string;
+  private cache = new Map<string, CacheEntry<T>>();
+  private cacheDuration = 5 * 60 * 1000; // 5 minutes
 
   //============================================================================================================================================================================================
   // Constructor
@@ -32,6 +39,8 @@ export abstract class BaseRepository<T> {
    * @returns A promise that resolves to the ID of the newly created record.
    */
   protected async create(data: Omit<T, "id">): Promise<number> {
+    // Invalidate cache on create
+    this.cache.clear();
     const dataKeys = Object.keys(data);
 
     const sql = `INSERT INTO ${this.tableName} (${dataKeys.join(", ")}) VALUES (${dataKeys.map(() => "?").join(", ")})`;
@@ -55,10 +64,20 @@ export abstract class BaseRepository<T> {
    * @throws Error - If any option field or value is invalid (validation performed by `ensureValidOptions`).
    */
   protected async get<K extends keyof T>(options: QueryOptions<T> = {}, fields?: K[]): Promise<Pick<T, K>[]> {
+    const cacheKey = JSON.stringify({ options, fields });
+    const cached = this.cache.get(cacheKey);
+
+    if (cached && (Date.now() - cached.timestamp < this.cacheDuration)) {
+      return cached.data as Pick<T, K>[];
+    }
+
     const { clause, params } = buildOptionsClause(options);
 
     const sql = `SELECT ${fields ? fields.join(", ") : "*"} FROM ${this.tableName} ${clause}`;
-    return await getQuery(this.db, sql, params);
+    const result = await getQuery(this.db, sql, params);
+
+    this.cache.set(cacheKey, { data: result as T[], timestamp: Date.now() });
+    return result as Pick<T, K>[];
   }
 
   // update
@@ -75,6 +94,8 @@ export abstract class BaseRepository<T> {
    * @throws Error - If any option field or value is invalid, or if data fields are invalid.
    */
   protected async update(criteria: QueryCriteria<T> = {}, data: Partial<Omit<T, "id">>): Promise<number> {
+    // Invalidate cache on update
+    this.cache.clear();
     const { clause, params } = buildOptionsClause(criteria);
 
     const { clause: setClause, params: setParams } = buildSetClause(data);
@@ -97,6 +118,8 @@ export abstract class BaseRepository<T> {
    * @returns A promise that resolves to the number of rows affected by the delete operation.
    */
   protected async delete(criteria: QueryCriteria<T> = {}): Promise<number> {
+    // Invalidate cache on delete
+    this.cache.clear();
     const { clause, params } = buildOptionsClause(criteria);
 
     const sql = `DELETE FROM ${this.tableName} ${clause}`;

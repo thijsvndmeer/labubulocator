@@ -37,14 +37,135 @@ db.serialize(() => {
       series TEXT NOT NULL,
       description TEXT,
       rarity TEXT,
-      image TEXT,
       msrp REAL,
-      lowestPrice REAL
+      lowestPrice REAL,
+      ebayLowestPrice REAL,
+      stockxLastRefreshed TEXT,
+      ebayLastRefreshed TEXT,
+      estimatedValue REAL,
+      estimatedValueLastCalculated TEXT,
+      priceChange24h REAL
     )
   `,
     (err) => {
       if (err) {
         console.error("Error creating labubus table", err.message);
+      }
+    }
+  );
+
+  // Create index on sku in labubus table
+  db.run(
+    `CREATE INDEX IF NOT EXISTS idx_labubus_sku ON labubus (sku)`,
+    (err) => {
+      if (err) {
+        console.error("Error creating index on labubus(sku)", err.message);
+      }
+    }
+  );
+
+  // Add stockxLastRefreshed column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN stockxLastRefreshed TEXT`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding stockxLastRefreshed column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Add ebayLastRefreshed column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN ebayLastRefreshed TEXT`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding ebayLastRefreshed column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Remove lastRefreshed column if it exists (optional, for cleanup)
+  // Note: SQLite does not support dropping columns directly. This would require a more complex migration.
+  // For simplicity, we'll just stop using it and add the new columns.
+
+  // Add ebayLowestPrice column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN ebayLowestPrice REAL`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding ebayLowestPrice column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Add stockStatus column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN stockStatus TEXT`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding stockStatus column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Add kicksdevId column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN kicksdevId TEXT`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding kicksdevId column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Add stockxPrice column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN stockxPrice REAL`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding stockxPrice column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Add estimatedValue column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN estimatedValue REAL`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding estimatedValue column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Add estimatedValueLastCalculated column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN estimatedValueLastCalculated TEXT`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding estimatedValueLastCalculated column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Add priceChange24h column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN priceChange24h REAL`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding priceChange24h column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Create the listings table
+
+  // Add stockStatus column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN stockStatus TEXT`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("Error adding stockStatus column to labubus table", err.message);
       }
     }
   );
@@ -72,6 +193,16 @@ db.serialize(() => {
     }
   );
 
+  // Create index on labubuSku in listings table
+  db.run(
+    `CREATE INDEX IF NOT EXISTS idx_listings_labubuSku ON listings (labubuSku)`,
+    (err) => {
+      if (err) {
+        console.error("Error creating index on listings(labubuSku)", err.message);
+      }
+    }
+  );
+
   // Create the price_history table
   db.run(
     `
@@ -87,6 +218,16 @@ db.serialize(() => {
     (err) => {
       if (err) {
         console.error("Error creating price_history table", err.message);
+      }
+    }
+  );
+
+  // Create index on listingId in price_history table
+  db.run(
+    `CREATE INDEX IF NOT EXISTS idx_price_history_listingId ON price_history (listingId)`,
+    (err) => {
+      if (err) {
+        console.error("Error creating index on price_history(listingId)", err.message);
       }
     }
   );
