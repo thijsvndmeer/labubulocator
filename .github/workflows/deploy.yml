@@ -13,17 +13,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Set up Node.js and Yarn
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-          cache: 'yarn'
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v1
 
       - name: Install dependencies
-        run: yarn install
+        run: bun install
 
       - name: Build
-        run: yarn workspace vite_react_shadcn_ts build
+        run: bun run --filter=vite_react_shadcn_ts build
 
       - name: Copy CNAME
         run: cp CNAME ./frontend/dist
