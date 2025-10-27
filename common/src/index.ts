@@ -1,1 +1,1 @@
-export * from "./types/labubu.js";
+export * from "./types/labubu";
