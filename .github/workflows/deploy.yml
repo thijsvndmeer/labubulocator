@@ -22,6 +22,9 @@ jobs:
       - name: Build
         run: bun run --filter=vite_react_shadcn_ts build
 
+      - name: Add 404 fallback for SPA
+        run: cp ./frontend/dist/index.html ./frontend/dist/404.html
+
       - name: Copy CNAME
         run: cp CNAME ./frontend/dist
 
