@@ -19,7 +19,14 @@ router.get("/", async (req, res) => {
       return;
     }
 
-    const result = await labubuRepository.get(options, options.fields);
+    const queryOptions: import("../types/labubu").QueryOptions<import("../types/labubu").PersistedLabubu> = {
+      filter: options.filter,
+      ranges: options.ranges as import("@labubu/common").Range<import("../types/labubu").PersistedLabubu>[] | undefined,
+      order: options.order as import("@labubu/common").Sorting<import("../types/labubu").PersistedLabubu>[] | undefined,
+      limit: options.limit,
+      offset: options.offset,
+    };
+    const result = await labubuRepository.get(queryOptions, options.fields as (keyof import("../types/labubu").PersistedLabubu)[]);
     res.status(200).json(result);
   } catch (err) {
     res.status(500).json({ error: "An error occurred while fetching labubus.", details: err });
