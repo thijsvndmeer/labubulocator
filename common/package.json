@@ -2,9 +2,15 @@
   "name": "@labubu/common",
   "version": "1.0.0",
   "private": true,
-  "main": "types/index.ts",
-  "types": "types/index.ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc"
+  },
   "dependencies": {
     "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
   }
 }
