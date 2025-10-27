@@ -1,7 +1,7 @@
 import { VariantCard } from '@/components/VariantCard';
 import { CardSkeleton } from '@/components/CardSkeleton';
 const heroBanner = "http://localhost:3001/images/hero-banner.jpg";
-import { TrendingUp } from 'lucide-react';
+import { Gem, Flame, TrendingDown } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Labubu } from '@labubu/common/src/types/labubu';
 import { useQuery } from '@tanstack/react-query';
@@ -24,6 +24,16 @@ const Index = () => {
     .sort((a, b) => (b.lowestPrice || 0) - (a.lowestPrice || 0))
     .slice(0, 15);
 
+  const hotVariants = variants
+    .filter(v => v.priceChange24h)
+    .sort((a, b) => (b.priceChange24h || 0) - (a.priceChange24h || 0))
+    .slice(0, 15);
+
+  const biggestLosers = variants
+    .filter(v => v.priceChange24h)
+    .sort((a, b) => (a.priceChange24h || 0) - (b.priceChange24h || 0))
+    .slice(0, 15);
+
   return (
     <div className="min-h-screen">
 
@@ -42,53 +52,141 @@ const Index = () => {
               Track Your Labubu Collection Value
             </h2>
             <p className="text-lg text-primary-foreground/90 mb-8">
-              Real-time pricing from Amazon, eBay, StockX, and trusted resellers
+              Real-time value estimates and price comparisons for your Labubu collection
             </p>
           </div>
         </div>
       </section>
 
       <div className="container mx-auto px-4 py-12 space-y-16">
-        {/* Trending Section */}
-        <section>
-          <div className="flex items-center gap-3 mb-8">
-            <TrendingUp className="h-8 w-8 text-primary" />
-            <div>
-              <h2 className="text-3xl font-bold">Trending Now</h2>
-              <p className="text-muted-foreground">Highest value Labubus</p>
+        {/* What's Hot Section */}
+        {!isLoading && hotVariants.length > 0 && (
+          <section>
+            <div className="flex items-center gap-3 mb-8">
+              <Flame className="h-8 w-8 text-primary" />
+              <div>
+                <h2 className="text-3xl font-bold">What's Hot</h2>
+                <p className="text-muted-foreground">Top daily price increases</p>
+              </div>
             </div>
-          </div>
-          
-          <Carousel
-            opts={{
-              align: "start",
-              loop: true,
-            }}
-            className="w-full"
-          >
-            <CarouselContent>
-              {isLoading ? (
-                Array.from({ length: 5 }).map((_, index) => (
-                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                    <div className="p-1">
-                      <CardSkeleton />
-                    </div>
-                  </CarouselItem>
-                ))
-              ) : (
-                trendingVariants.map((variant) => (
-                  <CarouselItem key={variant.sku} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                    <div className="p-1">
-                      <VariantCard variant={variant} />
-                    </div>
-                  </CarouselItem>
-                ))
-              )}
-            </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
-          </Carousel>
-        </section>
+            
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                      <div className="p-1">
+                        <CardSkeleton />
+                      </div>
+                    </CarouselItem>
+                  ))
+                ) : (
+                  hotVariants.map((variant) => (
+                    <CarouselItem key={variant.sku} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                      <div className="p-1">
+                        <VariantCard variant={variant} />
+                      </div>
+                    </CarouselItem>
+                  ))
+                )}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          </section>
+        )}
+
+        {/* Biggest Losers Section */}
+        {!isLoading && biggestLosers.length > 0 && (
+          <section>
+            <div className="flex items-center gap-3 mb-8">
+              <TrendingDown className="h-8 w-8 text-destructive" />
+              <div>
+                <h2 className="text-3xl font-bold">Biggest Losers</h2>
+                <p className="text-muted-foreground">Top daily price decreases</p>
+              </div>
+            </div>
+            
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                      <div className="p-1">
+                        <CardSkeleton />
+                      </div>
+                    </CarouselItem>
+                  ))
+                ) : (
+                  biggestLosers.map((variant) => (
+                    <CarouselItem key={variant.sku} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                      <div className="p-1">
+                        <VariantCard variant={variant} />
+                      </div>
+                    </CarouselItem>
+                  ))
+                )}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          </section>
+        )}
+
+        {/* Highest Value Section */}
+        {!isLoading && trendingVariants.length > 0 && (
+          <section>
+            <div className="flex items-center gap-3 mb-8">
+              <Gem className="h-8 w-8 text-primary" />
+              <div>
+                <h2 className="text-3xl font-bold">Highest Value</h2>
+                <p className="text-muted-foreground">Highest value Labubus</p>
+              </div>
+            </div>
+            
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                      <div className="p-1">
+                        <CardSkeleton />
+                      </div>
+                    </CarouselItem>
+                  ))
+                ) : (
+                  trendingVariants.map((variant) => (
+                    <CarouselItem key={variant.sku} className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                      <div className="p-1">
+                        <VariantCard variant={variant} />
+                      </div>
+                    </CarouselItem>
+                  ))
+                )}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          </section>
+        )}
 
         {/* Footer */}
         <footer className="text-center py-8 border-t">

@@ -43,7 +43,7 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md">
+    <header className="static top-0 z-50 bg-background/80 backdrop-blur-md md:sticky">
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">

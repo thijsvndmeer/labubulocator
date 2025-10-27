@@ -5,6 +5,10 @@ interface PriceChangeBadgeProps {
 }
 
 export const PriceChangeBadge = ({ priceChange }: PriceChangeBadgeProps) => {
+  if (priceChange === 0) {
+    return null;
+  }
+
   const isPositive = priceChange > 0;
   const isNegative = priceChange < 0;
   const color = isPositive ? 'text-green-500' : isNegative ? 'text-red-500' : 'text-gray-500';

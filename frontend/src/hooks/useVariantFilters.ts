@@ -17,9 +17,9 @@ export const useVariantFilters = (variants: Labubu[], searchQuery: string) => {
   });
   const [sortBy, setSortBy] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('sortBy') || 'price-change';
+      return localStorage.getItem('sortBy') || 'series';
     }
-    return 'price-change';
+    return 'series';
   });
   const [randomOrderSkus, setRandomOrderSkus] = useState<string[]>([]);
 
