@@ -20,11 +20,9 @@ jobs:
 
       - name: Install dependencies
         run: yarn install
-        working-directory: ./frontend
 
       - name: Build
-        run: yarn build
-        working-directory: ./frontend
+        run: yarn workspace vite_react_shadcn_ts build
 
       - name: Create .nojekyll file
         run: touch ./frontend/dist/.nojekyll
