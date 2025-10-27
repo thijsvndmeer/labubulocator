@@ -24,9 +24,6 @@ jobs:
       - name: Build
         run: yarn workspace vite_react_shadcn_ts build
 
-      - name: Create .nojekyll file
-        run: touch ./frontend/dist/.nojekyll
-
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
