@@ -5,7 +5,11 @@ import fs from "fs";
 //============================================================================================================================================================================================
 // Setup
 //============================================================================================================================================================================================
-const dbPath = path.resolve("src", "data", "app.db");
+
+const dataDir = process.env.RENDER_DATA_DIR || path.resolve(process.cwd(), "data");
+const dbPath = path.join(dataDir, "app.db");
+const dbDir = path.dirname(dbPath);
+
 // Create the directory if it doesn't exist
 if (!fs.existsSync(dbDir)) {
   fs.mkdirSync(dbDir, { recursive: true });
