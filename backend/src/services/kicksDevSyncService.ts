@@ -4,7 +4,7 @@ import axios from "axios";
 import pLimit from "p-limit";
 import { calculateEstimatedValueForLabubu } from "./estimatedValueService";
 
-const KICKS_DEV_API_KEY = process.env.KICKS_DEV_API_KEY || "sd_r796CnCR9yo8earZQezqQsOh2e60Zqxb";
+const KICKS_DEV_API_KEY = process.env.KICKS_DEV_API_KEY;
 const KICKS_DEV_API_BASE_URL = "https://api.kicks.dev/v3/stockx/products";
 
 // Helper function for rate limiting
