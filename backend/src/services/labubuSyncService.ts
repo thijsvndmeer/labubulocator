@@ -21,6 +21,7 @@ const getSeriesFolderName = (series: string): string => {
 }
 
 export const syncLabubus = async () => {
+  console.log("LABUBU SYNC: Starting Labubu synchronization from CSV.");
   try {
     const parser = fs.createReadStream(csvPath).pipe(
       parse({
@@ -31,6 +32,7 @@ export const syncLabubus = async () => {
     );
 
     for await (const record of parser) {
+      console.log(`LABUBU SYNC: Processing record for SKU: ${record.sku}`);
       const labubuData: Partial<Labubu> = {
         sku: record.sku,
         name: record.name,
@@ -46,10 +48,11 @@ export const syncLabubus = async () => {
       }
 
       await labubuRepository.updateOrCreate(labubuData as Labubu);
+      console.log(`LABUBU SYNC: Upserted Labubu with SKU: ${record.sku}`);
     }
 
-    console.log(`Succesfully synced ${csvPath} with the database`);
+    console.log(`LABUBU SYNC: Succesfully synced ${csvPath} with the database`);
   } catch (err) {
-    console.error(`Error processing ${csvPath}:`, err);
+    console.error(`LABUBU SYNC: Error processing ${csvPath}:`, err);
   }
 };

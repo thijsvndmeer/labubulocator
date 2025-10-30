@@ -8,8 +8,10 @@ const CURRENT_MARKET_WEIGHT = 0.7;
 const HISTORICAL_WEIGHT = 0.3;
 
 const calculateHistoricalValue = async (sku: string): Promise<number | null> => {
+  console.log(`ESTIMATED VALUE: Calculating historical value for ${sku}.`);
   const historicalPrices = await priceHistoryRepository.getAllByLabubuSku(sku);
   if (historicalPrices.length === 0) {
+    console.log(`ESTIMATED VALUE: No historical prices found for ${sku}.`);
     return null;
   }
 
@@ -24,21 +26,26 @@ const calculateHistoricalValue = async (sku: string): Promise<number | null> => 
     weightSum += weight;
   }
 
-  return weightSum > 0 ? weightedPriceSum / weightSum : null;
+  const result = weightSum > 0 ? weightedPriceSum / weightSum : null;
+  console.log(`ESTIMATED VALUE: Calculated historical value for ${sku}: ${result}`);
+  return result;
 };
 
 const calculateCurrentMarketValue = (labubu: Labubu): number | null => {
+  console.log(`ESTIMATED VALUE: Calculating current market value for ${labubu.name}.`);
   const { stockxPrice, ebayLowestPrice } = labubu;
 
+  let result: number | null = null;
   if (stockxPrice && ebayLowestPrice) {
-    return STOCKX_WEIGHT * stockxPrice + EBAY_WEIGHT * ebayLowestPrice;
+    result = STOCKX_WEIGHT * stockxPrice + EBAY_WEIGHT * ebayLowestPrice;
   } else if (stockxPrice) {
-    return stockxPrice;
+    result = stockxPrice;
   } else if (ebayLowestPrice) {
-    return ebayLowestPrice;
+    result = ebayLowestPrice;
   }
 
-  return null;
+  console.log(`ESTIMATED VALUE: Calculated current market value for ${labubu.name}: ${result}`);
+  return result;
 };
 
 const roundEstimatedValue = (value: number): number => {
@@ -49,6 +56,7 @@ const roundEstimatedValue = (value: number): number => {
 };
 
 export const calculateEstimatedValueForLabubu = async (labubu: Labubu) => {
+  console.log(`ESTIMATED VALUE: Calculating estimated value for ${labubu.name}.`);
   const previousEstimatedValue = labubu.estimatedValue;
 
   const historicalValue = await calculateHistoricalValue(labubu.sku);
@@ -65,7 +73,9 @@ export const calculateEstimatedValueForLabubu = async (labubu: Labubu) => {
   }
 
   if (estimatedValue) {
+    console.log(`ESTIMATED VALUE: Calculated estimated value for ${labubu.name}: ${estimatedValue}`);
     const roundedValue = roundEstimatedValue(estimatedValue);
+    console.log(`ESTIMATED VALUE: Rounded estimated value for ${labubu.name}: ${roundedValue}`);
     let priceChange24h: number | undefined = undefined;
 
     if (previousEstimatedValue) {
@@ -85,12 +95,12 @@ export const calculateEstimatedValueForLabubu = async (labubu: Labubu) => {
 };
 
 export const calculateEstimatedValues = async () => {
-  console.log("Calculating estimated values for all labubus...");
+  console.log("ESTIMATED VALUE: Calculating estimated values for all labubus...");
   const labubus = await labubuRepository.get({});
 
   for (const labubu of labubus) {
     await calculateEstimatedValueForLabubu(labubu);
   }
 
-  console.log("Finished calculating estimated values for all labubus.");
+  console.log("ESTIMATED VALUE: Finished calculating estimated values for all labubus.");
 };

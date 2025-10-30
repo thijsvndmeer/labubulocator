@@ -23,6 +23,7 @@ export abstract class BaseRepository<T> {
    * @param tableName - The name of the table in the database.
    */
   constructor(db: Database, tableName: string) {
+    console.log(`REPOSITORY: Initializing ${tableName} repository.`);
     this.db = db;
     this.tableName = tableName;
   }
@@ -39,12 +40,15 @@ export abstract class BaseRepository<T> {
    * @returns A promise that resolves to the ID of the newly created record.
    */
   protected async create(data: Omit<T, "id">): Promise<number> {
+    console.log(`REPOSITORY: Creating new record in ${this.tableName}.`);
     // Invalidate cache on create
     this.cache.clear();
     const dataKeys = Object.keys(data);
 
     const sql = `INSERT INTO ${this.tableName} (${dataKeys.join(", ")}) VALUES (${dataKeys.map(() => "?").join(", ")})`;
-    return (await runQuery(this.db, sql, Object.values(data))).lastID;
+    const result = await runQuery(this.db, sql, Object.values(data));
+    console.log(`REPOSITORY: Created new record with ID: ${result.lastID}`);
+    return result.lastID;
   }
 
   // read
@@ -68,14 +72,17 @@ export abstract class BaseRepository<T> {
     const cached = this.cache.get(cacheKey);
 
     if (cached && (Date.now() - cached.timestamp < this.cacheDuration)) {
+      console.log(`REPOSITORY: Returning cached data for ${this.tableName}.`);
       return cached.data as Pick<T, K>[];
     }
 
+    console.log(`REPOSITORY: Getting records from ${this.tableName}.`);
     const { clause, params } = buildOptionsClause(options);
 
     const sql = `SELECT ${fields ? fields.join(", ") : "*"} FROM ${this.tableName} ${clause}`;
     const result = await getQuery(this.db, sql, params);
 
+    console.log(`REPOSITORY: Found ${result.length} records in ${this.tableName}.`);
     this.cache.set(cacheKey, { data: result as T[], timestamp: Date.now() });
     return result as Pick<T, K>[];
   }
@@ -94,17 +101,21 @@ export abstract class BaseRepository<T> {
    * @throws Error - If any option field or value is invalid, or if data fields are invalid.
    */
   protected async update(criteria: QueryCriteria<T> = {}, data: Partial<Omit<T, "id">>): Promise<number> {
+    console.log(`REPOSITORY: Updating records in ${this.tableName}.`);
     // Invalidate cache on update
     this.cache.clear();
     const { clause, params } = buildOptionsClause(criteria);
 
     const { clause: setClause, params: setParams } = buildSetClause(data);
     if (setParams.length === 0) {
+      console.log(`REPOSITORY: No fields to update in ${this.tableName}.`);
       return 0; // No fields to update
     }
 
     const sql = `UPDATE ${this.tableName} ${setClause} ${clause}`;
-    return (await runQuery(this.db, sql, setParams.concat(params))).changes;
+    const result = await runQuery(this.db, sql, setParams.concat(params));
+    console.log(`REPOSITORY: Updated ${result.changes} records in ${this.tableName}.`);
+    return result.changes;
   }
 
   // delete
@@ -118,11 +129,14 @@ export abstract class BaseRepository<T> {
    * @returns A promise that resolves to the number of rows affected by the delete operation.
    */
   protected async delete(criteria: QueryCriteria<T> = {}): Promise<number> {
+    console.log(`REPOSITORY: Deleting records from ${this.tableName}.`);
     // Invalidate cache on delete
     this.cache.clear();
     const { clause, params } = buildOptionsClause(criteria);
 
     const sql = `DELETE FROM ${this.tableName} ${clause}`;
-    return (await runQuery(this.db, sql, params)).changes;
+    const result = await runQuery(this.db, sql, params);
+    console.log(`REPOSITORY: Deleted ${result.changes} records from ${this.tableName}.`);
+    return result.changes;
   }
 }

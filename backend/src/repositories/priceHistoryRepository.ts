@@ -47,6 +47,7 @@ export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> 
   }
 
   public async getMinMaxPriceForLabubuLast24h(labubuSku: string): Promise<{ min: number; max: number } | null> {
+    console.log(`REPOSITORY: Getting min/max price for labubu ${labubuSku} in the last 24h.`);
     const oneDayAgo = new Date();
     oneDayAgo.setDate(oneDayAgo.getDate() - 1);
     const oneDayAgoISO = oneDayAgo.toISOString();
@@ -60,12 +61,15 @@ export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> 
     const result = await getQuery<{ minPrice: number; maxPrice: number }>(this.db, sql, [labubuSku, oneDayAgoISO]);
 
     if (result && result.length > 0 && result[0].minPrice !== null && result[0].maxPrice !== null) {
+      console.log(`REPOSITORY: Found min/max price for labubu ${labubuSku}:`, result[0]);
       return { min: result[0].minPrice, max: result[0].maxPrice };
     }
+    console.log(`REPOSITORY: No min/max price found for labubu ${labubuSku}.`);
     return null;
   }
 
   public async getAllByLabubuSku(labubuSku: string): Promise<{ price: number; date: string }[]> {
+    console.log(`REPOSITORY: Getting all price history for labubu ${labubuSku}.`);
     const sql = `
       SELECT ph.price, ph.date
       FROM price_history ph
@@ -73,6 +77,7 @@ export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> 
       WHERE l.labubuSku = ?
     `;
     const result = await getQuery<{ price: number; date: string }>(this.db, sql, [labubuSku]);
+    console.log(`REPOSITORY: Found ${result.length} price history records for labubu ${labubuSku}.`);
     return result || [];
   }
 }

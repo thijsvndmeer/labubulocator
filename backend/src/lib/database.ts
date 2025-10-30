@@ -9,6 +9,7 @@ import fs from "fs";
 const dataDir = process.env.RENDER_DATA_DIR || path.resolve(process.cwd(), "data");
 const dbPath = path.join(dataDir, "app.db");
 const dbDir = path.dirname(dbPath);
+console.log(`DATABASE: Database path: ${dbPath}`);
 
 // Create the directory if it doesn't exist
 if (!fs.existsSync(dbDir)) {
@@ -17,9 +18,9 @@ if (!fs.existsSync(dbDir)) {
 
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
-    console.error("Error connecting to database", err.message);
+    console.error("DATABASE: Error connecting to database", err.message);
   } else {
-    console.log("Database connected");
+    console.log("DATABASE: Database connected");
   }
 });
 
@@ -28,6 +29,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
 //============================================================================================================================================================================================
 
 db.serialize(() => {
+  console.log("DATABASE: Initializing database schema...");
   // Create the labubus table
   db.run(
     `
@@ -50,7 +52,9 @@ db.serialize(() => {
   `,
     (err) => {
       if (err) {
-        console.error("Error creating labubus table", err.message);
+        console.error("DATABASE: Error creating labubus table", err.message);
+      } else {
+        console.log("DATABASE: labubus table created or already exists.");
       }
     }
   );
@@ -60,7 +64,9 @@ db.serialize(() => {
     `CREATE INDEX IF NOT EXISTS idx_labubus_sku ON labubus (sku)`,
     (err) => {
       if (err) {
-        console.error("Error creating index on labubus(sku)", err.message);
+        console.error("DATABASE: Error creating index on labubus(sku)", err.message);
+      } else {
+        console.log("DATABASE: Index on labubus(sku) created or already exists.");
       }
     }
   );
@@ -70,7 +76,7 @@ db.serialize(() => {
     `ALTER TABLE labubus ADD COLUMN stockxLastRefreshed TEXT`,
     (err) => {
       if (err && !err.message.includes("duplicate column name")) {
-        console.error("Error adding stockxLastRefreshed column to labubus table", err.message);
+        console.error("DATABASE: Error adding stockxLastRefreshed column to labubus table", err.message);
       }
     }
   );
@@ -80,7 +86,7 @@ db.serialize(() => {
     `ALTER TABLE labubus ADD COLUMN ebayLastRefreshed TEXT`,
     (err) => {
       if (err && !err.message.includes("duplicate column name")) {
-        console.error("Error adding ebayLastRefreshed column to labubus table", err.message);
+        console.error("DATABASE: Error adding ebayLastRefreshed column to labubus table", err.message);
       }
     }
   );
@@ -94,7 +100,7 @@ db.serialize(() => {
     `ALTER TABLE labubus ADD COLUMN ebayLowestPrice REAL`,
     (err) => {
       if (err && !err.message.includes("duplicate column name")) {
-        console.error("Error adding ebayLowestPrice column to labubus table", err.message);
+        console.error("DATABASE: Error adding ebayLowestPrice column to labubus table", err.message);
       }
     }
   );
@@ -104,7 +110,7 @@ db.serialize(() => {
     `ALTER TABLE labubus ADD COLUMN stockStatus TEXT`,
     (err) => {
       if (err && !err.message.includes("duplicate column name")) {
-        console.error("Error adding stockStatus column to labubus table", err.message);
+        console.error("DATABASE: Error adding stockStatus column to labubus table", err.message);
       }
     }
   );
@@ -114,7 +120,7 @@ db.serialize(() => {
     `ALTER TABLE labubus ADD COLUMN kicksdevId TEXT`,
     (err) => {
       if (err && !err.message.includes("duplicate column name")) {
-        console.error("Error adding kicksdevId column to labubus table", err.message);
+        console.error("DATABASE: Error adding kicksdevId column to labubus table", err.message);
       }
     }
   );
@@ -124,7 +130,7 @@ db.serialize(() => {
     `ALTER TABLE labubus ADD COLUMN stockxPrice REAL`,
     (err) => {
       if (err && !err.message.includes("duplicate column name")) {
-        console.error("Error adding stockxPrice column to labubus table", err.message);
+        console.error("DATABASE: Error adding stockxPrice column to labubus table", err.message);
       }
     }
   );
@@ -134,7 +140,7 @@ db.serialize(() => {
     `ALTER TABLE labubus ADD COLUMN estimatedValue REAL`,
     (err) => {
       if (err && !err.message.includes("duplicate column name")) {
-        console.error("Error adding estimatedValue column to labubus table", err.message);
+        console.error("DATABASE: Error adding estimatedValue column to labubus table", err.message);
       }
     }
   );
@@ -144,7 +150,7 @@ db.serialize(() => {
     `ALTER TABLE labubus ADD COLUMN estimatedValueLastCalculated TEXT`,
     (err) => {
       if (err && !err.message.includes("duplicate column name")) {
-        console.error("Error adding estimatedValueLastCalculated column to labubus table", err.message);
+        console.error("DATABASE: Error adding estimatedValueLastCalculated column to labubus table", err.message);
       }
     }
   );
@@ -154,7 +160,7 @@ db.serialize(() => {
     `ALTER TABLE labubus ADD COLUMN priceChange24h REAL`,
     (err) => {
       if (err && !err.message.includes("duplicate column name")) {
-        console.error("Error adding priceChange24h column to labubus table", err.message);
+        console.error("DATABASE: Error adding priceChange24h column to labubus table", err.message);
       }
     }
   );
@@ -166,7 +172,7 @@ db.serialize(() => {
     `ALTER TABLE labubus ADD COLUMN stockStatus TEXT`,
     (err) => {
       if (err && !err.message.includes("duplicate column name")) {
-        console.error("Error adding stockStatus column to labubus table", err.message);
+        console.error("DATABASE: Error adding stockStatus column to labubus table", err.message);
       }
     }
   );
@@ -189,7 +195,9 @@ db.serialize(() => {
   `,
     (err) => {
       if (err) {
-        console.error("Error creating listings table", err.message);
+        console.error("DATABASE: Error creating listings table", err.message);
+      } else {
+        console.log("DATABASE: listings table created or already exists.");
       }
     }
   );
@@ -199,7 +207,9 @@ db.serialize(() => {
     `CREATE INDEX IF NOT EXISTS idx_listings_labubuSku ON listings (labubuSku)`,
     (err) => {
       if (err) {
-        console.error("Error creating index on listings(labubuSku)", err.message);
+        console.error("DATABASE: Error creating index on listings(labubuSku)", err.message);
+      } else {
+        console.log("DATABASE: Index on listings(labubuSku) created or already exists.");
       }
     }
   );
@@ -218,7 +228,9 @@ db.serialize(() => {
   `,
     (err) => {
       if (err) {
-        console.error("Error creating price_history table", err.message);
+        console.error("DATABASE: Error creating price_history table", err.message);
+      } else {
+        console.log("DATABASE: price_history table created or already exists.");
       }
     }
   );
@@ -228,7 +240,9 @@ db.serialize(() => {
     `CREATE INDEX IF NOT EXISTS idx_price_history_listingId ON price_history (listingId)`,
     (err) => {
       if (err) {
-        console.error("Error creating index on price_history(listingId)", err.message);
+        console.error("DATABASE: Error creating index on price_history(listingId)", err.message);
+      } else {
+        console.log("DATABASE: Index on price_history(listingId) created or already exists.");
       }
     }
   );

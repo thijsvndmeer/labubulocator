@@ -30,8 +30,8 @@ interface KicksDevApiResponse {
 export const stockxLimit = pLimit(1); // Limit to 1 concurrent StockX request
 
 export const processStockxLabubu = async (labubu: Labubu) => {
-  console.log("--- START processStockxLabubu ---");
-  console.log("Initial labubu object:", labubu);
+  console.log("STOCKX: --- START processStockxLabubu ---");
+  console.log("STOCKX: Initial labubu object:", labubu);
 
   const threeDaysAgo = new Date();
   threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
@@ -66,24 +66,24 @@ export const processStockxLabubu = async (labubu: Labubu) => {
               "display[variants]": true,
             },
           });
-          console.log("Direct lookup response:", response.data);
+          console.log("STOCKX: Direct lookup response:", response.data);
           const product = response.data.data;
           if (product) {
-            console.log("Direct lookup product:", product);
+            console.log("STOCKX: Direct lookup product:", product);
             const title = product.title || product.primary_title || '';
             if (!title.toLowerCase().includes('blind box')) {
               currentLowestAsk = product.variants?.[0]?.lowest_ask;
               currentStockxLink = product.link;
               currentKicksdevId = product.slug;
-              console.log("Direct lookup values:", { currentLowestAsk, currentStockxLink, currentKicksdevId });
+              console.log("STOCKX: Direct lookup values:", { currentLowestAsk, currentStockxLink, currentKicksdevId });
             }
           }
         } catch (error) {
-          console.error("Error during direct lookup:", error);
+          console.error("STOCKX: Error during direct lookup:", error);
         }
       } else {
         const performSearch = async (query: string) => {
-          console.log(`Performing search with query: "${query}"`);
+          console.log(`STOCKX: Performing search with query: "${query}"`);
           try {
             const response = await axios.get<KicksDevApiResponse>(KICKS_DEV_API_BASE_URL, {
               headers: {
@@ -95,9 +95,9 @@ export const processStockxLabubu = async (labubu: Labubu) => {
                 brand: 'Pop Mart',
               },
             });
-            console.log("Search response data:", response.data);
+            console.log("STOCKX: Search response data:", response.data);
             const stockxData = response.data.data;
-            console.log("Search stockxData:", stockxData);
+            console.log("STOCKX: Search stockxData:", stockxData);
 
             let lowestAsk: number | undefined;
             let stockxLink: string | undefined;
@@ -114,14 +114,14 @@ export const processStockxLabubu = async (labubu: Labubu) => {
                   }
                 }
               }
-              console.log("Valid asks:", validAsks);
+              console.log("STOCKX: Valid asks:", validAsks);
 
               if (validAsks.length > 0) {
                 validAsks.sort((a, b) => a.price - b.price);
                 lowestAsk = validAsks[0].price;
                 stockxLink = validAsks[0].link;
                 kicksdevId = validAsks[0].slug;
-                console.log("Initial search result:", { lowestAsk, stockxLink, kicksdevId });
+                console.log("STOCKX: Initial search result:", { lowestAsk, stockxLink, kicksdevId });
 
                 if (
                   labubu.rarity === 'common' &&
@@ -134,7 +134,7 @@ export const processStockxLabubu = async (labubu: Labubu) => {
                     lowestAsk = validAsks[1].price;
                     stockxLink = validAsks[1].link;
                     kicksdevId = validAsks[1].slug;
-                    console.log("Second best search result:", { lowestAsk, stockxLink, kicksdevId });
+                    console.log("STOCKX: Second best search result:", { lowestAsk, stockxLink, kicksdevId });
                   } else {
                     console.log(`STOCKX: Price for ${labubu.name} is >= 2 * MSRP, but no second best search result available.`);
                     lowestAsk = undefined;
@@ -146,7 +146,7 @@ export const processStockxLabubu = async (labubu: Labubu) => {
             }
             return { lowestAsk, stockxLink, kicksdevId };
           } catch (error) {
-            console.error("Error during search:", error);
+            console.error("STOCKX: Error during search:", error);
             return { lowestAsk: undefined, stockxLink: undefined, kicksdevId: undefined };
           }
         };
@@ -162,7 +162,7 @@ export const processStockxLabubu = async (labubu: Labubu) => {
         currentLowestAsk = searchResult.lowestAsk;
         currentStockxLink = searchResult.stockxLink;
         currentKicksdevId = searchResult.kicksdevId;
-        console.log("Final search result:", { currentLowestAsk, currentStockxLink, currentKicksdevId });
+        console.log("STOCKX: Final search result:", { currentLowestAsk, currentStockxLink, currentKicksdevId });
       }
 
       const updateData: Partial<Labubu> = { stockxLastRefreshed: new Date().toISOString() };
@@ -185,7 +185,7 @@ export const processStockxLabubu = async (labubu: Labubu) => {
         updateData.kicksdevId = currentKicksdevId;
       }
 
-      console.log("Update data:", updateData);
+      console.log("STOCKX: Update data:", updateData);
 
       if (Object.keys(updateData).length > 1) {
         await labubuRepository.update(
@@ -204,5 +204,5 @@ export const processStockxLabubu = async (labubu: Labubu) => {
       console.error(`STOCKX: Error fetching StockX data for Labubu ${labubu.name} (SKU: ${labubu.sku}):`, apiError);
     }
   }
-  console.log("--- END processStockxLabubu ---");
+  console.log("STOCKX: --- END processStockxLabubu ---");
 };

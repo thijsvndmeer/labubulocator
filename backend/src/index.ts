@@ -12,6 +12,7 @@ import fs from 'fs';
 import path from 'path';
 
 const app = express();
+console.log("APP: Starting up...");
 app.set("query parser", "extended");
 const port = process.env.PORT || 3001;
 
@@ -23,8 +24,10 @@ export const labubuRepository = new LabubuRepository(db);
 export const listingRepository = new ListingRepository(db);
 export const priceHistoryRepository = new PriceHistoryRepository(db);
 
-syncLabubus();
-startApiSync();
+(async () => {
+  await syncLabubus();
+  startApiSync();
+})();
 
 //============================================================================================================================================================================================
 // Middleware
@@ -48,7 +51,7 @@ const findImageRecursively = (filename: string, currentDir: string): string | nu
 };
 
 app.use((req, res, next) => {
-  const allowedOrigins = ["https://labubulocator.me"];
+  const allowedOrigins = ["https://labubulocator.me","localhost"];
   const origin = req.headers.origin;
   if (origin && allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
