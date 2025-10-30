@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { RarityBadge } from '@/components/RarityBadge';
-import { ConfidenceScore } from '@/components/ConfidenceScore';
+import { VolatilityMetric } from '@/components/VolatilityMetric';
 import { StockStatusBadge } from '@/components/StockStatusBadge';
 import { ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -104,7 +104,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
         </div>
 
         <Link to={`/variant/${variant.sku}`}>
-          <ConfidenceScore score={variant.confidenceScore || 0} />
+          <VolatilityMetric volatility={variant.volatility || 0} />
         </Link>
       </div>
     </Card>

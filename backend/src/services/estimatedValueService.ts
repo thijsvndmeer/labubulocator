@@ -7,6 +7,26 @@ const DECAY_RATE = 0.1;
 const CURRENT_MARKET_WEIGHT = 0.7;
 const HISTORICAL_WEIGHT = 0.3;
 
+const calculateVolatility = async (sku: string): Promise<number | undefined> => {
+  console.log(`ESTIMATED VALUE: Calculating volatility for ${sku}.`);
+  const historicalPrices = await priceHistoryRepository.getAllByLabubuSku(sku);
+  if (historicalPrices.length < 2) {
+    console.log(`ESTIMATED VALUE: Not enough historical prices to calculate volatility for ${sku}.`);
+    return undefined;
+  }
+
+  const prices = historicalPrices.map(p => p.price);
+  const mean = prices.reduce((a, b) => a + b, 0) / prices.length;
+  const variance = prices.map(p => Math.pow(p - mean, 2)).reduce((a, b) => a + b, 0) / prices.length;
+  const stdDev = Math.sqrt(variance);
+
+  // Normalize volatility to a 0-100 scale. Assuming prices are in a reasonable range.
+  const normalizedVolatility = Math.min(stdDev / 5, 1) * 100;
+
+  console.log(`ESTIMATED VALUE: Calculated volatility for ${sku}: ${normalizedVolatility}`);
+  return normalizedVolatility;
+};
+
 const calculateHistoricalValue = async (sku: string): Promise<number | null> => {
   console.log(`ESTIMATED VALUE: Calculating historical value for ${sku}.`);
   const historicalPrices = await priceHistoryRepository.getAllByLabubuSku(sku);
@@ -61,6 +81,7 @@ export const calculateEstimatedValueForLabubu = async (labubu: Labubu) => {
 
   const historicalValue = await calculateHistoricalValue(labubu.sku);
   const currentMarketValue = calculateCurrentMarketValue(labubu);
+  const volatility = await calculateVolatility(labubu.sku);
 
   let estimatedValue: number | null = null;
 
@@ -88,6 +109,7 @@ export const calculateEstimatedValueForLabubu = async (labubu: Labubu) => {
         estimatedValue: roundedValue,
         estimatedValueLastCalculated: new Date().toISOString(),
         priceChange24h: priceChange24h,
+        volatility: volatility,
       }
     );
     console.log(`ESTIMATED VALUE: Updated estimated value for ${labubu.name} to ${roundedValue}`);

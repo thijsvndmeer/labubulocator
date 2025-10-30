@@ -33,6 +33,7 @@ export const processStockxLabubu = async (labubu: Labubu) => {
   console.log("STOCKX: --- START processStockxLabubu ---");
   console.log("STOCKX: Initial labubu object:", labubu);
 
+  console.log(`STOCKX: Checking if Labubu ${labubu.name} (SKU: ${labubu.sku}) needs a StockX price update.`);
   const threeDaysAgo = new Date();
   threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
