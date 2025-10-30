@@ -331,14 +331,14 @@ export default function VariantDetail() {
                           <Card className="p-4">
                             <div className="flex items-center justify-between mb-2">
                               <h4 className="font-semibold">StockX</h4>
-                              {mergedVariant.msrp && mergedVariant.lowestPrice && (
+                              {mergedVariant.msrp && mergedVariant.stockxPrice && (
                                 <span className={`text-sm font-medium text-gray-500`}>
-                                  {typeof mergedVariant.lowestPrice === 'number' && typeof mergedVariant.msrp === 'number' ? `${((mergedVariant.lowestPrice - mergedVariant.msrp) / mergedVariant.msrp * 100).toFixed(0)}% vs MSRP` : '--.--'}
+                                  {typeof mergedVariant.stockxPrice === 'number' && typeof mergedVariant.msrp === 'number' ? `${((mergedVariant.stockxPrice - mergedVariant.msrp) / mergedVariant.msrp * 100).toFixed(0)}% vs MSRP` : '--.--'}
                                 </span>
                               )}
                             </div>
                             <div className="flex items-center justify-between">
-                              <span className="text-2xl font-bold">{typeof mergedVariant.lowestPrice === 'number' ? `$${mergedVariant.lowestPrice.toFixed(2)}` : '--.--'}</span>
+                              <span className="text-2xl font-bold">{typeof mergedVariant.stockxPrice === 'number' ? `$${mergedVariant.stockxPrice.toFixed(2)}` : '--.--'}</span>
                               <Button size="sm" asChild>
                                 <a href={`https://stockx.com/${mergedVariant.kicksdevId}`} target="_blank" rel="noopener noreferrer">
                                   View on StockX
