@@ -30,6 +30,7 @@ export const labubuSchema = z.object({
   recentSales: z.array(z.object({ source: z.string(), price: z.coerce.number(), currency: z.string(), date: z.string(), url: z.string() })).optional(),
   stockxLastRefreshed: z.string().optional(),
   ebayLastRefreshed: z.string().optional(),
+  ebaySearchOverride: z.string().optional(),
 });
 export type Labubu = z.infer<typeof labubuSchema>;
 

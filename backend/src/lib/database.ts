@@ -165,6 +165,16 @@ db.serialize(() => {
     }
   );
 
+  // Add ebaySearchOverride column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN ebaySearchOverride TEXT`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("DATABASE: Error adding ebaySearchOverride column to labubus table", err.message);
+      }
+    }
+  );
+
   // Create the listings table
 
   // Add stockStatus column if it doesn't exist

@@ -47,6 +47,10 @@ export const syncLabubus = async () => {
         labubuData.kicksdevId = record.kicksdevId;
       }
 
+      if (record.ebaySearchOverride && record.ebaySearchOverride.trim() !== '') {
+        labubuData.ebaySearchOverride = record.ebaySearchOverride;
+      }
+
       await labubuRepository.updateOrCreate(labubuData as Labubu);
       console.log(`LABUBU SYNC: Upserted Labubu with SKU: ${record.sku}`);
     }

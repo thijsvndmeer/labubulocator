@@ -70,11 +70,13 @@ export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit
   try {
     const token = await getAccessToken();
 
-    let baseEbayQuery = labubu.name;
-    if (labubu.series === "Mokoko") {
-      baseEbayQuery += " Mokoko";
-    } else {
-      baseEbayQuery += " labubu";
+    let baseEbayQuery = labubu.ebaySearchOverride || labubu.name;
+    if (!labubu.ebaySearchOverride) {
+      if (labubu.series === "Mokoko") {
+        baseEbayQuery += " Mokoko";
+      } else {
+        baseEbayQuery += " labubu";
+      }
     }
     console.log(`EBAY: Base eBay query: "${baseEbayQuery}"`);
 
