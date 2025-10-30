@@ -30,14 +30,14 @@ export const startApiSync = () => {
         try {
           const allLabubus = await labubuRepository.get({});
           console.log(`SCHEDULER: Found ${allLabubus.length} Labubus for initial Kicks.dev synchronization.`);
-          const promises = allLabubus.map(labubu => stockxLimit(() => processStockxLabubu(labubu)));
-          await Promise.all(promises);
+          // const promises = allLabubus.map(labubu => stockxLimit(() => processStockxLabubu(labubu)));
+          // await Promise.all(promises); uncomment these lines to enable initial sync
           console.log("SCHEDULER: Initial Labubu value synchronization completed.");
         } catch (error) {
           console.error("SCHEDULER: Error during initial Labubu value synchronization:", error);
         }
       })(),
-      syncAllEbayLabubus() // Uncomment this line if you want to run eBay sync on startup as well (which i dont)
+      // syncAllEbayLabubus() // Uncomment this line if you want to run eBay sync on startup as well
     ]);
     console.log("SCHEDULER: Initial API synchronization completed.");
 
