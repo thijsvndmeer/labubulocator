@@ -123,23 +123,12 @@ export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit
           validPrices.sort((a, b) => a.price - b.price);
           console.log(`EBAY: Sorted valid prices:`, validPrices);
 
-          if (
-            labubu.rarity === 'common' &&
-            labubu.stockStatus === 'aftermarketorbb' &&
-            labubu.msrp &&
-            validPrices[0].price >= labubu.msrp * 2
-          ) {
-            if (validPrices.length > 1) {
-              console.log(`EBAY: Price for ${labubu.name} is >= 2 * MSRP. Using second best search result.`);
-              return { lowestPrice: validPrices[1].price, ebayUrl: validPrices[1].url };
-            } else {
-              console.log(`EBAY: Price for ${labubu.name} is >= 2 * MSRP, but no second best search result available.`);
-              return { lowestPrice: undefined, ebayUrl: validPrices[0].url };
-            }
-          }
+          const mid = Math.floor(validPrices.length / 2);
+          const medianPrice = validPrices.length % 2 !== 0 ? validPrices[mid].price : (validPrices[mid - 1].price + validPrices[mid].price) / 2;
+          const medianUrl = validPrices[mid].url;
 
-          console.log(`EBAY: Returning lowest price: ${validPrices[0].price}`);
-          return { lowestPrice: validPrices[0].price, ebayUrl: validPrices[0].url };
+          console.log(`EBAY: Returning median price: ${medianPrice}`);
+          return { lowestPrice: medianPrice, ebayUrl: medianUrl };
         }
       }
       console.log(`EBAY: No valid price found for query "${query}"`);
