@@ -1,7 +1,27 @@
 import { z, ZodObject } from "zod";
 
-export type Rarity = "common" | "uncommon" | "rare" | "epic" | "legendary" | "secret";
-export type StockStatus = "in_stock" | "low_stock" | "out_of_stock" | "pre_order" | "discontinued" | "aftermarketorbb";
+export const Rarity = {
+  Common: "common",
+  Uncommon: "uncommon",
+  Rare: "rare",
+  Epic: "epic",
+  Legendary: "legendary",
+  Secret: "secret",
+} as const; // `as const` creates a literal type from the object, which is useful for type inference.
+
+export type Rarity = (typeof Rarity)[keyof typeof Rarity];
+
+export const StockStatus = {
+  InStock: "in_stock",
+  LowStock: "low_stock",
+  OutOfStock: "out_of_stock",
+  PreOrder: "pre_order",
+  Discontinued: "discontinued",
+  AftermarketOrBB: "aftermarketorbb",
+  Unknown: "unknown", // Added Unknown for initialization safety
+} as const;
+
+export type StockStatus = (typeof StockStatus)[keyof typeof StockStatus];
 
 export interface PriceSource {
   source: string;
@@ -53,10 +73,10 @@ export const makeRangeSchema = <T extends ZodObject<any>>(schema: T) => {
       min: z.any().optional(),
       max: z.any().optional(),
     })
-    .refine(({ min, max }) => {
-      return min !== undefined || max !== undefined;
+    .refine((data): data is { field: string, min?: any, max?: any } => { // Explicitly type data
+      return data.min !== undefined || data.max !== undefined;
     }, "Range must contain min or max")
-    .superRefine((data, ctx) => {
+    .superRefine((data, ctx: z.RefinementCtx) => { // Explicitly type ctx
       const fieldSchema = schema.shape[data.field];
 
       if (data.min !== undefined) {

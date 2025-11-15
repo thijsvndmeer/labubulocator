@@ -20,6 +20,14 @@ const SharedCollection = lazy(() => import("./pages/SharedCollection"));
 const SharedFavorites = lazy(() => import("./pages/SharedFavorites"));
 const Random = lazy(() => import("./pages/Random"));
 const Home = lazy(() => import("./pages/Home"));
+const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage"));
+const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
+const AdminCharacterEditorPage = lazy(() => import("./pages/AdminCharacterEditorPage"));
+const AdminSetEditorPage = lazy(() => import("./pages/AdminSetEditorPage"));
+const AdminVariantEditorPage = lazy(() => import("./pages/AdminVariantEditorPage"));
+const AdminCollectionCategoryEditorPage = lazy(() => import("./pages/AdminCollectionCategoryEditorPage"));
+const AdminSiteConfigEditorPage = lazy(() => import("./pages/AdminSiteConfigEditorPage"));
+const AdminSearchSettingsEditorPage = lazy(() => import("./pages/AdminSearchSettingsEditorPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -75,6 +83,16 @@ export const AppContent = () => {
           <Route path="/sharedfavorites" element={<SharedFavorites />} />
           <Route path="/random" element={<Random />} />
           <Route path="/home" element={<Home />} />
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboardPage />} /> {/* Admin Dashboard homepage */}
+            <Route path="character/:id?" element={<AdminCharacterEditorPage />} />
+            <Route path="set/:id?" element={<AdminSetEditorPage />} />
+            <Route path="variant/:id?" element={<AdminVariantEditorPage />} />
+            <Route path="collection-category/:id?" element={<AdminCollectionCategoryEditorPage />} />
+            <Route path="site-config/:id?" element={<AdminSiteConfigEditorPage />} />
+            <Route path="search-settings/:id?" element={<AdminSearchSettingsEditorPage />} />
+          </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

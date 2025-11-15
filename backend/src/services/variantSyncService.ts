@@ -1,6 +1,6 @@
 import { parse } from "csv-parse";
 import fs from "fs";
-import { labubuRepository } from "../index";
+import { variantRepository } from "../index";
 import { Variant } from "@labubu/common";
 import path from "path";
 
@@ -20,7 +20,7 @@ const getSeriesFolderName = (series: string): string => {
     return series.toLowerCase().replace(/ /g, '-');
 }
 
-export const syncLabubus = async () => {
+export const syncVariants = async () => {
   console.log("VARIANT SYNC: Starting Variant synchronization from CSV.");
   try {
     const parser = fs.createReadStream(csvPath).pipe(
@@ -51,7 +51,7 @@ export const syncLabubus = async () => {
         variantData.ebaySearchOverride = record.ebaySearchOverride;
       }
 
-      await labubuRepository.updateOrCreate(variantData as Variant);
+      await variantRepository.updateOrCreate(variantData as Variant);
       console.log(`VARIANT SYNC: Upserted Variant with SKU: ${record.sku}`);
     }
 

@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { Variant } from "@labubu/common";
-import { labubuRepository, priceHistoryRepository } from "../index";
+import { variantRepository, priceHistoryRepository } from "../index";
 import pLimit from "p-limit";
-import { calculateEstimatedValueForLabubu } from './estimatedValueService';
+import { calculateEstimatedValueForVariant } from './estimatedValueService';
 
 // Helper function for rate limiting
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -177,8 +177,8 @@ export const getEbayListing = async (variant: Variant, stockxPrice?: number, lim
 
 export const ebayLimit = pLimit(1); // Limit to 1 concurrent eBay request
 
-export const processEbayLabubu = async (variant: Variant) => {
-  console.log(`EBAY: --- START processEbayLabubu for ${variant.name} ---`);
+export const processEbayVariant = async (variant: Variant) => {
+  console.log(`EBAY: --- START processEbayVariant for ${variant.name} ---`);
   // The threeDaysAgo check is no longer applicable for eBay as per user instructions.
 
   if (variant.name) {
@@ -201,8 +201,8 @@ export const processEbayLabubu = async (variant: Variant) => {
       if (ebayListing.lowestPrice !== undefined) {
         updateData.ebayLowestPrice = ebayListing.lowestPrice;
 
-        const existingLabubu = await labubuRepository.get({ filter: { sku: variant.sku } }, ["stockxPrice"]);
-        const currentStockxPrice = existingLabubu[0]?.stockxPrice;
+        const existingVariant = await variantRepository.get({ filter: { sku: variant.sku } }, ["stockxPrice"]);
+        const currentStockxPrice = existingVariant[0]?.stockxPrice;
         console.log(`EBAY: Current StockX price from DB for ${variant.name}: ${currentStockxPrice}`);
 
         if (currentStockxPrice !== undefined && currentStockxPrice !== null) {
@@ -221,33 +221,33 @@ export const processEbayLabubu = async (variant: Variant) => {
       }
 
       if (Object.keys(updateData).length > 1) {
-        console.log(`EBAY: Updating Labubu ${variant.name} in DB with data:`, updateData);
-        await labubuRepository.update(
-          { filter: { sku: variant.sku } },
+        console.log(`EBAY: Updating Variant ${variant.name} in DB with data:`, updateData);
+        await variantRepository.updateById(
+          variant.id,
           updateData
         );
-        console.log(`EBAY: Updated Labubu ${variant.name} (SKU: ${variant.sku}) with eBay data: lowest price: ${updateData.ebayLowestPrice}`);
-        const updatedLabubu = await labubuRepository.get({ filter: { sku: variant.sku } });
-        if (updatedLabubu.length > 0) {
-          await calculateEstimatedValueForLabubu(updatedLabubu[0]);
+        console.log(`EBAY: Updated Variant ${variant.name} (SKU: ${variant.sku}) with eBay data: lowest price: ${updateData.ebayLowestPrice}`);
+        const updatedVariant = await variantRepository.get({ filter: { sku: variant.sku } });
+        if (updatedVariant.length > 0) {
+          await calculateEstimatedValueForVariant(updatedVariant[0]);
         }
       } else {
-        console.log(`EBAY: No new eBay data found for Labubu ${variant.name} (SKU: ${variant.sku})`);
+        console.log(`EBAY: No new eBay data found for Variant ${variant.name} (SKU: ${variant.sku})`);
       }
     } catch (apiError) {
-      console.error(`EBAY: Error fetching eBay data for Labubu ${variant.name} (SKU: ${variant.sku}):`, apiError);
+      console.error(`EBAY: Error fetching eBay data for Variant ${variant.name} (SKU: ${variant.sku}):`, apiError);
     }
   }
-  console.log(`EBAY: --- END processEbayLabubu for ${variant.name} ---`);
+  console.log(`EBAY: --- END processEbayVariant for ${variant.name} ---`);
 };
 
-export const syncAllEbayLabubus = async () => {
+export const syncAllEbayVariants = async () => {
   console.log("EBAY: Starting eBay value synchronization...");
   try {
-    const allLabubus = await labubuRepository.get({}); // Fetch all Labubus
-    console.log(`EBAY: Found ${allLabubus.length} Labubus for eBay synchronization.`);
-    for (const labubu of allLabubus) {
-      await ebayLimit(() => processEbayLabubu(labubu));
+    const allVariants = await variantRepository.get({}); // Fetch all Variants
+    console.log(`EBAY: Found ${allVariants.length} Variants for eBay synchronization.`);
+    for (const variant of allVariants) {
+      await ebayLimit(() => processEbayVariant(variant));
       await new Promise(resolve => setTimeout(resolve, 1000)); // 1-second delay
     }
     console.log("EBAY: eBay value synchronization completed.");

@@ -1,8 +1,8 @@
-import { labubuRepository } from "../index";
+import { variantRepository } from "../index";
 import { Variant } from "@labubu/common";
 import axios from "axios";
 import pLimit from "p-limit";
-import { calculateEstimatedValueForLabubu } from "./estimatedValueService";
+import { calculateEstimatedValueForVariant } from "./estimatedValueService";
 
 const KICKS_DEV_API_KEY = process.env.KICKS_DEV_API_KEY;
 const KICKS_DEV_API_BASE_URL = "https://api.kicks.dev/v3/stockx/products";
@@ -173,7 +173,7 @@ export const processStockxVariant = async (variant: Variant) => {
         updateData.stockxPrice = adjustedLowestAsk;
         console.log(`STOCKX: Adjusted lowest ask for Variant ${variant.name} (SKU: ${variant.sku}) from ${currentLowestAsk} to ${adjustedLowestAsk} (+7).`);
 
-        const existingVariant = await labubuRepository.get({ filter: { sku: variant.sku } }, ["ebayLowestPrice"]);
+        const existingVariant = await variantRepository.get({ filter: { sku: variant.sku } }, ["ebayLowestPrice"]);
         const ebayLowestPrice = existingVariant[0]?.ebayLowestPrice;
 
         if (ebayLowestPrice !== undefined && ebayLowestPrice !== null) {
@@ -189,14 +189,14 @@ export const processStockxVariant = async (variant: Variant) => {
       console.log("STOCKX: Update data:", updateData);
 
       if (Object.keys(updateData).length > 1) {
-        await labubuRepository.update(
-          { filter: { sku: variant.sku } },
+        await variantRepository.updateById(
+          variant.id,
           updateData
         );
         console.log(`STOCKX: Updated Variant ${variant.name} (SKU: ${variant.sku}) with StockX data: stockxPrice: ${updateData.stockxPrice}, lowestPrice: ${updateData.lowestPrice}`);
-        const updatedVariant = await labubuRepository.get({ filter: { sku: variant.sku } });
+        const updatedVariant = await variantRepository.get({ filter: { sku: variant.sku } });
         if (updatedVariant.length > 0) {
-          await calculateEstimatedValueForLabubu(updatedVariant[0]);
+          await calculateEstimatedValueForVariant(updatedVariant[0]);
         }
       } else {
         console.log(`STOCKX: No new StockX data found for Variant ${variant.name} (SKU: ${variant.sku})`);

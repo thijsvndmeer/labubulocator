@@ -9,7 +9,7 @@ export const variantSchema = z.object({
   setId: z.string(),
   rarity: z.custom<Rarity>(),
   description: z.string().optional(),
-  images: z.array(z.string()),
+  images: z.string().optional(), // Changed to string for comma-separated URLs
   msrp: z.number().optional(),
   stockStatus: z.custom<StockStatus>(),
   attributes: z.record(z.string(), z.string()).optional(),
@@ -32,6 +32,11 @@ export const variantSchema = z.object({
   kicksdevId: z.string().optional(),
   estimatedValueLastCalculated: z.string().optional(),
   volatility: z.number().optional(),
+  // New fields for standardization
+  status: z.enum(['draft', 'published', 'archived']).default('draft'),
+  createdAt: z.string().datetime().optional(),
+  updatedAt: z.string().datetime().optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 export type Variant = z.infer<typeof variantSchema>;

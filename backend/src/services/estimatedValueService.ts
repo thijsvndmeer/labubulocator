@@ -1,4 +1,4 @@
-import { labubuRepository, priceHistoryRepository } from "../index";
+import { variantRepository, priceHistoryRepository } from "../index";
 import { Variant } from "@labubu/common";
 
 const STOCKX_WEIGHT = 0.8;
@@ -75,7 +75,7 @@ const roundEstimatedValue = (value: number): number => {
   return Math.round(value);
 };
 
-export const calculateEstimatedValueForLabubu = async (variant: Variant) => {
+export const calculateEstimatedValueForVariant = async (variant: Variant) => {
   console.log(`ESTIMATED VALUE: Calculating estimated value for ${variant.name}.`);
   const previousEstimatedValue = variant.estimatedValue;
 
@@ -103,8 +103,8 @@ export const calculateEstimatedValueForLabubu = async (variant: Variant) => {
       priceChange24h = ((roundedValue - previousEstimatedValue) / previousEstimatedValue) * 100;
     }
 
-    await labubuRepository.update(
-      { filter: { sku: variant.sku } },
+    await variantRepository.updateById(
+      variant.id,
       {
         estimatedValue: roundedValue,
         estimatedValueLastCalculated: new Date().toISOString(),
@@ -118,10 +118,10 @@ export const calculateEstimatedValueForLabubu = async (variant: Variant) => {
 
 export const calculateEstimatedValues = async () => {
   console.log("ESTIMATED VALUE: Calculating estimated values for all variants...");
-  const variants = await labubuRepository.get({});
+  const variants = await variantRepository.get({});
 
   for (const variant of variants) {
-    await calculateEstimatedValueForLabubu(variant);
+    await calculateEstimatedValueForVariant(variant);
   }
 
   console.log("ESTIMATED VALUE: Finished calculating estimated values for all variants.");
