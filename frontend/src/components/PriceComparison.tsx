@@ -2,7 +2,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Listing } from '@labubu/common/src/types/labubu';
+import { Listing } from '@labubu/common';
 
 interface PriceComparisonProps {
   listings: Listing[];

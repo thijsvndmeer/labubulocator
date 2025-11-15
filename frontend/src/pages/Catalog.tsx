@@ -7,7 +7,7 @@ import { Package } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useLocation } from 'react-router-dom';
 import { getCollection } from '@/lib/collection';
-import { Labubu } from '@labubu/common/src/types/labubu';
+import { Variant } from '@labubu/common';
 import { useQuery } from '@tanstack/react-query';
 
 interface CatalogPageProps {
@@ -16,7 +16,7 @@ interface CatalogPageProps {
 }
 
 export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) => {
-  const { data: variants = [], isLoading, isFetching } = useQuery<Labubu[]>({ 
+  const { data: variants = [], isLoading, isFetching } = useQuery<Variant[]>({ 
     queryKey: ['variants'], 
     queryFn: () => api.labubus.get(),
     keepPreviousData: true,
@@ -70,7 +70,7 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
             <div>
               <h2 className="text-3xl font-bold">Complete Catalog</h2>
               <p className="text-muted-foreground">
-                Tracking {variants.length} Labubu variants across all series
+                Tracking {variants.length} variants across all series
               </p>
             </div>
           </div>

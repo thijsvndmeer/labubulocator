@@ -1,5 +1,5 @@
 import { Database } from "sqlite3";
-import { PersistedPriceEntry, PriceEntryData, QueryCriteria, QueryOptions } from "../types/labubu";
+import { PersistedPriceEntry, PriceEntryData, QueryCriteria, QueryOptions } from "@labubu/common";
 import { BaseRepository } from "./baseRepository";
 import { getQuery } from "../utils/databaseUtils";
 
@@ -18,7 +18,7 @@ export class PriceHistoryRepository extends BaseRepository<PersistedPriceEntry> 
 
   // create
 
-  public async create(data: PriceEntryData): Promise<number> {
+  public async create(data: PriceEntryData): Promise<string | number> {
     return await super.create(data);
   }
 

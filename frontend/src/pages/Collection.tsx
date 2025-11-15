@@ -9,11 +9,11 @@ import { useVariantFilters } from '@/hooks/useVariantFilters';
 import { VariantCard } from '@/components/VariantCard';
 import { CardSkeleton } from '@/components/CardSkeleton';
 import { api } from '@/lib/api';
-import { Labubu } from '@labubu/common/src/types/labubu';
+import { Variant } from '@labubu/common';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Collection() {
-  const { data: allVariants = [], isLoading, isFetching } = useQuery<Labubu[]>({
+  const { data: allVariants = [], isLoading, isFetching } = useQuery<Variant[]>({
     queryKey: ['variants'],
     queryFn: () => api.labubus.get(),
     keepPreviousData: true,
@@ -104,7 +104,7 @@ export default function Collection() {
               <div>
                 <h2 className="text-3xl font-bold">Your Collection</h2>
                 <p className="text-muted-foreground">
-                  {collectedVariants.length} collected Labubu variants.
+                  {collectedVariants.length} collected variants.
                 </p>
               </div>
             </div>
@@ -138,7 +138,7 @@ export default function Collection() {
             </div>
           ) : filteredVariants.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No Labubus found in your collection matching the current filters.</p>
+              <p className="text-muted-foreground">No variants found in your collection matching the current filters.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

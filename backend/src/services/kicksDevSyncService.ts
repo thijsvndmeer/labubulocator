@@ -1,8 +1,8 @@
-import { labubuRepository } from "../index";
-import { Labubu } from "@labubu/common/src/types/labubu";
+import { variantRepository } from "../index";
+import { Variant } from "@labubu/common";
 import axios from "axios";
 import pLimit from "p-limit";
-import { calculateEstimatedValueForLabubu } from "./estimatedValueService";
+import { calculateEstimatedValueForVariant } from "./estimatedValueService";
 
 const KICKS_DEV_API_KEY = process.env.KICKS_DEV_API_KEY;
 const KICKS_DEV_API_BASE_URL = "https://api.kicks.dev/v3/stockx/products";
@@ -29,37 +29,37 @@ interface KicksDevApiResponse {
 
 export const stockxLimit = pLimit(1); // Limit to 1 concurrent StockX request
 
-export const processStockxLabubu = async (labubu: Labubu) => {
-  console.log("STOCKX: --- START processStockxLabubu ---");
-  console.log("STOCKX: Initial labubu object:", labubu);
+export const processStockxVariant = async (variant: Variant) => {
+  console.log("STOCKX: --- START processStockxVariant ---");
+  console.log("STOCKX: Initial variant object:", variant);
 
-  console.log(`STOCKX: Checking if Labubu ${labubu.name} (SKU: ${labubu.sku}) needs a StockX price update.`);
+  console.log(`STOCKX: Checking if Variant ${variant.name} (SKU: ${variant.sku}) needs a StockX price update.`);
   const threeDaysAgo = new Date();
   threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
-  if (labubu.name) {
+  if (variant.name) {
     // Only skip if refreshed recently AND lowestPrice is a valid positive number
-    if (labubu.stockxLastRefreshed && labubu.stockxPrice && labubu.stockxPrice > 0) {
-      const lastRefreshedDate = new Date(labubu.stockxLastRefreshed);
+    if (variant.stockxLastRefreshed && variant.stockxPrice && variant.stockxPrice > 0) {
+      const lastRefreshedDate = new Date(variant.stockxLastRefreshed);
       if (lastRefreshedDate > threeDaysAgo) {
-        console.log(`STOCKX: Skipping StockX update for Labubu ${labubu.name} (SKU: ${labubu.sku}) - already refreshed recently and has a valid price.`);
+        console.log(`STOCKX: Skipping StockX update for Variant ${variant.name} (SKU: ${variant.sku}) - already refreshed recently and has a valid price.`);
         return;
       }
     }
 
     try {
-      console.log(`STOCKX: Starting 10-second delay for Labubu ${labubu.name} (SKU: ${labubu.sku})...`);
+      console.log(`STOCKX: Starting 10-second delay for Variant ${variant.name} (SKU: ${variant.sku})...`);
       await sleep(10000); // 10-second delay between Kicks.dev API calls
-      console.log(`STOCKX: Delay finished for Labubu ${labubu.name} (SKU: ${labubu.sku}). Fetching data...`);
+      console.log(`STOCKX: Delay finished for Variant ${variant.name} (SKU: ${variant.sku}). Fetching data...`);
 
       let currentLowestAsk: number | undefined;
       let currentStockxLink: string | undefined;
       let currentKicksdevId: string | undefined;
 
-      if (labubu.kicksdevId) {
-        console.log(`STOCKX: Performing direct lookup for Labubu ${labubu.name} (SKU: ${labubu.sku}) with kicksdevId: ${labubu.kicksdevId}`);
+      if (variant.kicksdevId) {
+        console.log(`STOCKX: Performing direct lookup for Variant ${variant.name} (SKU: ${variant.sku}) with kicksdevId: ${variant.kicksdevId}`);
         try {
-          const response = await axios.get<{ data: KicksDevProduct }>(`${KICKS_DEV_API_BASE_URL}/${labubu.kicksdevId}`, {
+          const response = await axios.get<{ data: KicksDevProduct }>(`${KICKS_DEV_API_BASE_URL}/${variant.kicksdevId}`, {
             headers: {
               Authorization: `Bearer ${KICKS_DEV_API_KEY}`,
             },
@@ -125,19 +125,19 @@ export const processStockxLabubu = async (labubu: Labubu) => {
                 console.log("STOCKX: Initial search result:", { lowestAsk, stockxLink, kicksdevId });
 
                 if (
-                  labubu.rarity === 'common' &&
-                  labubu.stockStatus === 'aftermarketorbb' &&
-                  labubu.msrp &&
-                  lowestAsk >= labubu.msrp * 2
+                  variant.rarity === 'common' &&
+                  variant.stockStatus === 'aftermarketorbb' &&
+                  variant.msrp &&
+                  lowestAsk >= variant.msrp * 2
                 ) {
                   if (validAsks.length > 1) {
-                    console.log(`STOCKX: Price for ${labubu.name} is >= 2 * MSRP. Using second best search result.`);
+                    console.log(`STOCKX: Price for ${variant.name} is >= 2 * MSRP. Using second best search result.`);
                     lowestAsk = validAsks[1].price;
                     stockxLink = validAsks[1].link;
                     kicksdevId = validAsks[1].slug;
                     console.log("STOCKX: Second best search result:", { lowestAsk, stockxLink, kicksdevId });
                   } else {
-                    console.log(`STOCKX: Price for ${labubu.name} is >= 2 * MSRP, but no second best search result available.`);
+                    console.log(`STOCKX: Price for ${variant.name} is >= 2 * MSRP, but no second best search result available.`);
                     lowestAsk = undefined;
                     stockxLink = undefined;
                     kicksdevId = undefined;
@@ -153,12 +153,12 @@ export const processStockxLabubu = async (labubu: Labubu) => {
         };
 
         // Initial search
-        let initialSearchQuery = labubu.name;
-        const dashIndex = labubu.name.indexOf(' - ');
+        let initialSearchQuery = variant.name;
+        const dashIndex = variant.name.indexOf(' - ');
         if (dashIndex !== -1) {
-          initialSearchQuery = labubu.name.substring(0, dashIndex) + ' pin for love';
+          initialSearchQuery = variant.name.substring(0, dashIndex) + ' pin for love';
         }
-        console.log(`STOCKX: Performing search for Labubu ${labubu.name} (SKU: ${labubu.sku}) with query: "${initialSearchQuery}"`);
+        console.log(`STOCKX: Performing search for Variant ${variant.name} (SKU: ${variant.sku}) with query: "${initialSearchQuery}"`);
         let searchResult = await performSearch(initialSearchQuery);
         currentLowestAsk = searchResult.lowestAsk;
         currentStockxLink = searchResult.stockxLink;
@@ -166,15 +166,15 @@ export const processStockxLabubu = async (labubu: Labubu) => {
         console.log("STOCKX: Final search result:", { currentLowestAsk, currentStockxLink, currentKicksdevId });
       }
 
-      const updateData: Partial<Labubu> = { stockxLastRefreshed: new Date().toISOString() };
+      const updateData: Partial<Variant> = { stockxLastRefreshed: new Date().toISOString() };
 
       if (currentLowestAsk !== undefined) {
         const adjustedLowestAsk = currentLowestAsk + 7;
         updateData.stockxPrice = adjustedLowestAsk;
-        console.log(`STOCKX: Adjusted lowest ask for Labubu ${labubu.name} (SKU: ${labubu.sku}) from ${currentLowestAsk} to ${adjustedLowestAsk} (+7).`);
+        console.log(`STOCKX: Adjusted lowest ask for Variant ${variant.name} (SKU: ${variant.sku}) from ${currentLowestAsk} to ${adjustedLowestAsk} (+7).`);
 
-        const existingLabubu = await labubuRepository.get({ filter: { sku: labubu.sku } }, ["ebayLowestPrice"]);
-        const ebayLowestPrice = existingLabubu[0]?.ebayLowestPrice;
+        const existingVariant = await variantRepository.get({ filter: { sku: variant.sku } }, ["ebayLowestPrice"]);
+        const ebayLowestPrice = existingVariant[0]?.ebayLowestPrice;
 
         if (ebayLowestPrice !== undefined && ebayLowestPrice !== null) {
           updateData.lowestPrice = Math.min(adjustedLowestAsk, ebayLowestPrice);
@@ -182,28 +182,28 @@ export const processStockxLabubu = async (labubu: Labubu) => {
           updateData.lowestPrice = adjustedLowestAsk;
         }
       }
-      if (currentKicksdevId && !labubu.kicksdevId) {
+      if (currentKicksdevId && !variant.kicksdevId) {
         updateData.kicksdevId = currentKicksdevId;
       }
 
       console.log("STOCKX: Update data:", updateData);
 
       if (Object.keys(updateData).length > 1) {
-        await labubuRepository.update(
-          { filter: { sku: labubu.sku } },
+        await variantRepository.updateById(
+          variant.id,
           updateData
         );
-        console.log(`STOCKX: Updated Labubu ${labubu.name} (SKU: ${labubu.sku}) with StockX data: stockxPrice: ${updateData.stockxPrice}, lowestPrice: ${updateData.lowestPrice}`);
-        const updatedLabubu = await labubuRepository.get({ filter: { sku: labubu.sku } });
-        if (updatedLabubu.length > 0) {
-          await calculateEstimatedValueForLabubu(updatedLabubu[0]);
+        console.log(`STOCKX: Updated Variant ${variant.name} (SKU: ${variant.sku}) with StockX data: stockxPrice: ${updateData.stockxPrice}, lowestPrice: ${updateData.lowestPrice}`);
+        const updatedVariant = await variantRepository.get({ filter: { sku: variant.sku } });
+        if (updatedVariant.length > 0) {
+          await calculateEstimatedValueForVariant(updatedVariant[0]);
         }
       } else {
-        console.log(`STOCKX: No new StockX data found for Labubu ${labubu.name} (SKU: ${labubu.sku})`);
+        console.log(`STOCKX: No new StockX data found for Variant ${variant.name} (SKU: ${variant.sku})`);
       }
     } catch (apiError) {
-      console.error(`STOCKX: Error fetching StockX data for Labubu ${labubu.name} (SKU: ${labubu.sku}):`, apiError);
+      console.error(`STOCKX: Error fetching StockX data for Variant ${variant.name} (SKU: ${variant.sku}):`, apiError);
     }
   }
-  console.log("STOCKX: --- END processStockxLabubu ---");
+  console.log("STOCKX: --- END processStockxVariant ---");
 };

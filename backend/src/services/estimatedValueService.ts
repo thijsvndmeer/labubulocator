@@ -1,5 +1,5 @@
-import { labubuRepository, priceHistoryRepository } from "../index";
-import { Labubu } from "@labubu/common/src/types/labubu";
+import { variantRepository, priceHistoryRepository } from "../index";
+import { Variant } from "@labubu/common";
 
 const STOCKX_WEIGHT = 0.8;
 const EBAY_WEIGHT = 0.2;
@@ -51,9 +51,9 @@ const calculateHistoricalValue = async (sku: string): Promise<number | null> => 
   return result;
 };
 
-const calculateCurrentMarketValue = (labubu: Labubu): number | null => {
-  console.log(`ESTIMATED VALUE: Calculating current market value for ${labubu.name}.`);
-  const { stockxPrice, ebayLowestPrice } = labubu;
+const calculateCurrentMarketValue = (variant: Variant): number | null => {
+  console.log(`ESTIMATED VALUE: Calculating current market value for ${variant.name}.`);
+  const { stockxPrice, ebayLowestPrice } = variant;
 
   let result: number | null = null;
   if (stockxPrice && ebayLowestPrice) {
@@ -64,7 +64,7 @@ const calculateCurrentMarketValue = (labubu: Labubu): number | null => {
     result = ebayLowestPrice;
   }
 
-  console.log(`ESTIMATED VALUE: Calculated current market value for ${labubu.name}: ${result}`);
+  console.log(`ESTIMATED VALUE: Calculated current market value for ${variant.name}: ${result}`);
   return result;
 };
 
@@ -75,13 +75,13 @@ const roundEstimatedValue = (value: number): number => {
   return Math.round(value);
 };
 
-export const calculateEstimatedValueForLabubu = async (labubu: Labubu) => {
-  console.log(`ESTIMATED VALUE: Calculating estimated value for ${labubu.name}.`);
-  const previousEstimatedValue = labubu.estimatedValue;
+export const calculateEstimatedValueForVariant = async (variant: Variant) => {
+  console.log(`ESTIMATED VALUE: Calculating estimated value for ${variant.name}.`);
+  const previousEstimatedValue = variant.estimatedValue;
 
-  const historicalValue = await calculateHistoricalValue(labubu.sku);
-  const currentMarketValue = calculateCurrentMarketValue(labubu);
-  const volatility = await calculateVolatility(labubu.sku);
+  const historicalValue = await calculateHistoricalValue(variant.sku);
+  const currentMarketValue = calculateCurrentMarketValue(variant);
+  const volatility = await calculateVolatility(variant.sku);
 
   let estimatedValue: number | null = null;
 
@@ -94,17 +94,17 @@ export const calculateEstimatedValueForLabubu = async (labubu: Labubu) => {
   }
 
   if (estimatedValue) {
-    console.log(`ESTIMATED VALUE: Calculated estimated value for ${labubu.name}: ${estimatedValue}`);
+    console.log(`ESTIMATED VALUE: Calculated estimated value for ${variant.name}: ${estimatedValue}`);
     const roundedValue = roundEstimatedValue(estimatedValue);
-    console.log(`ESTIMATED VALUE: Rounded estimated value for ${labubu.name}: ${roundedValue}`);
+    console.log(`ESTIMATED VALUE: Rounded estimated value for ${variant.name}: ${roundedValue}`);
     let priceChange24h: number | undefined = undefined;
 
     if (previousEstimatedValue) {
       priceChange24h = ((roundedValue - previousEstimatedValue) / previousEstimatedValue) * 100;
     }
 
-    await labubuRepository.update(
-      { filter: { sku: labubu.sku } },
+    await variantRepository.updateById(
+      variant.id,
       {
         estimatedValue: roundedValue,
         estimatedValueLastCalculated: new Date().toISOString(),
@@ -112,17 +112,17 @@ export const calculateEstimatedValueForLabubu = async (labubu: Labubu) => {
         volatility: volatility,
       }
     );
-    console.log(`ESTIMATED VALUE: Updated estimated value for ${labubu.name} to ${roundedValue}`);
+    console.log(`ESTIMATED VALUE: Updated estimated value for ${variant.name} to ${roundedValue}`);
   }
 };
 
 export const calculateEstimatedValues = async () => {
-  console.log("ESTIMATED VALUE: Calculating estimated values for all labubus...");
-  const labubus = await labubuRepository.get({});
+  console.log("ESTIMATED VALUE: Calculating estimated values for all variants...");
+  const variants = await variantRepository.get({});
 
-  for (const labubu of labubus) {
-    await calculateEstimatedValueForLabubu(labubu);
+  for (const variant of variants) {
+    await calculateEstimatedValueForVariant(variant);
   }
 
-  console.log("ESTIMATED VALUE: Finished calculating estimated values for all labubus.");
+  console.log("ESTIMATED VALUE: Finished calculating estimated values for all variants.");
 };

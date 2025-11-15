@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Labubu } from '@labubu/common/src/types/labubu';
+import { Variant } from '@labubu/common';
 import { shuffleArray } from '@/lib/utils';
 
-export const useVariantFilters = (variants: Labubu[], searchQuery: string) => {
+export const useVariantFilters = (variants: Variant[], searchQuery: string) => {
   const [selectedRarity, setSelectedRarity] = useState<string | 'all'>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('selectedRarity') as string | 'all') || 'all';
@@ -73,7 +73,7 @@ export const useVariantFilters = (variants: Labubu[], searchQuery: string) => {
       eligibleVariants = eligibleVariants.filter(v => v.series === selectedSeries);
     }
 
-    const applySorting = (arr: Labubu[]) => {
+    const applySorting = (arr: Variant[]) => {
       switch (sortBy) {
         case 'price-low':
           arr.sort((a, b) => (a.lowestPrice || 0) - (b.lowestPrice || 0));
@@ -114,12 +114,12 @@ export const useVariantFilters = (variants: Labubu[], searchQuery: string) => {
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      const exactNameMatches: Labubu[] = [];
-      const partialNameMatches: Labubu[] = [];
-      const exactSeriesMatches: Labubu[] = [];
-      const partialSeriesMatches: Labubu[] = [];
-      const exactSkuMatches: Labubu[] = [];
-      const partialSkuOrVariantMatches: Labubu[] = [];
+      const exactNameMatches: Variant[] = [];
+      const partialNameMatches: Variant[] = [];
+      const exactSeriesMatches: Variant[] = [];
+      const partialSeriesMatches: Variant[] = [];
+      const exactSkuMatches: Variant[] = [];
+      const partialSkuOrVariantMatches: Variant[] = [];
 
       eligibleVariants.forEach(v => {
         const nameLower = v.name.toLowerCase();
@@ -142,9 +142,9 @@ export const useVariantFilters = (variants: Labubu[], searchQuery: string) => {
       });
 
       const seenSkus = new Set<string>();
-      const combinedFiltered: Labubu[] = [];
+      const combinedFiltered: Variant[] = [];
 
-      const addUniqueAndSort = (arr: Labubu[]) => {
+      const addUniqueAndSort = (arr: Variant[]) => {
         const sortedArr = applySorting(arr);
         sortedArr.forEach(v => {
           if (!seenSkus.has(v.sku)) {

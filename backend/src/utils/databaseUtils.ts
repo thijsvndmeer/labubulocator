@@ -1,5 +1,5 @@
 import { Database } from "sqlite3";
-import { QueryOptions } from "../types/labubu";
+import { QueryOptions } from "@labubu/common";
 
 //============================================================================================================================================================================================
 // Database query helpers

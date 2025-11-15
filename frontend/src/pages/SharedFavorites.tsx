@@ -6,14 +6,14 @@ import { useVariantFilters } from '@/hooks/useVariantFilters';
 import { VariantCard } from '@/components/VariantCard';
 import { CardSkeleton } from '@/components/CardSkeleton';
 import { api } from '@/lib/api';
-import { Labubu } from '@labubu/common/src/types/labubu';
+import { Variant } from '@labubu/common';
 import { useQuery } from '@tanstack/react-query';
 
 export default function SharedFavorites() {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: allVariants = [], isLoading, isFetching } = useQuery<Labubu[]>({
+  const { data: allVariants = [], isLoading, isFetching } = useQuery<Variant[]>({
     queryKey: ['variants'],
     queryFn: () => api.labubus.get(),
     keepPreviousData: true,
@@ -64,7 +64,7 @@ export default function SharedFavorites() {
               <div>
                 <h2 className="text-3xl font-bold">Shared Favorites</h2>
                 <p className="text-muted-foreground">
-                  {favoritedVariants.length} shared Labubu variants.
+                  {favoritedVariants.length} shared variants.
                 </p>
               </div>
             </div>
@@ -92,7 +92,7 @@ export default function SharedFavorites() {
             </div>
           ) : filteredVariants.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No Labubus found in this shared favorite list matching the current filters.</p>
+              <p className="text-muted-foreground">No variants found in this shared favorite list matching the current filters.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

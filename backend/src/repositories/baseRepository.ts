@@ -1,6 +1,6 @@
 import { Database } from "sqlite3";
 import { getQuery, runQuery, buildOptionsClause, buildSetClause } from "../utils/databaseUtils";
-import { QueryCriteria, QueryOptions } from "../types/labubu";
+import { QueryCriteria, QueryOptions } from "@labubu/common";
 
 interface CacheEntry<T> {
   data: T[];
@@ -39,7 +39,7 @@ export abstract class BaseRepository<T> {
    * @param data - An object containing the data to insert into the table, excluding the 'id' field.
    * @returns A promise that resolves to the ID of the newly created record.
    */
-  protected async create(data: Omit<T, "id">): Promise<number> {
+  protected async create(data: Omit<T, "id">): Promise<string | number> {
     console.log(`REPOSITORY: Creating new record in ${this.tableName}.`);
     // Invalidate cache on create
     this.cache.clear();

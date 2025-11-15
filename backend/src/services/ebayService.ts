@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { Labubu } from "@labubu/common/src/types/labubu";
-import { labubuRepository, priceHistoryRepository } from "../index";
+import { Variant } from "@labubu/common";
+import { variantRepository, priceHistoryRepository } from "../index";
 import pLimit from "p-limit";
-import { calculateEstimatedValueForLabubu } from './estimatedValueService';
+import { calculateEstimatedValueForVariant } from './estimatedValueService';
 
 // Helper function for rate limiting
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -64,15 +64,15 @@ const retry = async <T>(fn: () => Promise<T>, retries = 5, delay = 2000): Promis
   }
 };
 
-export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit: number = 10): Promise<{ lowestPrice?: number; ebayUrl?: string | null }> => {
-  console.log(`EBAY: --- START getEbayListing for ${labubu.name} ---`);
+export const getEbayListing = async (variant: Variant, stockxPrice?: number, limit: number = 10): Promise<{ lowestPrice?: number; ebayUrl?: string | null }> => {
+  console.log(`EBAY: --- START getEbayListing for ${variant.name} ---`);
   let ebaySearchUrl: string | null = null; // Declare ebaySearchUrl here and initialize to null
   try {
     const token = await getAccessToken();
 
-    let baseEbayQuery = labubu.ebaySearchOverride || labubu.name;
-    if (!labubu.ebaySearchOverride) {
-      if (labubu.series === "Mokoko") {
+    let baseEbayQuery = variant.ebaySearchOverride || variant.name;
+    if (!variant.ebaySearchOverride) {
+      if (variant.series === "Mokoko") {
         baseEbayQuery += " Mokoko";
       } else {
         baseEbayQuery += " labubu";
@@ -112,7 +112,7 @@ export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit
           if (price >= 20) {
             // Apply reliability filter if stockxPrice is available
             if (stockxPrice && price < stockxPrice * 0.5) {
-              console.log(`EBAY: Discarding eBay listing for ${labubu.name} due to price (${price}) being too low compared to StockX (${stockxPrice}).`);
+              console.log(`EBAY: Discarding eBay listing for ${variant.name} due to price (${price}) being too low compared to StockX (${stockxPrice}).`);
               continue; // Skip this listing
             }
             validPrices.push({ price: price, url: item.itemWebUrl || currentEbaySearchUrl });
@@ -144,110 +144,110 @@ export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit
 
     // If no valid price found, try again without 'authentic'
     if (searchResult.lowestPrice === undefined) { 
-      console.log(`EBAY: No valid price found with 'authentic' for ${labubu.name}. Retrying without 'authentic'.`);
+      console.log(`EBAY: No valid price found with 'authentic' for ${variant.name}. Retrying without 'authentic'.`);
       searchResult = await performEbaySearch(baseEbayQuery, limit, stockxPrice);
       console.log("EBAY: Search result without 'authentic':", searchResult);
     }
 
     // If still no valid price found, try a less strict query
     if (searchResult.lowestPrice === undefined) {
-      const lessStrictQuery = labubu.name.replace(/\s*\(.*?\)/g, '').trim();
-      if (lessStrictQuery !== labubu.name) {
+      const lessStrictQuery = variant.name.replace(/\s*\(.*?\)/g, '').trim();
+      if (lessStrictQuery !== variant.name) {
         console.log(`EBAY: No valid price found. Retrying with less strict query: ${lessStrictQuery} labubu`);
         await sleep(30000); // Delay for the retry
         searchResult = await performEbaySearch(lessStrictQuery + " labubu", limit, stockxPrice);
         console.log("EBAY: Search result with less strict query:", searchResult);
       } else {
         // As a last resort, try searching with just the name, without "labubu" or "Mokoko"
-        console.log(`EBAY: No valid price found. Retrying with just the name: ${labubu.name}`);
+        console.log(`EBAY: No valid price found. Retrying with just the name: ${variant.name}`);
         await sleep(30000); // Delay for the retry
-        searchResult = await performEbaySearch(labubu.name, limit, stockxPrice);
+        searchResult = await performEbaySearch(variant.name, limit, stockxPrice);
         console.log("EBAY: Search result with just the name:", searchResult);
       }
     }
 
-    console.log(`EBAY: --- END getEbayListing for ${labubu.name} ---`);
+    console.log(`EBAY: --- END getEbayListing for ${variant.name} ---`);
     return searchResult;
   } catch (error) {
-    console.error(`EBAY: Error fetching eBay listing for ${labubu.name}:`, error);
+    console.error(`EBAY: Error fetching eBay listing for ${variant.name}:`, error);
   }
-  console.log(`EBAY: --- END getEbayListing for ${labubu.name} with error ---`);
+  console.log(`EBAY: --- END getEbayListing for ${variant.name} with error ---`);
   return { lowestPrice: undefined, ebayUrl: null }; // Return undefined for price and null for URL on error
 };
 
 export const ebayLimit = pLimit(1); // Limit to 1 concurrent eBay request
 
-export const processEbayLabubu = async (labubu: Labubu) => {
-  console.log(`EBAY: --- START processEbayLabubu for ${labubu.name} ---`);
+export const processEbayVariant = async (variant: Variant) => {
+  console.log(`EBAY: --- START processEbayVariant for ${variant.name} ---`);
   // The threeDaysAgo check is no longer applicable for eBay as per user instructions.
 
-  if (labubu.name) {
+  if (variant.name) {
     try {
-      let stockxPrice = labubu.stockxPrice; // Use stockxPrice
-      console.log(`EBAY: StockX price for ${labubu.name}: ${stockxPrice}`);
-      let ebayListing = await getEbayListing(labubu, stockxPrice);
-      console.log(`EBAY: eBay listing for ${labubu.name}:`, ebayListing);
+      let stockxPrice = variant.stockxPrice; // Use stockxPrice
+      console.log(`EBAY: StockX price for ${variant.name}: ${stockxPrice}`);
+      let ebayListing = await getEbayListing(variant, stockxPrice);
+      console.log(`EBAY: eBay listing for ${variant.name}:`, ebayListing);
 
       // If eBay price is significantly lower than StockX price, try to find a more reliable listing
       if (stockxPrice && ebayListing.lowestPrice && ebayListing.lowestPrice < stockxPrice * 0.5) {
-        console.log(`EBAY: eBay price for ${labubu.name} is significantly lower than StockX. Attempting to find a more reliable listing.`);
+        console.log(`EBAY: eBay price for ${variant.name} is significantly lower than StockX. Attempting to find a more reliable listing.`);
         // Re-run getEbayListing with a higher limit to get more options
-        ebayListing = await getEbayListing(labubu, stockxPrice, 20); // Pass a higher limit
+        ebayListing = await getEbayListing(variant, stockxPrice, 20); // Pass a higher limit
         console.log(`EBAY: New eBay listing after retry:`, ebayListing);
       }
 
-      const updateData: Partial<Labubu> = { ebayLastRefreshed: new Date().toISOString() };
+      const updateData: Partial<Variant> = { ebayLastRefreshed: new Date().toISOString() };
 
       if (ebayListing.lowestPrice !== undefined) {
         updateData.ebayLowestPrice = ebayListing.lowestPrice;
 
-        const existingLabubu = await labubuRepository.get({ filter: { sku: labubu.sku } }, ["stockxPrice"]);
-        const currentStockxPrice = existingLabubu[0]?.stockxPrice;
-        console.log(`EBAY: Current StockX price from DB for ${labubu.name}: ${currentStockxPrice}`);
+        const existingVariant = await variantRepository.get({ filter: { sku: variant.sku } }, ["stockxPrice"]);
+        const currentStockxPrice = existingVariant[0]?.stockxPrice;
+        console.log(`EBAY: Current StockX price from DB for ${variant.name}: ${currentStockxPrice}`);
 
         if (currentStockxPrice !== undefined && currentStockxPrice !== null) {
           updateData.lowestPrice = Math.min(ebayListing.lowestPrice, currentStockxPrice);
         } else {
           updateData.lowestPrice = ebayListing.lowestPrice;
         }
-        console.log(`EBAY: Updated lowest price for ${labubu.name}: ${updateData.lowestPrice}`);
+        console.log(`EBAY: Updated lowest price for ${variant.name}: ${updateData.lowestPrice}`);
       }
 
 
-      const priceRange = await priceHistoryRepository.getMinMaxPriceForLabubuLast24h(labubu.sku);
+      const priceRange = await priceHistoryRepository.getMinMaxPriceForLabubuLast24h(variant.sku);
       if (priceRange) {
         updateData.priceRange = { low: priceRange.min, high: priceRange.max };
-        console.log(`EBAY: Updated price range for ${labubu.name}:`, updateData.priceRange);
+        console.log(`EBAY: Updated price range for ${variant.name}:`, updateData.priceRange);
       }
 
       if (Object.keys(updateData).length > 1) {
-        console.log(`EBAY: Updating Labubu ${labubu.name} in DB with data:`, updateData);
-        await labubuRepository.update(
-          { filter: { sku: labubu.sku } },
+        console.log(`EBAY: Updating Variant ${variant.name} in DB with data:`, updateData);
+        await variantRepository.updateById(
+          variant.id,
           updateData
         );
-        console.log(`EBAY: Updated Labubu ${labubu.name} (SKU: ${labubu.sku}) with eBay data: lowest price: ${updateData.ebayLowestPrice}`);
-        const updatedLabubu = await labubuRepository.get({ filter: { sku: labubu.sku } });
-        if (updatedLabubu.length > 0) {
-          await calculateEstimatedValueForLabubu(updatedLabubu[0]);
+        console.log(`EBAY: Updated Variant ${variant.name} (SKU: ${variant.sku}) with eBay data: lowest price: ${updateData.ebayLowestPrice}`);
+        const updatedVariant = await variantRepository.get({ filter: { sku: variant.sku } });
+        if (updatedVariant.length > 0) {
+          await calculateEstimatedValueForVariant(updatedVariant[0]);
         }
       } else {
-        console.log(`EBAY: No new eBay data found for Labubu ${labubu.name} (SKU: ${labubu.sku})`);
+        console.log(`EBAY: No new eBay data found for Variant ${variant.name} (SKU: ${variant.sku})`);
       }
     } catch (apiError) {
-      console.error(`EBAY: Error fetching eBay data for Labubu ${labubu.name} (SKU: ${labubu.sku}):`, apiError);
+      console.error(`EBAY: Error fetching eBay data for Variant ${variant.name} (SKU: ${variant.sku}):`, apiError);
     }
   }
-  console.log(`EBAY: --- END processEbayLabubu for ${labubu.name} ---`);
+  console.log(`EBAY: --- END processEbayVariant for ${variant.name} ---`);
 };
 
-export const syncAllEbayLabubus = async () => {
+export const syncAllEbayVariants = async () => {
   console.log("EBAY: Starting eBay value synchronization...");
   try {
-    const allLabubus = await labubuRepository.get({}); // Fetch all Labubus
-    console.log(`EBAY: Found ${allLabubus.length} Labubus for eBay synchronization.`);
-    for (const labubu of allLabubus) {
-      await ebayLimit(() => processEbayLabubu(labubu));
+    const allVariants = await variantRepository.get({}); // Fetch all Variants
+    console.log(`EBAY: Found ${allVariants.length} Variants for eBay synchronization.`);
+    for (const variant of allVariants) {
+      await ebayLimit(() => processEbayVariant(variant));
       await new Promise(resolve => setTimeout(resolve, 1000)); // 1-second delay
     }
     console.log("EBAY: eBay value synchronization completed.");

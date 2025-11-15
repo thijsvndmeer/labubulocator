@@ -1,7 +1,6 @@
 import { Database } from "sqlite3";
-import { QueryCriteria, QueryOptions } from "../types/labubu";
+import { QueryCriteria, QueryOptions, Listing } from "@labubu/common";
 import { BaseRepository } from "./baseRepository";
-import { Listing } from "@labubu/common/src/types/labubu";
 
 export class ListingRepository extends BaseRepository<Listing> {
   //============================================================================================================================================================================================
@@ -18,11 +17,11 @@ export class ListingRepository extends BaseRepository<Listing> {
 
   // create
 
-  public async create(data: Omit<Listing, "id">): Promise<number> {
+  public async create(data: Omit<Listing, "id">): Promise<string | number> {
     return await super.create(data);
   }
 
-  public async getOrCreate(data: Omit<Listing, "id">): Promise<number> {
+  public async getOrCreate(data: Omit<Listing, "id">): Promise<string | number> {
     const existing = await this.get({ filter: { productUrl: data.productUrl } }, ["id"]);
     if (existing.length > 0) {
       return existing[0].id;
@@ -30,7 +29,7 @@ export class ListingRepository extends BaseRepository<Listing> {
     return await super.create(data);
   }
 
-  public async updateOrCreate(data: Omit<Listing, "id">): Promise<number> {
+  public async updateOrCreate(data: Omit<Listing, "id">): Promise<string | number> {
     const existing = await this.get({ filter: { productUrl: data.productUrl } }, ["id"]);
     if (existing.length > 0) {
       await super.update({ filter: { productUrl: data.productUrl } }, data);
