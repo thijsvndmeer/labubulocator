@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Wheel } from 'react-custom-roulette';
 import { api } from '@/lib/api';
-import { Labubu } from '@labubu/common/src/types/labubu';
+import { Variant } from '@labubu/common';
 import { VariantCard } from '@/components/VariantCard';
 import Particles from "react-tsparticles";
 import { loadFull } from "tsparticles";
@@ -24,8 +24,8 @@ const colorPalette = [
 const Random: React.FC = () => {
   const [mustSpin, setMustSpin] = useState(false);
   const [prizeNumber, setPrizeNumber] = useState(0);
-  const [variants, setVariants] = useState<Labubu[]>([]);
-  const [selectedVariant, setSelectedVariant] = useState<Labubu | null>(null);
+  const [variants, setVariants] = useState<Variant[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
   // Sound effect placeholders
@@ -153,7 +153,7 @@ const Random: React.FC = () => {
         }}
       />
       <div className="absolute top-4 left-0 w-full flex items-center justify-center z-20">
-        <h1 className="text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 animate-pulse">Wheel of Labubu</h1>
+        <h1 className="text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 animate-pulse">Wheel of Variants</h1>
       </div>
       <div className="z-10 flex flex-col items-center justify-center w-full h-full">
         {variants.length > 0 ? (

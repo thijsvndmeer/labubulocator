@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import express, { Request, Response } from "express";
-import labubuRoutes from "./routes/labubus";
+import variantsRoutes from "./routes/variants";
 import listingRoutes from "./routes/listings";
 import { LabubuRepository } from "./repositories/labubuRepository";
 import { ListingRepository } from "./repositories/listingRepository";
@@ -10,6 +10,7 @@ import { syncLabubus } from "./services/labubuSyncService";
 import { startApiSync } from "./services/scheduler";
 import fs from 'fs';
 import path from 'path';
+import { Database } from "sqlite3";
 
 const app = express();
 console.log("APP: Starting up...");
@@ -20,9 +21,9 @@ const port = process.env.PORT || 3001;
 // Database
 //============================================================================================================================================================================================
 
-export const labubuRepository = new LabubuRepository(db);
-export const listingRepository = new ListingRepository(db);
-export const priceHistoryRepository = new PriceHistoryRepository(db);
+export const labubuRepository = new LabubuRepository(db as Database);
+export const listingRepository = new ListingRepository(db as Database);
+export const priceHistoryRepository = new PriceHistoryRepository(db as Database);
 
 (async () => {
   await syncLabubus();
@@ -82,7 +83,7 @@ app.use("/images/:filename", (req, res, next) => {
 // Routing
 //============================================================================================================================================================================================
 
-app.use("/api/labubus", labubuRoutes);
+app.use("/api/variants", variantsRoutes);
 
 app.use("/api/listings", listingRoutes);
 

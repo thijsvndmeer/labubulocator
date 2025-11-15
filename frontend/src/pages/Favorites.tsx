@@ -8,11 +8,11 @@ import { useToast } from '@/components/ui/use-toast';
 import { SearchFilters } from '@/components/SearchFilters';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
-import { Labubu } from '@labubu/common/src/types/labubu';
+import { Variant } from '@labubu/common';
 import { useQuery } from '@tanstack/react-query';
 
 export const FavoritesPage = () => {
-  const { data: allVariants = [], isLoading, isFetching } = useQuery<Labubu[]>({
+  const { data: allVariants = [], isLoading, isFetching } = useQuery<Variant[]>({
     queryKey: ['variants'],
     queryFn: () => api.labubus.get(),
     keepPreviousData: true,
@@ -84,7 +84,7 @@ export const FavoritesPage = () => {
               <div>
                 <h2 className="text-3xl font-bold">My Favorites</h2>
                 <p className="text-muted-foreground">
-                  {favoritedVariants.length} favorited Labubu variants.
+                  {favoritedVariants.length} favorited variants.
                 </p>
               </div>
             </div>

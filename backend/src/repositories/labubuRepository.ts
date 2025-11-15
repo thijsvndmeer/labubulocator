@@ -1,9 +1,8 @@
 import { Database } from "sqlite3";
-import { Labubu } from "@labubu/common/src/types/labubu";
-import { PersistedLabubu, QueryCriteria, QueryOptions } from "../types/labubu";
+import { Variant, QueryOptions, QueryCriteria } from "@labubu/common";
 import { BaseRepository } from "./baseRepository";
 
-export class LabubuRepository extends BaseRepository<PersistedLabubu> {
+export class LabubuRepository extends BaseRepository<Variant> {
   //============================================================================================================================================================================================
   // Constructor
   //============================================================================================================================================================================================
@@ -18,11 +17,11 @@ export class LabubuRepository extends BaseRepository<PersistedLabubu> {
 
   // create
 
-  public async create(data: Labubu): Promise<number> {
+  public async create(data: Variant): Promise<string | number> {
     return await super.create(data);
   }
 
-  public async getOrCreate(data: Labubu): Promise<number> {
+  public async getOrCreate(data: Variant): Promise<string | number> {
     const existing = await this.get({ filter: { sku: data.sku } }, ["id"]);
     if (existing.length > 0) {
       return existing[0].id;
@@ -30,7 +29,7 @@ export class LabubuRepository extends BaseRepository<PersistedLabubu> {
     return await super.create(data);
   }
 
-  public async updateOrCreate(data: Labubu): Promise<number> {
+  public async updateOrCreate(data: Variant): Promise<string | number> {
     const existing = await this.get({ filter: { sku: data.sku } }, ["id"]);
     if (existing.length > 0) {
       await super.update({ filter: { sku: data.sku } }, data);
@@ -41,22 +40,22 @@ export class LabubuRepository extends BaseRepository<PersistedLabubu> {
 
   // read
 
-  public async get<K extends keyof PersistedLabubu>(
-    options: QueryOptions<PersistedLabubu> = {},
+  public async get<K extends keyof Variant>(
+    options: QueryOptions<Variant> = {},
     fields?: K[]
-  ): Promise<Pick<PersistedLabubu, K>[]> {
+  ): Promise<Pick<Variant, K>[]> {
     return await super.get(options, fields);
   }
 
   // update
 
-  public async update(criteria: QueryCriteria<PersistedLabubu> = {}, data: Partial<Labubu>): Promise<number> {
+  public async update(criteria: QueryCriteria<Variant> = {}, data: Partial<Variant>): Promise<number> {
     return await super.update(criteria, data);
   }
 
   // delete
 
-  public async delete(criteria: QueryCriteria<PersistedLabubu> = {}): Promise<number> {
+  public async delete(criteria: QueryCriteria<Variant> = {}): Promise<number> {
     return await super.delete(criteria);
   }
 }

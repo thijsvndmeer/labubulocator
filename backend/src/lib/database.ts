@@ -1,143 +1,157 @@
-import { Pool } from 'pg';
-import 'dotenv/config';
+import sqlite3 from "sqlite3";
+import path from "path";
+import fs from "fs";
 
-console.log('DATABASE: Initializing PostgreSQL connection pool...');
+const dataDir = process.env.RENDER_DATA_DIR || path.resolve(process.cwd(), "data");
+const dbPath = path.join(dataDir, "app.db");
+const dbDir = path.dirname(dbPath);
+console.log(`DATABASE: Database path: ${dbPath}`);
 
-// Fly.io injects the DATABASE_URL environment variable
-// https://fly.io/docs/postgres/connecting/connecting-with-fly-proxy/
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+// Create the directory if it doesn't exist
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
+
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error("DATABASE: Error connecting to database", err.message);
+  } else {
+    console.log("DATABASE: Database connected");
+  }
 });
 
-pool.on('connect', () => {
-  console.log('DATABASE: Client connected to PostgreSQL database.');
-});
+//============================================================================================================================================================================================
+// SCHEMA
+//============================================================================================================================================================================================
 
-pool.on('error', (err) => {
-  console.error('DATABASE: Unexpected error on idle client', err);
-  process.exit(-1);
-});
-
-const initializeSchema = async () => {
-  console.log("DATABASE: Initializing PostgreSQL schema...");
-  const client = await pool.connect();
-  try {
-    // In PostgreSQL, we use SERIAL for auto-incrementing primary keys,
-    // NUMERIC for prices, and TIMESTAMPTZ for timezone-aware timestamps.
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS labubus (
-        id SERIAL PRIMARY KEY,
-        sku TEXT UNIQUE NOT NULL,
-        name TEXT NOT NULL,
-        series TEXT NOT NULL,
-        description TEXT,
-        rarity TEXT,
-        msrp NUMERIC,
-        lowestPrice NUMERIC,
-        ebayLowestPrice NUMERIC,
-        stockxLastRefreshed TIMESTAMPTZ,
-        ebayLastRefreshed TIMESTAMPTZ,
-        estimatedValue NUMERIC,
-        estimatedValueLastCalculated TIMESTAMPTZ,
-        priceChange24h NUMERIC,
-        stockStatus TEXT,
-        kicksdevId TEXT,
-        stockxPrice NUMERIC,
-        ebaySearchOverride TEXT
-      );
-    `);
-    console.log("DATABASE: 'labubus' table created or already exists.");
-
-    await client.query(`CREATE INDEX IF NOT EXISTS idx_labubus_sku ON labubus (sku);`);
-    console.log("DATABASE: Index on labubus(sku) created or already exists.");
-
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS listings (
-        id SERIAL PRIMARY KEY,
-        productUrl TEXT UNIQUE NOT NULL,
-        labubuSku TEXT NOT NULL,
-        vendorName TEXT NOT NULL,
-        listingTitle TEXT NOT NULL,
-        currentPrice NUMERIC,
-        inStock BOOLEAN DEFAULT true,
-        lastCheckedAt TIMESTAMPTZ,
-        FOREIGN KEY (labubuSku) REFERENCES labubus (sku)
-      );
-    `);
-    console.log("DATABASE: 'listings' table created or already exists.");
-
-    await client.query(`CREATE INDEX IF NOT EXISTS idx_listings_labubuSku ON listings (labubuSku);`);
-    console.log("DATABASE: Index on listings(labubuSku) created or already exists.");
-
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS price_history (
-        id SERIAL PRIMARY KEY,
-        listingId INTEGER NOT NULL,
-        price NUMERIC,
-        date TIMESTAMPTZ NOT NULL,
-        FOREIGN KEY (listingId) REFERENCES listings (id)
-      );
-    `);
-    console.log("DATABASE: 'price_history' table created or already exists.");
-
-    await client.query(`CREATE INDEX IF NOT EXISTS idx_price_history_listingId ON price_history (listingId);`);
-    console.log("DATABASE: Index on price_history(listingId) created or already exists.");
-
-  } catch (err) {
-    if (err instanceof Error) {
-        console.error("DATABASE: Error initializing schema", err.stack);
-    } else {
-        console.error("DATABASE: An unknown error occurred during schema initialization", err);
+db.serialize(() => {
+  console.log("DATABASE: Initializing database schema...");
+  // Create the labubus table
+  db.run(
+    `
+    CREATE TABLE IF NOT EXISTS labubus (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sku TEXT UNIQUE NOT NULL,
+      name TEXT NOT NULL,
+      series TEXT NOT NULL,
+      description TEXT,
+      rarity TEXT,
+      msrp REAL,
+      lowestPrice REAL,
+      ebayLowestPrice REAL,
+      stockxLastRefreshed TEXT,
+      ebayLastRefreshed TEXT,
+      estimatedValue REAL,
+      estimatedValueLastCalculated TEXT,
+      priceChange24h REAL,
+      stockStatus TEXT,
+      kicksdevId TEXT,
+      stockxPrice REAL,
+      ebaySearchOverride TEXT
+    )
+  `,
+    (err) => {
+      if (err) {
+        console.error("DATABASE: Error creating labubus table", err.message);
+      } else {
+        console.log("DATABASE: labubus table created or already exists.");
+      }
     }
-    // If schema initialization fails, we probably want to exit.
-    process.exit(1);
-  } finally {
-    client.release();
-  }
-};
+  );
 
-// Initialize the schema on startup
-initializeSchema().catch(err => {
-    console.error("DATABASE: Failed to initialize database schema.", err);
-    process.exit(1);
+  // Create index on sku in labubus table
+  db.run(
+    `CREATE INDEX IF NOT EXISTS idx_labubus_sku ON labubus (sku)`,
+    (err) => {
+      if (err) {
+        console.error("DATABASE: Error creating index on labubus(sku)", err.message);
+      } else {
+        console.log("DATABASE: Index on labubus(sku) created or already exists.");
+      }
+    }
+  );
+
+  // Add ebaySearchOverride column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN ebaySearchOverride TEXT`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("DATABASE: Error adding ebaySearchOverride column to labubus table", err.message);
+      }
+    }
+  );
+
+  // Create the listings table
+  db.run(
+    `
+    CREATE TABLE IF NOT EXISTS listings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      productUrl TEXT UNIQUE NOT NULL,
+      labubuSku TEXT NOT NULL,
+      vendorName TEXT NOT NULL,
+      listingTitle TEXT NOT NULL,
+      currentPrice REAL,
+      inStock BOOLEAN DEFAULT true,
+      lastCheckedAt TEXT,
+      FOREIGN KEY (labubuSku) REFERENCES labubus (sku)
+    )
+  `,
+    (err) => {
+      if (err) {
+        console.error("DATABASE: Error creating listings table", err.message);
+      } else {
+        console.log("DATABASE: listings table created or already exists.");
+      }
+    }
+  );
+
+  // Create index on labubuSku in listings table
+  db.run(
+    `CREATE INDEX IF NOT EXISTS idx_listings_labubuSku ON listings (labubuSku)`,
+    (err) => {
+      if (err) {
+        console.error("DATABASE: Error creating index on listings(labubuSku)", err.message);
+      } else {
+        console.log("DATABASE: Index on listings(labubuSku) created or already exists.");
+      }
+    }
+  );
+
+  // Create the price_history table
+  db.run(
+    `
+    CREATE TABLE IF NOT EXISTS price_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      listingId INTEGER NOT NULL,
+      price REAL,
+      date TEXT NOT NULL,
+      FOREIGN KEY (listingId) REFERENCES listings (id)
+    )
+  `,
+    (err) => {
+      if (err) {
+        console.error("DATABASE: Error creating price_history table", err.message);
+      } else {
+        console.log("DATABASE: price_history table created or already exists.");
+      }
+    }
+  );
+
+  // Create index on listingId in price_history table
+  db.run(
+    `CREATE INDEX IF NOT EXISTS idx_price_history_listingId ON price_history (listingId)`,
+    (err) => {
+      if (err) {
+        console.error("DATABASE: Error creating index on price_history(listingId)", err.message);
+      } else {
+        console.log("DATABASE: Index on price_history(listingId) created or already exists.");
+      }
+    }
+  );
 });
 
-// The existing repositories are written for the 'sqlite3' package's API,
-// which uses callbacks. The 'pg' package uses Promises.
-// We create a small adapter object that mimics the 'sqlite3' API
-// so we don't have to rewrite all the repository files.
-const dbAdapter = {
-  // Convert 'all' to use the pool
-  all: (sql: string, params: any[], callback: (err: Error | null, rows: any[]) => void) => {
-    pool.query(sql, params)
-      .then(res => callback(null, res.rows))
-      .catch(err => callback(err, []));
-  },
-  // Convert 'get' to use the pool
-  get: (sql: string, params: any[], callback: (err: Error | null, row: any) => void) => {
-    pool.query(sql, params)
-      .then(res => callback(null, res.rows[0]))
-      .catch(err => callback(err, undefined));
-  },
-  // Convert 'run' to use the pool
-  run: (sql: string, params: any[], callback: (this: { lastID: number }, err: Error | null) => void) => {
-    // The 'run' method in sqlite can return the lastID, but it's more complex with pg.
-    // We'll check if the query is an INSERT and returns the id.
-    // This is a simplification and might need adjustment if the app uses `lastID`.
-    // For now, we assume it's mainly for INSERT/UPDATE/DELETE without needing the return value.
-    pool.query(sql, params)
-      .then(res => {
-        // A basic attempt to simulate `lastID` for INSERT statements
-        const lastID = (res.command === 'INSERT' && res.rows.length > 0) ? res.rows[0].id : 0;
-        callback.call({ lastID }, null);
-      })
-      .catch(err => callback.call({ lastID: 0 }, err));
-  },
-  // serialize is used to run queries in sequence. With a connection pool, this is less of an issue,
-  // but we'll provide a no-op function to avoid breaking the existing code structure.
-  serialize: (callback: () => void) => {
-    callback();
-  }
-};
+//============================================================================================================================================================================================
+// Default export
+//============================================================================================================================================================================================
 
-export default dbAdapter;
+export default db;

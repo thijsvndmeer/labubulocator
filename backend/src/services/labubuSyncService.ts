@@ -1,7 +1,7 @@
 import { parse } from "csv-parse";
 import fs from "fs";
 import { labubuRepository } from "../index";
-import { Labubu } from "@labubu/common/src/types/labubu";
+import { Variant } from "@labubu/common";
 import path from "path";
 
 const csvPath = path.resolve("src", "data", "labubus.csv");
@@ -21,7 +21,7 @@ const getSeriesFolderName = (series: string): string => {
 }
 
 export const syncLabubus = async () => {
-  console.log("LABUBU SYNC: Starting Labubu synchronization from CSV.");
+  console.log("VARIANT SYNC: Starting Variant synchronization from CSV.");
   try {
     const parser = fs.createReadStream(csvPath).pipe(
       parse({
@@ -32,8 +32,8 @@ export const syncLabubus = async () => {
     );
 
     for await (const record of parser) {
-      console.log(`LABUBU SYNC: Processing record for SKU: ${record.sku}`);
-      const labubuData: Partial<Labubu> = {
+      console.log(`VARIANT SYNC: Processing record for SKU: ${record.sku}`);
+      const variantData: Partial<Variant> = {
         sku: record.sku,
         name: record.name,
         series: record.series,
@@ -44,19 +44,19 @@ export const syncLabubus = async () => {
       };
 
       if (record.kicksdevId && record.kicksdevId.trim() !== '') {
-        labubuData.kicksdevId = record.kicksdevId;
+        variantData.kicksdevId = record.kicksdevId;
       }
 
       if (record.ebaySearchOverride && record.ebaySearchOverride.trim() !== '') {
-        labubuData.ebaySearchOverride = record.ebaySearchOverride;
+        variantData.ebaySearchOverride = record.ebaySearchOverride;
       }
 
-      await labubuRepository.updateOrCreate(labubuData as Labubu);
-      console.log(`LABUBU SYNC: Upserted Labubu with SKU: ${record.sku}`);
+      await labubuRepository.updateOrCreate(variantData as Variant);
+      console.log(`VARIANT SYNC: Upserted Variant with SKU: ${record.sku}`);
     }
 
-    console.log(`LABUBU SYNC: Succesfully synced ${csvPath} with the database`);
+    console.log(`VARIANT SYNC: Succesfully synced ${csvPath} with the database`);
   } catch (err) {
-    console.error(`LABUBU SYNC: Error processing ${csvPath}:`, err);
+    console.error(`VARIANT SYNC: Error processing ${csvPath}:`, err);
   }
 };
