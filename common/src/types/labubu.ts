@@ -34,6 +34,13 @@ export const labubuSchema = z.object({
 });
 export type Labubu = z.infer<typeof labubuSchema>;
 
+export const characterSchema = z.object({
+  id: z.coerce.number().optional(),
+  name: z.string(),
+  description: z.string().optional(),
+});
+export type Character = z.infer<typeof characterSchema>;
+
 export const listingSchema = z.object({
   id: z.coerce.number(),
   productUrl: z.string(),
