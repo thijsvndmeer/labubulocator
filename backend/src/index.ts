@@ -1,13 +1,18 @@
 import 'dotenv/config';
 import express, { Request, Response } from "express";
+import bodyParser from "body-parser";
 import labubuRoutes from "./routes/labubus";
 import listingRoutes from "./routes/listings";
 import { LabubuRepository } from "./repositories/labubuRepository";
 import { ListingRepository } from "./repositories/listingRepository";
 import { PriceHistoryRepository } from "./repositories/priceHistoryRepository";
+import { UserRepository } from "./repositories/userRepository";
+import { RoleRepository } from "./repositories/roleRepository";
 import db from "./lib/database";
 import { syncLabubus } from "./services/labubuSyncService";
 import { startApiSync } from "./services/scheduler";
+import { UserService } from "./services/userService";
+import { RoleService } from "./services/roleService";
 import fs from 'fs';
 import path from 'path';
 
@@ -23,6 +28,21 @@ const port = process.env.PORT || 3001;
 export const labubuRepository = new LabubuRepository(db);
 export const listingRepository = new ListingRepository(db);
 export const priceHistoryRepository = new PriceHistoryRepository(db);
+export const userRepository = new UserRepository(db);
+export const roleRepository = new RoleRepository(db);
+export const contentRepository = new ContentRepository(db);
+export const navigationRepository = new NavigationRepository(db);
+export const settingsRepository = new SettingsRepository(db);
+
+//============================================================================================================================================================================================
+// Services
+//============================================================================================================================================================================================
+
+export const userService = new UserService(userRepository);
+export const roleService = new RoleService(roleRepository);
+export const contentService = new ContentService(contentRepository);
+export const navigationService = new NavigationService(navigationRepository);
+export const settingsService = new SettingsService(settingsRepository);
 
 (async () => {
   await syncLabubus();
@@ -50,6 +70,9 @@ const findImageRecursively = (filename: string, currentDir: string): string | nu
   return null;
 };
 
+import bodyParser from "body-parser";
+
+app.use(bodyParser.json());
 app.use((req, res, next) => {
   const allowedOrigins = ["https://labubulocator.me","http://localhost:4173"];
   const origin = req.headers.origin;
@@ -82,9 +105,14 @@ app.use("/images/:filename", (req, res, next) => {
 // Routing
 //============================================================================================================================================================================================
 
+import adminRoutes from "./routes/admin";
+import { authMiddleware } from "./middleware/auth";
+
 app.use("/api/labubus", labubuRoutes);
 
 app.use("/api/listings", listingRoutes);
+
+app.use("/api/admin", authMiddleware, adminRoutes);
 
 //============================================================================================================================================================================================
 // Start the server

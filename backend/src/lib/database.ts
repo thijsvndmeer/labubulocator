@@ -187,6 +187,101 @@ db.serialize(() => {
     }
   );
 
+
+  // Create the roles table
+  db.run(
+    `
+    CREATE TABLE IF NOT EXISTS roles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE NOT NULL
+    )
+  `,
+    (err) => {
+      if (err) {
+        console.error("DATABASE: Error creating roles table", err.message);
+      } else {
+        console.log("DATABASE: roles table created or already exists.");
+      }
+    }
+  );
+
+  // Create the users table
+  db.run(
+    `
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      role_id INTEGER,
+      FOREIGN KEY (role_id) REFERENCES roles (id)
+    )
+  `,
+    (err) => {
+      if (err) {
+        console.error("DATABASE: Error creating users table", err.message);
+      } else {
+        console.log("DATABASE: users table created or already exists.");
+      }
+    }
+  );
+
+  // Create the content table
+  db.run(
+    `
+    CREATE TABLE IF NOT EXISTS content (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      key TEXT UNIQUE NOT NULL,
+      value TEXT,
+      last_updated TEXT
+    )
+  `,
+    (err) => {
+      if (err) {
+        console.error("DATABASE: Error creating content table", err.message);
+      } else {
+        console.log("DATABASE: content table created or already exists.");
+      }
+    }
+  );
+
+  // Create the navigation table
+  db.run(
+    `
+    CREATE TABLE IF NOT EXISTS navigation (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE NOT NULL,
+      structure TEXT,
+      last_updated TEXT
+    )
+  `,
+    (err) => {
+      if (err) {
+        console.error("DATABASE: Error creating navigation table", err.message);
+      } else {
+        console.log("DATABASE: navigation table created or already exists.");
+      }
+    }
+  );
+
+  // Create the settings table
+  db.run(
+    `
+    CREATE TABLE IF NOT EXISTS settings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      key TEXT UNIQUE NOT NULL,
+      value TEXT,
+      last_updated TEXT
+    )
+  `,
+    (err) => {
+      if (err) {
+        console.error("DATABASE: Error creating settings table", err.message);
+      } else {
+        console.log("DATABASE: settings table created or already exists.");
+      }
+    }
+  );
+
   // Create the listings table
   db.run(
     `

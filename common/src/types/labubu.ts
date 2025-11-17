@@ -52,6 +52,44 @@ export const priceEntrySchema = z.object({
 });
 export type PriceEntry = z.infer<typeof priceEntrySchema>;
 
+export const roleSchema = z.object({
+  id: z.coerce.number().optional(),
+  name: z.string(),
+});
+export type Role = z.infer<typeof roleSchema>;
+
+export const userSchema = z.object({
+  id: z.coerce.number().optional(),
+  username: z.string(),
+  password: z.string(),
+  role_id: z.coerce.number().optional(),
+});
+export type User = z.infer<typeof userSchema>;
+
+export const contentSchema = z.object({
+  id: z.coerce.number().optional(),
+  key: z.string(),
+  value: z.string().optional(),
+  last_updated: z.string().optional(),
+});
+export type Content = z.infer<typeof contentSchema>;
+
+export const navigationSchema = z.object({
+  id: z.coerce.number().optional(),
+  name: z.string(),
+  structure: z.string(), // Storing as JSON string
+  last_updated: z.string().optional(),
+});
+export type Navigation = z.infer<typeof navigationSchema>;
+
+export const settingsSchema = z.object({
+  id: z.coerce.number().optional(),
+  key: z.string(),
+  value: z.string().optional(),
+  last_updated: z.string().optional(),
+});
+export type Settings = z.infer<typeof settingsSchema>;
+
 //============================================================================================================================================================================================
 // Http parameter types
 //============================================================================================================================================================================================

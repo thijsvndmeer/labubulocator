@@ -9,6 +9,7 @@ import { api } from './lib/api';
 import Spinner from "./components/Spinner";
 import { Header } from "./components/Header";
 import { useState, useEffect, lazy, Suspense } from "react";
+import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
 
 const Index = lazy(() => import("./pages/Index"));
 const VariantDetail = lazy(() => import("./pages/VariantDetail"));
@@ -20,6 +21,18 @@ const SharedCollection = lazy(() => import("./pages/SharedCollection"));
 const SharedFavorites = lazy(() => import("./pages/SharedFavorites"));
 const Random = lazy(() => import("./pages/Random"));
 const Home = lazy(() => import("./pages/Home"));
+
+const AdminLogin = lazy(() => import("./pages/AdminLogin")); // Import AdminLogin
+const AdminLayout = lazy(() => import("./components/AdminLayout"));
+const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
+const AdminCatalog = lazy(() => import("./pages/admin/Catalog"));
+const AdminUsers = lazy(() => import("./pages/admin/Users"));
+const AdminRoles = lazy(() => import("./pages/admin/Roles"));
+const AdminContent = lazy(() => import("./pages/admin/Content"));
+const AdminNavigation = lazy(() => import("./pages/admin/Navigation"));
+const AdminSettings = lazy(() => import("./pages/admin/Settings"));
+const AddCatalogItem = lazy(() => import("./pages/admin/AddCatalogItem"));
+const EditCatalogItem = lazy(() => import("./pages/admin/EditCatalogItem"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -75,6 +88,20 @@ export const AppContent = () => {
           <Route path="/sharedfavorites" element={<SharedFavorites />} />
           <Route path="/random" element={<Random />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/admin/login" element={<AdminLogin />} /> {/* Admin Login Route */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="catalog" element={<AdminCatalog />} />
+              <Route path="catalog/add" element={<AddCatalogItem />} />
+              <Route path="catalog/edit/:sku" element={<EditCatalogItem />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="roles" element={<AdminRoles />} />
+              <Route path="content" element={<AdminContent />} />
+              <Route path="navigation" element={<AdminNavigation />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
+          </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

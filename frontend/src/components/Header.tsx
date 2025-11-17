@@ -1,5 +1,5 @@
 import { ThemeToggle } from "./ThemeToggle";
-import { PlusCircle, Search, LocateFixed, Package, Heart, Boxes } from 'lucide-react';
+import { PlusCircle, Search, LocateFixed, Package, Heart, Boxes, Settings } from 'lucide-react'; // Import Settings icon
 import { Input } from '@/components/ui/input';
 import { Button } from './ui/button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -94,6 +94,11 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
                 </Button>
               </Link>
             )}
+            <Link to="/admin/login"> {/* Admin Login Link */}
+              <Button variant="outline" className="flex items-center justify-center w-10 h-10 p-0">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </Link>
             <ThemeToggle />
           </form>
         </div>
