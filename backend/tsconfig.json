@@ -7,7 +7,10 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-
+    "baseUrl": ".",
+    "paths": {
+      "@labubu/common": ["../common/src"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
