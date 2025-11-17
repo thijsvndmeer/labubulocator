@@ -6,15 +6,14 @@ const router = Router();
 
 // Admin authentication middleware
 const adminAuth = (req: any, res: any, next: any) => {
-  // const token = req.headers.authorization?.replace('Bearer ', '');
-  // const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'supersecrettokenpleasereplaceme';
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'supersecrettokenpleasereplaceme';
   
-  // if (token === ADMIN_TOKEN) {
-  //   next();
-  // } else {
-  //   res.status(401).json({ error: 'Unauthorized' });
-  // }
-  next(); // Temporarily bypass authentication for development
+  if (token === ADMIN_TOKEN) {
+    next();
+  } else {
+    res.status(401).json({ error: 'Unauthorized' });
+  }
 };
 
 //============================================================================================================================================================================================
