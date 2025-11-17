@@ -24,24 +24,19 @@ import {
 } from '@/components/ui/select';
 
 // Define initial form state for a new Labubu item
-const initialLabubuState: Omit<Labubu, 'id' | 'createdAt' | 'updatedAt' | 'lowestPrice' | 'lastSalePrice' | 'priceChange24h'> = {
+const initialLabubuState: Partial<Labubu> = {
   sku: '',
   name: '',
   series: '',
   rarity: 'common', // Default to common
-  image: '',
   description: '',
-  releaseDate: '',
-  isRetired: 0,
-  stockXUrl: '',
-  ebayUrl: '',
-  funkoId: '',
-  releasePrice: 0,
+  msrp: 0,
+  variant: '',
 };
 
 const EditCatalogItem = () => {
   const { sku } = useParams<{ sku: string }>();
-  const [labubu, setLabubu] = useState<Omit<Labubu, 'id' | 'createdAt' | 'updatedAt' | 'lowestPrice' | 'lastSalePrice' | 'priceChange24h'>>(initialLabubuState);
+  const [labubu, setLabubu] = useState<Partial<Labubu>>(initialLabubuState);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -61,14 +56,9 @@ const EditCatalogItem = () => {
         name: existingLabubu.name,
         series: existingLabubu.series,
         rarity: existingLabubu.rarity,
-        image: existingLabubu.image || '',
         description: existingLabubu.description || '',
-        releaseDate: existingLabubu.releaseDate || '',
-        isRetired: existingLabubu.isRetired || 0,
-        stockXUrl: existingLabubu.stockXUrl || '',
-        ebayUrl: existingLabubu.ebayUrl || '',
-        funkoId: existingLabubu.funkoId || '',
-        releasePrice: existingLabubu.releasePrice || 0,
+        msrp: existingLabubu.msrp || 0,
+        variant: existingLabubu.variant || '',
       });
     }
   }, [existingLabubu]);
@@ -97,7 +87,7 @@ const EditCatalogItem = () => {
     const { id, value } = e.target;
     setLabubu((prev) => ({
       ...prev,
-      [id]: id === 'releasePrice' || id === 'isRetired' ? Number(value) : value,
+      [id]: id === 'msrp' ? Number(value) : value,
     }));
   }, []);
 
@@ -176,10 +166,12 @@ const EditCatalogItem = () => {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="image">Image URL</Label>
+              <Label htmlFor="msrp">MSRP</Label>
               <Input
-                id="image"
-                value={labubu.image}
+                id="msrp"
+                type="number"
+                step="0.01"
+                value={labubu.msrp || ''}
                 onChange={handleChange}
               />
             </div>

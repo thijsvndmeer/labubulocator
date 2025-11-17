@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express, { Request, Response } from "express";
 import labubuRoutes from "./routes/labubus";
 import listingRoutes from "./routes/listings";
+import adminRoutes from "./routes/admin";
 import { LabubuRepository } from "./repositories/labubuRepository";
 import { ListingRepository } from "./repositories/listingRepository";
 import { PriceHistoryRepository } from "./repositories/priceHistoryRepository";
@@ -87,6 +88,8 @@ app.use("/images/:filename", (req, res, next) => {
 app.use("/api/labubus", labubuRoutes);
 
 app.use("/api/listings", listingRoutes);
+
+app.use("/api/admin", adminRoutes);
 
 //============================================================================================================================================================================================
 // Start the server

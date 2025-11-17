@@ -24,19 +24,14 @@ import {
 } from '@/components/ui/select'; // Assuming Select component exists
 
 // Define initial form state for a new Labubu item
-const initialLabubuState: Omit<Labubu, 'id' | 'createdAt' | 'updatedAt' | 'lowestPrice' | 'lastSalePrice' | 'priceChange24h'> = {
+const initialLabubuState: Partial<Labubu> = {
   sku: '',
   name: '',
   series: '',
   rarity: 'common', // Default to common
-  image: '',
   description: '',
-  releaseDate: '',
-  isRetired: 0,
-  stockXUrl: '',
-  ebayUrl: '',
-  funkoId: '',
-  releasePrice: 0,
+  msrp: 0,
+  variant: '',
 };
 
 const AddCatalogItem = () => {
@@ -140,10 +135,12 @@ const AddCatalogItem = () => {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="image">Image URL</Label>
+              <Label htmlFor="msrp">MSRP</Label>
               <Input
-                id="image"
-                value={labubu.image}
+                id="msrp"
+                type="number"
+                step="0.01"
+                value={labubu.msrp || ''}
                 onChange={handleChange}
               />
             </div>
