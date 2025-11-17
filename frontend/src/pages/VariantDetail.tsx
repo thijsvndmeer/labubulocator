@@ -247,7 +247,7 @@ export default function VariantDetail() {
                     <p className="text-sm text-muted-foreground">{mergedVariant.variant}</p>
                   )}
                 </div>
-                <RarityBadge rarity={mergedVariant.rarity as any} />
+                <RarityBadge rarity={mergedVariant.rarity} />
               </div>
               
               <div className="flex items-center gap-2 mt-3">
@@ -255,7 +255,7 @@ export default function VariantDetail() {
                   <Tag className="h-3 w-3 mr-1" />
                   {mergedVariant.sku}
                 </Badge>
-                <StockStatusBadge status={mergedVariant.stockStatus as any} />
+                <StockStatusBadge status={mergedVariant.stockStatus} />
               </div>
             </div>
 

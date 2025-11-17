@@ -79,8 +79,8 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
             <SearchFilters
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
-              selectedRarity={selectedRarity as any}
-              onRarityChange={setSelectedRarity as any}
+              selectedRarity={selectedRarity}
+              onRarityChange={setSelectedRarity}
               selectedSeries={selectedSeries}
               onSeriesChange={setSelectedSeries}
               sortBy={sortBy}

@@ -34,7 +34,7 @@ const AdminLogin = () => {
           variant: 'destructive',
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Login Failed',
         description: error.message || 'An error occurred during login.',

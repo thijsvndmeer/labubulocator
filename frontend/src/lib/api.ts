@@ -13,7 +13,7 @@ import {
 export const API_ROOT_URL = "https://api.labubulocator.me";
 const API_BASE_URL = `${API_ROOT_URL}/api`;
 
-function toUrlSearchParams(obj: any, prefix = ''): URLSearchParams {
+function toUrlSearchParams(obj: Record<string, unknown>, prefix = ''): URLSearchParams {
   const params = new URLSearchParams();
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
@@ -44,7 +44,7 @@ function toUrlSearchParams(obj: any, prefix = ''): URLSearchParams {
   return params;
 }
 
-async function fetchFromApi<T>(path: string, options?: HttpOptions<T>, method: "GET" | "POST" | "PUT" | "DELETE" = "GET", body?: any, useAdminToken: boolean = false): Promise<T> {
+async function fetchFromApi<T>(path: string, options?: HttpOptions<T>, method: "GET" | "POST" | "PUT" | "DELETE" = "GET", body?: unknown, useAdminToken: boolean = false): Promise<T> {
   const url = new URL(`${API_BASE_URL}${path}`);
   if (options && options.query) {
     const params = toUrlSearchParams(options.query);
@@ -79,25 +79,25 @@ async function removeResource<T>(path: string, id: string): Promise<T> {
 
 export const api = {
   characters: {
-    get: (options?: any) => fetchFromApi<Character[]>("/characters", options),
+    get: (options?: HttpOptions<Character[]>) => fetchFromApi<Character[]>("/characters", options),
     getById: (id: string) => fetchFromApi<Character>(`/characters/${id}`),
     create: (data: Partial<Character>) => createResource<Character>("/characters", data),
     update: (id: string, data: Partial<Character>) => updateResource<Character>("/characters", id, data),
     remove: (id: string) => removeResource<Character>("/characters", id),
   },
   sets: {
-    get: (options?: any) => fetchFromApi<Set[]>("/sets", options),
+    get: (options?: HttpOptions<Set[]>) => fetchFromApi<Set[]>("/sets", options),
     getById: (id: string) => fetchFromApi<Set>(`/sets/${id}`),
     create: (data: Partial<Set>) => createResource<Set>("/sets", data),
     update: (id: string, data: Partial<Set>) => updateResource<Set>("/sets", id, data),
     remove: (id: string) => removeResource<Set>("/sets", id),
   },
   labubus: {
-    get: (options?: any) => fetchFromApi<Variant[]>("/labubus", options),
+    get: (options?: HttpOptions<Variant[]>) => fetchFromApi<Variant[]>("/labubus", options),
     getBySku: (sku: string) => fetchFromApi<Variant>(`/labubus/${sku}`),
   },
   variants: {
-    get: (options?: any) => fetchFromApi<Variant[]>("/variants", options),
+    get: (options?: HttpOptions<Variant[]>) => fetchFromApi<Variant[]>("/variants", options),
     getBySku: (sku: string) => fetchFromApi<Variant>(`/variants/sku/${sku}`), // Changed to bySku
     getById: (id: string) => fetchFromApi<Variant>(`/variants/${id}`),
     create: (data: Partial<Variant>) => createResource<Variant>("/variants", data),
@@ -105,7 +105,7 @@ export const api = {
     remove: (id: string) => removeResource<Variant>("/variants", id),
   },
   collections: {
-    get: (options?: any) => fetchFromApi<Collection[]>("/collections", options),
+    get: (options?: HttpOptions<Collection[]>) => fetchFromApi<Collection[]>("/collections", options),
     getById: (id: string) => fetchFromApi<Collection>(`/collections/${id}`),
     create: (data: Partial<Collection>) => createResource<Collection>("/collections", data),
     update: (id: string, data: Partial<Collection>) => updateResource<Collection>("/collections", id, data),
@@ -120,7 +120,7 @@ export const api = {
     update: (id: string, data: Partial<SearchSettings>) => updateResource<SearchSettings>("/search-settings", id, data),
   },
   listings: { // Keeping listings for now, will update if needed
-    get: (options?: any) => fetchFromApi<Listing[]>("/listings", options),
+    get: (options?: HttpOptions<Listing[]>) => fetchFromApi<Listing[]>("/listings", options),
     getById: (id: string) => fetchFromApi<Listing>(`/listings/${id}`),
     getPriceHistory: (id: string) => fetchFromApi<PriceEntry[]>(`/listings/${id}/priceHistory`),
     create: (data: Partial<Listing>) => createResource<Listing>("/listings", data),
@@ -129,38 +129,38 @@ export const api = {
   },
   admin: {
     labubus: {
-      get: (options?: any) => fetchFromApi<Variant[]>("/admin/labubus", options, "GET", undefined, true),
+      get: (options?: HttpOptions<Variant[]>) => fetchFromApi<Variant[]>("/admin/labubus", options, "GET", undefined, true),
       getBySku: (sku: string) => fetchFromApi<Variant>(`/admin/labubus/${sku}`, undefined, "GET", undefined, true),
       create: (data: Partial<Variant>) => fetchFromApi<Variant>("/admin/labubus", { method: 'POST', body: data }, "POST", data, true),
       update: (sku: string, data: Partial<Variant>) => fetchFromApi<Variant>(`/admin/labubus/${sku}`, { method: 'PUT', body: data }, "PUT", data, true),
       delete: (sku: string) => fetchFromApi<{ message: string }>(`/admin/labubus/${sku}`, { method: 'DELETE' }, "DELETE", undefined, true),
     },
     users: {
-      get: () => fetchFromApi<any[]>("/admin/users", undefined, "GET", undefined, true),
-      getById: (id: number) => fetchFromApi<any>(`/admin/users/${id}`, undefined, "GET", undefined, true),
-      create: (data: any) => fetchFromApi<any>("/admin/users", { method: 'POST', body: data }, "POST", data, true),
-      update: (id: number, data: any) => fetchFromApi<any>(`/admin/users/${id}`, { method: 'PUT', body: data }, "PUT", data, true),
+      get: (options?: HttpOptions<unknown[]>) => fetchFromApi<unknown[]>("/admin/users", options, "GET", undefined, true),
+      getById: (id: number) => fetchFromApi<unknown>(`/admin/users/${id}`, undefined, "GET", undefined, true),
+      create: (data: unknown) => fetchFromApi<unknown>("/admin/users", { method: 'POST', body: data }, "POST", data, true),
+      update: (id: number, data: unknown) => fetchFromApi<unknown>(`/admin/users/${id}`, { method: 'PUT', body: data }, "PUT", data, true),
       delete: (id: number) => fetchFromApi<{ message: string }>(`/admin/users/${id}`, { method: 'DELETE' }, "DELETE", undefined, true),
     },
     roles: {
-      get: () => fetchFromApi<any[]>("/admin/roles", undefined, "GET", undefined, true),
-      getById: (id: number) => fetchFromApi<any>(`/admin/roles/${id}`, undefined, "GET", undefined, true),
-      create: (data: any) => fetchFromApi<any>("/admin/roles", { method: 'POST', body: data }, "POST", data, true),
-      update: (id: number, data: any) => fetchFromApi<any>(`/admin/roles/${id}`, { method: 'PUT', body: data }, "PUT", data, true),
+      get: () => fetchFromApi<unknown[]>("/admin/roles", undefined, "GET", undefined, true),
+      getById: (id: number) => fetchFromApi<unknown>(`/admin/roles/${id}`, undefined, "GET", undefined, true),
+      create: (data: unknown) => fetchFromApi<unknown>("/admin/roles", { method: 'POST', body: data }, "POST", data, true),
+      update: (id: number, data: unknown) => fetchFromApi<unknown>(`/admin/roles/${id}`, { method: 'PUT', body: data }, "PUT", data, true),
       delete: (id: number) => fetchFromApi<{ message: string }>(`/admin/roles/${id}`, { method: 'DELETE' }, "DELETE", undefined, true),
     },
     content: {
-      get: () => fetchFromApi<any[]>("/admin/content", undefined, "GET", undefined, true),
-      getById: (id: number) => fetchFromApi<any>(`/admin/content/${id}`, undefined, "GET", undefined, true),
-      create: (data: any) => fetchFromApi<any>("/admin/content", { method: 'POST', body: data }, "POST", data, true),
-      update: (id: number, data: any) => fetchFromApi<any>(`/admin/content/${id}`, { method: 'PUT', body: data }, "PUT", data, true),
+      get: () => fetchFromApi<unknown[]>("/admin/content", undefined, "GET", undefined, true),
+      getById: (id: number) => fetchFromApi<unknown>(`/admin/content/${id}`, undefined, "GET", undefined, true),
+      create: (data: unknown) => fetchFromApi<unknown>("/admin/content", { method: 'POST', body: data }, "POST", data, true),
+      update: (id: number, data: unknown) => fetchFromApi<unknown>(`/admin/content/${id}`, { method: 'PUT', body: data }, "PUT", data, true),
       delete: (id: number) => fetchFromApi<{ message: string }>(`/admin/content/${id}`, { method: 'DELETE' }, "DELETE", undefined, true),
     },
     settings: {
-      get: () => fetchFromApi<any[]>("/admin/settings", undefined, "GET", undefined, true),
-      getById: (id: number) => fetchFromApi<any>(`/admin/settings/${id}`, undefined, "GET", undefined, true),
-      create: (data: any) => fetchFromApi<any>("/admin/settings", { method: 'POST', body: data }, "POST", data, true),
-      update: (id: number, data: any) => fetchFromApi<any>(`/admin/settings/${id}`, { method: 'PUT', body: data }, "PUT", data, true),
+      get: () => fetchFromApi<unknown[]>("/admin/settings", undefined, "GET", undefined, true),
+      getById: (id: number) => fetchFromApi<unknown>(`/admin/settings/${id}`, undefined, "GET", undefined, true),
+      create: (data: unknown) => fetchFromApi<unknown>("/admin/settings", { method: 'POST', body: data }, "POST", data, true),
+      update: (id: number, data: unknown) => fetchFromApi<unknown>(`/admin/settings/${id}`, { method: 'PUT', body: data }, "PUT", data, true),
       delete: (id: number) => fetchFromApi<{ message: string }>(`/admin/settings/${id}`, { method: 'DELETE' }, "DELETE", undefined, true),
     },
     auth: {

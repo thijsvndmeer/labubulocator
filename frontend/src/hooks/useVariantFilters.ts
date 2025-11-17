@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Labubu } from '@labubu/common/src/types/labubu';
 import { shuffleArray } from '@/lib/utils';
+import { Rarity } from '@/types/variant'; // Import Rarity type
 
 export const useVariantFilters = (variants: Labubu[], searchQuery: string) => {
-  const [selectedRarity, setSelectedRarity] = useState<string | 'all'>(() => {
+  const [selectedRarity, setSelectedRarity] = useState<Rarity | 'all'>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem('selectedRarity') as string | 'all') || 'all';
+      return (localStorage.getItem('selectedRarity') as Rarity | 'all') || 'all';
     }
     return 'all';
   });

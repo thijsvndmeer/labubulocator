@@ -49,39 +49,38 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
       
       <div className="p-4 space-y-3">
         <Link to={`/variant/${variant.sku}`}>
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold truncate">{variant.name}</h3>
-              <p className="text-sm text-muted-foreground truncate">{variant.series}</p>
-              {variant.variant && (
-                <p className="text-xs text-muted-foreground truncate">{variant.variant}</p>
-              )}
-            </div>
-            <RarityBadge rarity={variant.rarity as any} />
-          </div>
-        </Link>
-
-        {isPopular && (
-          <Badge variant="secondary" className="absolute top-2 left-2">Popular</Badge>
-        )}
-
-        <Link to={`/variant/${variant.sku}`}>
-          <div className="space-y-1">
-            <div className="flex items-baseline justify-between">
-              <span className="text-2xl font-bold text-primary">
-                ${(variant.estimatedValue || 0).toFixed(2)}
-              </span>
-              {variant.priceChange24h !== undefined && (
-                <PriceChangeBadge priceChange={variant.priceChange24h} />
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Floor: ${lowestPrice > 0 && lowestPrice !== Infinity ? lowestPrice.toFixed(2) : 'N/A'} • Range: ${variant.priceRange?.low || 'N/A'}-${variant.priceRange?.high || 'N/A'}
-            </p>
-          </div>
-        </Link>
-          {!hideStockStatus && <StockStatusBadge status={variant.stockStatus as any} />}
-        <div className="flex items-center justify-between gap-0 pt-0">
+                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold truncate">{variant.name}</h3>
+                        <p className="text-sm text-muted-foreground truncate">{variant.series}</p>
+                        {variant.variant && (
+                          <p className="text-xs text-muted-foreground truncate">{variant.variant}</p>
+                        )}
+                      </div>
+                      <RarityBadge rarity={variant.rarity} />
+                    </div>
+                  </Link>
+          
+                  {isPopular && (
+                    <Badge variant="secondary" className="absolute top-2 left-2">Popular</Badge>
+                  )}
+          
+                  <Link to={`/variant/${variant.sku}`}>
+                    <div className="space-y-1">
+                      <div className="flex items-baseline justify-between">
+                        <span className="text-2xl font-bold text-primary">
+                          ${(variant.estimatedValue || 0).toFixed(2)}
+                        </span>
+                        {variant.priceChange24h !== undefined && (
+                          <PriceChangeBadge priceChange={variant.priceChange24h} />
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Floor: ${lowestPrice > 0 && lowestPrice !== Infinity ? lowestPrice.toFixed(2) : 'N/A'} • Range: ${variant.priceRange?.low || 'N/A'}-${variant.priceRange?.high || 'N/A'}
+                      </p>
+                    </div>
+                  </Link>
+                    {!hideStockStatus && <StockStatusBadge status={variant.stockStatus} />}        <div className="flex items-center justify-between gap-0 pt-0">
 
           {variant.affiliateLinks && variant.affiliateLinks.length > 0 && (
             <Button
