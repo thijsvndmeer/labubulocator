@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { labubuRepository } from "../index";
-import { HttpOptions, Labubu, labubuSchema, makeHttpOptionsSchema, QueryOptions } from "@labubu/common";
+import { HttpOptions, Labubu, labubuSchema, makeHttpOptionsSchema } from "@labubu/common";
 
 const router = Router();
 const labubuHttpOptionsSchema = makeHttpOptionsSchema(labubuSchema);
@@ -51,7 +51,6 @@ router.get("/:sku/", async (req, res) => {
     res.status(500).json({ error: "An error occurred while fetching the labubu.", details: err });
   }
 });
-
 
 //============================================================================================================================================================================================
 // Default export
