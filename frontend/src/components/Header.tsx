@@ -16,18 +16,21 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
   const navigate = useNavigate();
   const [favoriteCount, setFavoriteCount] = useState<number>(0);
   const [collectionCount, setCollectionCount] = useState<number>(0);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false); // State to manage admin status
 
   useEffect(() => {
-    const updateCounts = () => {
+    const updateCountsAndAdminStatus = () => {
       setFavoriteCount(getFavorites().length);
       setCollectionCount(getCollection().length);
+      // Check for admin token in localStorage
+      setIsAdmin(!!localStorage.getItem('admin_token'));
     };
 
-    updateCounts(); // Set initial count
+    updateCountsAndAdminStatus(); // Set initial counts and admin status
 
-    window.addEventListener('storage', updateCounts);
+    window.addEventListener('storage', updateCountsAndAdminStatus);
     return () => {
-      window.removeEventListener('storage', updateCounts);
+      window.removeEventListener('storage', updateCountsAndAdminStatus);
     };
   }, []);
 
@@ -88,17 +91,19 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
               <Link to="/favorites">
                 <Button variant="outline" className="relative">
                   <Heart className="h-4 w-4" />
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-inProgress">
                     {favoriteCount}
                   </span>
                 </Button>
               </Link>
             )}
-            <Link to="/admin/login"> {/* Admin Login Link */}
-              <Button variant="outline" className="flex items-center justify-center w-10 h-10 p-0">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </Link>
+            {isAdmin && ( // Conditionally render based on isAdmin state
+              <Link to="/admin/login"> {/* Admin Login Link */}
+                <Button variant="outline" className="flex items-center justify-center w-10 h-10 p-0">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
             <ThemeToggle />
           </form>
         </div>
