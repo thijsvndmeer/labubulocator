@@ -59,6 +59,36 @@ db.serialize(() => {
     }
   );
 
+  // Create the characters table
+  db.run(
+    `
+    CREATE TABLE IF NOT EXISTS characters (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      description TEXT
+    )
+  `,
+    (err) => {
+      if (err) {
+        console.error("DATABASE: Error creating characters table", err.message);
+      } else {
+        console.log("DATABASE: characters table created or already exists.");
+      }
+    }
+  );
+
+  // Create index on name in characters table
+  db.run(
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_characters_name ON characters (name)`,
+    (err) => {
+      if (err) {
+        console.error("DATABASE: Error creating unique index on characters(name)", err.message);
+      } else {
+        console.log("DATABASE: Unique index on characters(name) created or already exists.");
+      }
+    }
+  );
+
   // Create index on sku in labubus table
   db.run(
     `CREATE INDEX IF NOT EXISTS idx_labubus_sku ON labubus (sku)`,

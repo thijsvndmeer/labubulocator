@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { labubuRepository } from "../index";
-import { Labubu, labubuSchema, User, Role, Content, Settings } from "@labubu/common";
+import { labubuRepository, characterRepository } from "../index";
+import { Labubu, labubuSchema, User, Role, Content, Settings, Character, characterSchema } from "@labubu/common";
 
 const router = Router();
 
@@ -90,6 +90,61 @@ router.delete("/labubus/:sku", adminAuth, async (req, res) => {
     res.status(200).json({ message: 'Labubu deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: "An error occurred while deleting the labubu.", details: err });
+  }
+});
+
+//============================================================================================================================================================================================
+// Character admin routes
+//============================================================================================================================================================================================
+
+router.get("/characters", adminAuth, async (req, res) => {
+  try {
+    const result = await characterRepository.get({});
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching characters.", details: err });
+  }
+});
+
+router.get("/characters/:id", adminAuth, async (req, res) => {
+  try {
+    const result = await characterRepository.get({ filter: { id: parseInt(req.params.id) } });
+    if (result.length > 0) {
+      res.status(200).json(result[0]);
+    } else {
+      res.status(404).json({ error: `Character with id "${req.params.id}" not found` });
+    }
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching the character.", details: err });
+  }
+});
+
+router.post("/characters", adminAuth, async (req, res) => {
+  try {
+    const character = characterSchema.parse(req.body);
+    const id = await characterRepository.create(character);
+    res.status(201).json({ message: 'Character created successfully', id });
+  } catch (err) {
+    res.status(400).json({ error: "Invalid data", details: err });
+  }
+});
+
+router.put("/characters/:id", adminAuth, async (req, res) => {
+  try {
+    const character = characterSchema.parse({ ...req.body, id: parseInt(req.params.id) });
+    await characterRepository.update({ filter: { id: parseInt(req.params.id) } }, character);
+    res.status(200).json({ message: 'Character updated successfully', character });
+  } catch (err) {
+    res.status(400).json({ error: "Invalid data", details: err });
+  }
+});
+
+router.delete("/characters/:id", adminAuth, async (req, res) => {
+  try {
+    await characterRepository.delete({ filter: { id: parseInt(req.params.id) } });
+    res.status(200).json({ message: 'Character deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while deleting the character.", details: err });
   }
 });
 

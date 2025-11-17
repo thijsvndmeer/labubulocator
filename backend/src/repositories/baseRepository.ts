@@ -39,7 +39,7 @@ export abstract class BaseRepository<T> {
    * @param data - An object containing the data to insert into the table, excluding the 'id' field.
    * @returns A promise that resolves to the ID of the newly created record.
    */
-  protected async create(data: Omit<T, "id">): Promise<number> {
+  public async create(data: Omit<T, "id">): Promise<number> {
     console.log(`REPOSITORY: Creating new record in ${this.tableName}.`);
     // Invalidate cache on create
     this.cache.clear();
@@ -67,7 +67,7 @@ export abstract class BaseRepository<T> {
    * @returns A promise that resolves with an array of the found rows. Returns an empty array if no rows are found.
    * @throws Error - If any option field or value is invalid (validation performed by `ensureValidOptions`).
    */
-  protected async get<K extends keyof T>(options: QueryOptions<T> = {}, fields?: K[]): Promise<Pick<T, K>[]> {
+  public async get<K extends keyof T>(options: QueryOptions<T> = {}, fields?: K[]): Promise<Pick<T, K>[]> {
     const cacheKey = JSON.stringify({ options, fields });
     const cached = this.cache.get(cacheKey);
 
@@ -100,7 +100,7 @@ export abstract class BaseRepository<T> {
    * @returns A promise that resolves to the number of rows affected by the update operation.
    * @throws Error - If any option field or value is invalid, or if data fields are invalid.
    */
-  protected async update(criteria: QueryCriteria<T> = {}, data: Partial<Omit<T, "id">>): Promise<number> {
+  public async update(criteria: QueryCriteria<T> = {}, data: Partial<Omit<T, "id">>): Promise<number> {
     console.log(`REPOSITORY: Updating records in ${this.tableName}.`);
     // Invalidate cache on update
     this.cache.clear();
@@ -128,7 +128,7 @@ export abstract class BaseRepository<T> {
    *   - `ranges`: Optional. An array of range objects (e.g., `{ field: 'msrp', min: 50, max: 100 }`).
    * @returns A promise that resolves to the number of rows affected by the delete operation.
    */
-  protected async delete(criteria: QueryCriteria<T> = {}): Promise<number> {
+  public async delete(criteria: QueryCriteria<T> = {}): Promise<number> {
     console.log(`REPOSITORY: Deleting records from ${this.tableName}.`);
     // Invalidate cache on delete
     this.cache.clear();

@@ -6,6 +6,7 @@ import adminRoutes from "./routes/admin";
 import { LabubuRepository } from "./repositories/labubuRepository";
 import { ListingRepository } from "./repositories/listingRepository";
 import { PriceHistoryRepository } from "./repositories/priceHistoryRepository";
+import { CharacterRepository } from "./repositories/characterRepository"; // Import CharacterRepository
 import db from "./lib/database";
 import { syncLabubus } from "./services/labubuSyncService";
 import { startApiSync } from "./services/scheduler";
@@ -26,6 +27,7 @@ app.use(express.json()); // Enable JSON body parsing
 export const labubuRepository = new LabubuRepository(db);
 export const listingRepository = new ListingRepository(db);
 export const priceHistoryRepository = new PriceHistoryRepository(db);
+export const characterRepository = new CharacterRepository(db); // Instantiate CharacterRepository
 
 (async () => {
   await syncLabubus();
