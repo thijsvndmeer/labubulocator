@@ -1,5 +1,5 @@
 import { ContentRepository } from "../repositories/contentRepository";
-import { Content, QueryOptions } from "@labubu/common";
+import { Content, QueryOptions } from "../../../common/src/index";
 
 export class ContentService {
   private contentRepository: ContentRepository;

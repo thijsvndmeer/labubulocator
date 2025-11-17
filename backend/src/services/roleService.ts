@@ -1,5 +1,5 @@
 import { RoleRepository } from "../repositories/roleRepository";
-import { Role, QueryOptions } from "@labubu/common";
+import { Role, QueryOptions } from "../../../common/src/index";
 
 export class RoleService {
   private roleRepository: RoleRepository;

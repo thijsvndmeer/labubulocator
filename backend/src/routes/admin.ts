@@ -1,6 +1,6 @@
 import express from "express";
-import { labubuRepository, userService, roleService, contentService, navigationService } from "../index";
-import { labubuSchema, userSchema, roleSchema, contentSchema, navigationSchema } from "@labubu/common";
+import { labubuRepository, userService, roleService, contentService, navigationService, settingsService } from "../index";
+import { labubuSchema, userSchema, roleSchema, contentSchema, navigationSchema, settingsSchema } from "../../../common/src/index";
 
 const router = express.Router();
 

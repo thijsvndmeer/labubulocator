@@ -1,6 +1,6 @@
 import { Database } from "sqlite3";
 import { BaseRepository } from "./baseRepository";
-import { Content, QueryOptions } from "@labubu/common";
+import { Content, QueryOptions } from "../../../common/src/index";
 
 export class ContentRepository extends BaseRepository<Content> {
   constructor(db: Database) {
