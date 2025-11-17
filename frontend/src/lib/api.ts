@@ -1,4 +1,14 @@
-import { HttpOptions, Labubu, Listing, PriceEntry, User, Role, Content, Navigation, Settings } from "@labubu/common";
+import {
+  HttpOptions,
+  Variant,
+  Listing,
+  PriceEntry,
+  Character,
+  Set,
+  Collection,
+  SiteConfig,
+  SearchSettings,
+} from "@labubu/common";
 
 export const API_ROOT_URL = "https://api.labubulocator.me";
 const API_BASE_URL = `${API_ROOT_URL}/api`;
@@ -10,17 +20,20 @@ function toUrlSearchParams(obj: any, prefix = ''): URLSearchParams {
       const propName = prefix ? `${prefix}[${key}]` : key;
       const value = obj[key];
       if (value !== undefined && value !== null) {
-        if (typeof value === 'object' && !Array.isArray(value)) {
+        if (typeof value === 'object' && !Array.isArray(value) && !(value instanceof Date)) {
           const nestedParams = toUrlSearchParams(value, propName);
           nestedParams.forEach((nestedValue, nestedKey) => {
             params.append(nestedKey, nestedValue);
           });
         } else if (Array.isArray(value)) {
           value.forEach((item) => {
-            const arrayParams = toUrlSearchParams(item, `${propName}[]`);
-            arrayParams.forEach((nestedValue, nestedKey) => {
-              params.append(nestedKey, nestedValue);
-            });
+            // For simple arrays (e.g., tags=tag1,tag2), join them.
+            // For array of objects, convert each to JSON string or handle specifically.
+            if (typeof item === 'object') {
+                params.append(`${propName}[]`, JSON.stringify(item));
+            } else {
+                params.append(`${propName}[]`, item.toString());
+            }
           });
         } else {
           params.append(propName, value.toString());
@@ -33,82 +46,81 @@ function toUrlSearchParams(obj: any, prefix = ''): URLSearchParams {
 
 async function fetchFromApi<T>(path: string, options?: HttpOptions<T>, method: "GET" | "POST" | "PUT" | "DELETE" = "GET", body?: any, useAdminToken: boolean = false): Promise<T> {
   const url = new URL(`${API_BASE_URL}${path}`);
-  if (options) {
-    const params = toUrlSearchParams(options);
+  if (options && options.query) {
+    const params = toUrlSearchParams(options.query);
     url.search = params.toString();
   }
 
-  const token = useAdminToken ? localStorage.getItem("admin_token") : undefined;
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
   const response = await fetch(url.toString(), {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
+    method: options?.method || 'GET',
+    headers: options?.body ? { 'Content-Type': 'application/json' } : undefined,
+    body: options?.body ? JSON.stringify(options.body) : undefined,
   });
+
   if (!response.ok) {
-    throw new Error(`API request failed with status ${response.status}`);
+    const errorBody = await response.json().catch(() => ({ message: 'Unknown error' }));
+    throw new Error(errorBody.message || `API request failed with status ${response.status}`);
   }
   return response.json();
 }
 
+async function createResource<T>(path: string, data: Partial<T>): Promise<T> {
+  return fetchFromApi<T>(path, { method: 'POST', body: data });
+}
+
+async function updateResource<T>(path: string, id: string, data: Partial<T>): Promise<T> {
+  return fetchFromApi<T>(`${path}/${id}`, { method: 'PUT', body: data });
+}
+
+async function removeResource<T>(path: string, id: string): Promise<T> {
+  return fetchFromApi<T>(`${path}/${id}`, { method: 'DELETE' });
+}
 
 
 export const api = {
-  labubus: {
-    get: (options?: any) => fetchFromApi<Labubu[]>("/labubus", options),
-    getBySku: (sku: string) => fetchFromApi<Labubu>(`/labubus/${sku}`),
+  characters: {
+    get: (options?: any) => fetchFromApi<Character[]>("/characters", options),
+    getById: (id: string) => fetchFromApi<Character>(`/characters/${id}`),
+    create: (data: Partial<Character>) => createResource<Character>("/characters", data),
+    update: (id: string, data: Partial<Character>) => updateResource<Character>("/characters", id, data),
+    remove: (id: string) => removeResource<Character>("/characters", id),
   },
-  listings: {
+  sets: {
+    get: (options?: any) => fetchFromApi<Set[]>("/sets", options),
+    getById: (id: string) => fetchFromApi<Set>(`/sets/${id}`),
+    create: (data: Partial<Set>) => createResource<Set>("/sets", data),
+    update: (id: string, data: Partial<Set>) => updateResource<Set>("/sets", id, data),
+    remove: (id: string) => removeResource<Set>("/sets", id),
+  },
+  variants: {
+    get: (options?: any) => fetchFromApi<Variant[]>("/variants", options),
+    getBySku: (sku: string) => fetchFromApi<Variant>(`/variants/sku/${sku}`), // Changed to bySku
+    getById: (id: string) => fetchFromApi<Variant>(`/variants/${id}`),
+    create: (data: Partial<Variant>) => createResource<Variant>("/variants", data),
+    update: (id: string, data: Partial<Variant>) => updateResource<Variant>("/variants", id, data),
+    remove: (id: string) => removeResource<Variant>("/variants", id),
+  },
+  collections: {
+    get: (options?: any) => fetchFromApi<Collection[]>("/collections", options),
+    getById: (id: string) => fetchFromApi<Collection>(`/collections/${id}`),
+    create: (data: Partial<Collection>) => createResource<Collection>("/collections", data),
+    update: (id: string, data: Partial<Collection>) => updateResource<Collection>("/collections", id, data),
+    remove: (id: string) => removeResource<Collection>("/collections", id),
+  },
+  siteConfig: {
+    get: (id: string = 'main-config') => fetchFromApi<SiteConfig>(`/site-config/${id}`), // Assuming a singleton
+    update: (id: string, data: Partial<SiteConfig>) => updateResource<SiteConfig>("/site-config", id, data),
+  },
+  searchSettings: {
+    get: (id: string = 'main-search-config') => fetchFromApi<SearchSettings>(`/search-settings/${id}`), // Assuming a singleton
+    update: (id: string, data: Partial<SearchSettings>) => updateResource<SearchSettings>("/search-settings", id, data),
+  },
+  listings: { // Keeping listings for now, will update if needed
     get: (options?: any) => fetchFromApi<Listing[]>("/listings", options),
-    getById: (id: number) => fetchFromApi<Listing>(`/listings/${id}`),
-    getPriceHistory: (id: number) => fetchFromApi<PriceEntry[]>(`/listings/${id}/priceHistory`),
-  },
-  admin: {
-    labubus: {
-      create: (data: Labubu) => fetchFromApi<Labubu>("/admin/labubus", {}, "POST", data, true),
-      update: (sku: string, data: Labubu) => fetchFromApi<Labubu>(`/admin/labubus/${sku}`, {}, "PUT", data, true),
-      delete: (sku: string) => fetchFromApi<void>(`/admin/labubus/${sku}`, {}, "DELETE", undefined, true),
-    },
-    users: {
-      get: (options?: any) => fetchFromApi<User[]>("/admin/users", options, "GET", undefined, true),
-      getById: (id: number) => fetchFromApi<User>(`/admin/users/${id}`, undefined, "GET", undefined, true),
-      create: (data: User) => fetchFromApi<User>("/admin/users", undefined, "POST", data, true),
-      update: (id: number, data: Partial<User>) => fetchFromApi<User>(`/admin/users/${id}`, undefined, "PUT", data, true),
-      delete: (id: number) => fetchFromApi<void>(`/admin/users/${id}`, undefined, "DELETE", undefined, true),
-    },
-    roles: {
-      get: (options?: any) => fetchFromApi<Role[]>("/admin/roles", options, "GET", undefined, true),
-      getById: (id: number) => fetchFromApi<Role>(`/admin/roles/${id}`, undefined, "GET", undefined, true),
-      create: (data: Role) => fetchFromApi<Role>("/admin/roles", undefined, "POST", data, true),
-      update: (id: number, data: Partial<Role>) => fetchFromApi<Role>(`/admin/roles/${id}`, undefined, "PUT", data, true),
-      delete: (id: number) => fetchFromApi<void>(`/admin/roles/${id}`, undefined, "DELETE", undefined, true),
-    },
-    content: {
-      get: (options?: any) => fetchFromApi<Content[]>("/admin/content", options, "GET", undefined, true),
-      getById: (id: number) => fetchFromApi<Content>(`/admin/content/${id}`, undefined, "GET", undefined, true),
-      create: (data: Content) => fetchFromApi<Content>("/admin/content", undefined, "POST", data, true),
-      update: (id: number, data: Partial<Content>) => fetchFromApi<Content>(`/admin/content/${id}`, undefined, "PUT", data, true),
-      delete: (id: number) => fetchFromApi<void>(`/admin/content/${id}`, undefined, "DELETE", undefined, true),
-    },
-    navigation: {
-      get: (options?: any) => fetchFromApi<Navigation[]>("/admin/navigation", options, "GET", undefined, true),
-      getById: (id: number) => fetchFromApi<Navigation>(`/admin/navigation/${id}`, undefined, "GET", undefined, true),
-      create: (data: Navigation) => fetchFromApi<Navigation>("/admin/navigation", undefined, "POST", data, true),
-      update: (id: number, data: Partial<Navigation>) => fetchFromApi<Navigation>(`/admin/navigation/${id}`, undefined, "PUT", data, true),
-      delete: (id: number) => fetchFromApi<void>(`/admin/navigation/${id}`, undefined, "DELETE", undefined, true),
-    },
-    settings: {
-      get: (options?: any) => fetchFromApi<Settings[]>("/admin/settings", options, "GET", undefined, true),
-      getById: (id: number) => fetchFromApi<Settings>(`/admin/settings/${id}`, undefined, "GET", undefined, true),
-      create: (data: Settings) => fetchFromApi<Settings>("/admin/settings", undefined, "POST", data, true),
-      update: (id: number, data: Partial<Settings>) => fetchFromApi<Settings>(`/admin/settings/${id}`, undefined, "PUT", data, true),
-      delete: (id: number) => fetchFromApi<void>(`/admin/settings/${id}`, undefined, "DELETE", undefined, true),
-    },
+    getById: (id: string) => fetchFromApi<Listing>(`/listings/${id}`),
+    getPriceHistory: (id: string) => fetchFromApi<PriceEntry[]>(`/listings/${id}/priceHistory`),
+    create: (data: Partial<Listing>) => createResource<Listing>("/listings", data),
+    update: (id: string, data: Partial<Listing>) => updateResource<Listing>("/listings", id, data),
+    remove: (id: string) => removeResource<Listing>("/listings", id),
   },
 };
