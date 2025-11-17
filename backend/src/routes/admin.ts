@@ -67,7 +67,7 @@ router.get("/labubus/:sku", adminAuth, async (req, res) => {
 router.post("/labubus", adminAuth, async (req, res) => {
   try {
     const labubu = labubuSchema.parse(req.body);
-    await labubuRepository.upsert(labubu);
+    await labubuRepository.updateOrCreate(labubu);
     res.status(201).json({ message: 'Labubu created successfully', labubu });
   } catch (err) {
     res.status(400).json({ error: "Invalid data", details: err });
@@ -77,7 +77,7 @@ router.post("/labubus", adminAuth, async (req, res) => {
 router.put("/labubus/:sku", adminAuth, async (req, res) => {
   try {
     const labubu = labubuSchema.parse({ ...req.body, sku: req.params.sku });
-    await labubuRepository.upsert(labubu);
+    await labubuRepository.updateOrCreate(labubu);
     res.status(200).json({ message: 'Labubu updated successfully', labubu });
   } catch (err) {
     res.status(400).json({ error: "Invalid data", details: err });
