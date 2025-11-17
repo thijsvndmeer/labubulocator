@@ -1,5 +1,5 @@
 import { UserRepository } from "../repositories/userRepository";
-import { User, QueryOptions } from "../../../common/src/index";
+import { User, QueryOptions } from "@labubu/common";
 
 export class UserService {
   private userRepository: UserRepository;

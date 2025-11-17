@@ -1,5 +1,5 @@
 import { SettingsRepository } from "../repositories/settingsRepository";
-import { Settings, QueryOptions } from "../../../common/src/index";
+import { Settings, QueryOptions } from "@labubu/common";
 
 export class SettingsService {
   private settingsRepository: SettingsRepository;

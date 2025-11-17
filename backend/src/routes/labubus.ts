@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { labubuRepository } from "../index";
-import { HttpOptions, Labubu, labubuSchema, makeHttpOptionsSchema } from "../../../common/src/index";
+import { HttpOptions, Labubu, labubuSchema, makeHttpOptionsSchema, QueryOptions } from "@labubu/common";
 
 const router = Router();
 const labubuHttpOptionsSchema = makeHttpOptionsSchema(labubuSchema);

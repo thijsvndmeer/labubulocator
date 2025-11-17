@@ -167,3 +167,4 @@ export interface HttpOptions<T> {
   limit?: number;
   offset?: number;
 }
+export type QueryOptions<T> = HttpOptions<T>;

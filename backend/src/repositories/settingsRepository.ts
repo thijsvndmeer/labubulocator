@@ -1,6 +1,6 @@
 import { Database } from "sqlite3";
 import { BaseRepository } from "./baseRepository";
-import { Settings, QueryOptions } from "../../../common/src/index";
+import { Settings, QueryOptions } from "@labubu/common";
 
 export class SettingsRepository extends BaseRepository<Settings> {
   constructor(db: Database) {

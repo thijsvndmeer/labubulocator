@@ -5,13 +5,16 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx nodemon --exec ts-node -r tsconfig-paths/register src/index.ts",
+    "dev": "bun x nodemon --exec 'bun x ts-node src/index.ts'",
     "build": "(cd ../common && bun run build) && tsc"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "_moduleAliases": {
+    "@labubu/common": "../common/dist"
+  },
   "dependencies": {
     "@labubu/common": "file:../common",
     "@types/node-cron": "^3.0.11",
@@ -24,7 +27,8 @@
     "node-cron": "^4.2.1",
     "p-limit": "^3.1.0",
     "sqlite3": "^5.1.7",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "module-alias": "^2.2.3"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
@@ -32,7 +36,6 @@
     "@types/sqlite3": "^3.1.11",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.3"
   }
 }

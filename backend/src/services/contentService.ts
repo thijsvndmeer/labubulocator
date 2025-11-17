@@ -1,5 +1,5 @@
 import { ContentRepository } from "../repositories/contentRepository";
-import { Content, QueryOptions } from "../../../common/src/index";
+import { Content, QueryOptions } from "@labubu/common";
 
 export class ContentService {
   private contentRepository: ContentRepository;
@@ -21,6 +21,12 @@ export class ContentService {
   async getContentByKey(key: string): Promise<Content | undefined> {
     console.log(`CONTENT_SERVICE: Fetching content by key: ${key}`);
     const contents = await this.contentRepository.getContent({ filter: { key } });
+    return contents[0];
+  }
+
+  async getContentById(id: number): Promise<Content | undefined> {
+    console.log(`CONTENT_SERVICE: Fetching content by ID: ${id}`);
+    const contents = await this.contentRepository.getContent({ filter: { id } });
     return contents[0];
   }
 

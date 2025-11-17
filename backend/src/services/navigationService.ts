@@ -1,5 +1,5 @@
 import { NavigationRepository } from "../repositories/navigationRepository";
-import { Navigation, QueryOptions } from "../../../common/src/index";
+import { Navigation, QueryOptions } from "@labubu/common";
 
 export class NavigationService {
   private navigationRepository: NavigationRepository;
