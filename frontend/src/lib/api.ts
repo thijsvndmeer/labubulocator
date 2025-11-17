@@ -92,6 +92,10 @@ export const api = {
     update: (id: string, data: Partial<Set>) => updateResource<Set>("/sets", id, data),
     remove: (id: string) => removeResource<Set>("/sets", id),
   },
+  labubus: {
+    get: (options?: any) => fetchFromApi<Variant[]>("/labubus", options),
+    getBySku: (sku: string) => fetchFromApi<Variant>(`/labubus/${sku}`),
+  },
   variants: {
     get: (options?: any) => fetchFromApi<Variant[]>("/variants", options),
     getBySku: (sku: string) => fetchFromApi<Variant>(`/variants/sku/${sku}`), // Changed to bySku
@@ -122,5 +126,46 @@ export const api = {
     create: (data: Partial<Listing>) => createResource<Listing>("/listings", data),
     update: (id: string, data: Partial<Listing>) => updateResource<Listing>("/listings", id, data),
     remove: (id: string) => removeResource<Listing>("/listings", id),
+  },
+  admin: {
+    labubus: {
+      get: (options?: any) => fetchFromApi<Variant[]>("/admin/labubus", options, "GET", undefined, true),
+      getBySku: (sku: string) => fetchFromApi<Variant>(`/admin/labubus/${sku}`, undefined, "GET", undefined, true),
+      create: (data: Partial<Variant>) => fetchFromApi<Variant>("/admin/labubus", { method: 'POST', body: data }, "POST", data, true),
+      update: (sku: string, data: Partial<Variant>) => fetchFromApi<Variant>(`/admin/labubus/${sku}`, { method: 'PUT', body: data }, "PUT", data, true),
+      delete: (sku: string) => fetchFromApi<{ message: string }>(`/admin/labubus/${sku}`, { method: 'DELETE' }, "DELETE", undefined, true),
+    },
+    users: {
+      get: () => fetchFromApi<any[]>("/admin/users", undefined, "GET", undefined, true),
+      getById: (id: number) => fetchFromApi<any>(`/admin/users/${id}`, undefined, "GET", undefined, true),
+      create: (data: any) => fetchFromApi<any>("/admin/users", { method: 'POST', body: data }, "POST", data, true),
+      update: (id: number, data: any) => fetchFromApi<any>(`/admin/users/${id}`, { method: 'PUT', body: data }, "PUT", data, true),
+      delete: (id: number) => fetchFromApi<{ message: string }>(`/admin/users/${id}`, { method: 'DELETE' }, "DELETE", undefined, true),
+    },
+    roles: {
+      get: () => fetchFromApi<any[]>("/admin/roles", undefined, "GET", undefined, true),
+      getById: (id: number) => fetchFromApi<any>(`/admin/roles/${id}`, undefined, "GET", undefined, true),
+      create: (data: any) => fetchFromApi<any>("/admin/roles", { method: 'POST', body: data }, "POST", data, true),
+      update: (id: number, data: any) => fetchFromApi<any>(`/admin/roles/${id}`, { method: 'PUT', body: data }, "PUT", data, true),
+      delete: (id: number) => fetchFromApi<{ message: string }>(`/admin/roles/${id}`, { method: 'DELETE' }, "DELETE", undefined, true),
+    },
+    content: {
+      get: () => fetchFromApi<any[]>("/admin/content", undefined, "GET", undefined, true),
+      getById: (id: number) => fetchFromApi<any>(`/admin/content/${id}`, undefined, "GET", undefined, true),
+      create: (data: any) => fetchFromApi<any>("/admin/content", { method: 'POST', body: data }, "POST", data, true),
+      update: (id: number, data: any) => fetchFromApi<any>(`/admin/content/${id}`, { method: 'PUT', body: data }, "PUT", data, true),
+      delete: (id: number) => fetchFromApi<{ message: string }>(`/admin/content/${id}`, { method: 'DELETE' }, "DELETE", undefined, true),
+    },
+    settings: {
+      get: () => fetchFromApi<any[]>("/admin/settings", undefined, "GET", undefined, true),
+      getById: (id: number) => fetchFromApi<any>(`/admin/settings/${id}`, undefined, "GET", undefined, true),
+      create: (data: any) => fetchFromApi<any>("/admin/settings", { method: 'POST', body: data }, "POST", data, true),
+      update: (id: number, data: any) => fetchFromApi<any>(`/admin/settings/${id}`, { method: 'PUT', body: data }, "PUT", data, true),
+      delete: (id: number) => fetchFromApi<{ message: string }>(`/admin/settings/${id}`, { method: 'DELETE' }, "DELETE", undefined, true),
+    },
+    auth: {
+      login: (token: string) => fetchFromApi<{ success: boolean; message: string }>("/admin/auth/login", { method: 'POST', body: { token } }),
+      verify: (token: string) => fetchFromApi<{ valid: boolean }>("/admin/auth/verify", { method: 'POST', body: { token } }),
+    },
   },
 };

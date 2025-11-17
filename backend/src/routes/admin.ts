@@ -1,0 +1,196 @@
+import { Router } from "express";
+import { labubuRepository } from "../index";
+import { Labubu, labubuSchema, User, Role, Content, Settings } from "@labubu/common";
+
+const router = Router();
+
+// Admin authentication middleware
+const adminAuth = (req: any, res: any, next: any) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'supersecrettokenpleasereplaceme';
+  
+  if (token === ADMIN_TOKEN) {
+    next();
+  } else {
+    res.status(401).json({ error: 'Unauthorized' });
+  }
+};
+
+//============================================================================================================================================================================================
+// Auth routes
+//============================================================================================================================================================================================
+
+router.post("/auth/login", async (req, res) => {
+  const { token } = req.body;
+  const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'supersecrettokenpleasereplaceme';
+  
+  if (token === ADMIN_TOKEN) {
+    res.status(200).json({ success: true, message: 'Login successful' });
+  } else {
+    res.status(401).json({ success: false, message: 'Invalid token' });
+  }
+});
+
+router.post("/auth/verify", async (req, res) => {
+  const { token } = req.body;
+  const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'supersecrettokenpleasereplaceme';
+  
+  res.status(200).json({ valid: token === ADMIN_TOKEN });
+});
+
+//============================================================================================================================================================================================
+// Labubu admin routes
+//============================================================================================================================================================================================
+
+router.get("/labubus", adminAuth, async (req, res) => {
+  try {
+    const result = await labubuRepository.get({});
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching labubus.", details: err });
+  }
+});
+
+router.get("/labubus/:sku", adminAuth, async (req, res) => {
+  try {
+    const result = await labubuRepository.get({ filter: { sku: req.params.sku } });
+    if (result.length > 0) {
+      res.status(200).json(result[0]);
+    } else {
+      res.status(404).json({ error: `Labubu with sku "${req.params.sku}" not found` });
+    }
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching the labubu.", details: err });
+  }
+});
+
+router.post("/labubus", adminAuth, async (req, res) => {
+  try {
+    const labubu = labubuSchema.parse(req.body);
+    await labubuRepository.upsert(labubu);
+    res.status(201).json({ message: 'Labubu created successfully', labubu });
+  } catch (err) {
+    res.status(400).json({ error: "Invalid data", details: err });
+  }
+});
+
+router.put("/labubus/:sku", adminAuth, async (req, res) => {
+  try {
+    const labubu = labubuSchema.parse({ ...req.body, sku: req.params.sku });
+    await labubuRepository.upsert(labubu);
+    res.status(200).json({ message: 'Labubu updated successfully', labubu });
+  } catch (err) {
+    res.status(400).json({ error: "Invalid data", details: err });
+  }
+});
+
+router.delete("/labubus/:sku", adminAuth, async (req, res) => {
+  try {
+    // Add delete functionality to repository if needed
+    res.status(200).json({ message: 'Labubu deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while deleting the labubu.", details: err });
+  }
+});
+
+//============================================================================================================================================================================================
+// User admin routes (placeholder - implement with actual database)
+//============================================================================================================================================================================================
+
+router.get("/users", adminAuth, async (req, res) => {
+  res.status(200).json([]);
+});
+
+router.get("/users/:id", adminAuth, async (req, res) => {
+  res.status(404).json({ error: "User not found" });
+});
+
+router.post("/users", adminAuth, async (req, res) => {
+  res.status(501).json({ error: "Not implemented" });
+});
+
+router.put("/users/:id", adminAuth, async (req, res) => {
+  res.status(501).json({ error: "Not implemented" });
+});
+
+router.delete("/users/:id", adminAuth, async (req, res) => {
+  res.status(501).json({ error: "Not implemented" });
+});
+
+//============================================================================================================================================================================================
+// Role admin routes (placeholder - implement with actual database)
+//============================================================================================================================================================================================
+
+router.get("/roles", adminAuth, async (req, res) => {
+  res.status(200).json([
+    { id: 1, name: 'Admin' },
+    { id: 2, name: 'Editor' },
+    { id: 3, name: 'Viewer' }
+  ]);
+});
+
+router.get("/roles/:id", adminAuth, async (req, res) => {
+  res.status(404).json({ error: "Role not found" });
+});
+
+router.post("/roles", adminAuth, async (req, res) => {
+  res.status(501).json({ error: "Not implemented" });
+});
+
+router.put("/roles/:id", adminAuth, async (req, res) => {
+  res.status(501).json({ error: "Not implemented" });
+});
+
+router.delete("/roles/:id", adminAuth, async (req, res) => {
+  res.status(501).json({ error: "Not implemented" });
+});
+
+//============================================================================================================================================================================================
+// Content admin routes (placeholder)
+//============================================================================================================================================================================================
+
+router.get("/content", adminAuth, async (req, res) => {
+  res.status(200).json([]);
+});
+
+router.get("/content/:id", adminAuth, async (req, res) => {
+  res.status(404).json({ error: "Content not found" });
+});
+
+router.post("/content", adminAuth, async (req, res) => {
+  res.status(501).json({ error: "Not implemented" });
+});
+
+router.put("/content/:id", adminAuth, async (req, res) => {
+  res.status(501).json({ error: "Not implemented" });
+});
+
+router.delete("/content/:id", adminAuth, async (req, res) => {
+  res.status(501).json({ error: "Not implemented" });
+});
+
+//============================================================================================================================================================================================
+// Settings admin routes (placeholder)
+//============================================================================================================================================================================================
+
+router.get("/settings", adminAuth, async (req, res) => {
+  res.status(200).json([]);
+});
+
+router.get("/settings/:id", adminAuth, async (req, res) => {
+  res.status(404).json({ error: "Setting not found" });
+});
+
+router.post("/settings", adminAuth, async (req, res) => {
+  res.status(501).json({ error: "Not implemented" });
+});
+
+router.put("/settings/:id", adminAuth, async (req, res) => {
+  res.status(501).json({ error: "Not implemented" });
+});
+
+router.delete("/settings/:id", adminAuth, async (req, res) => {
+  res.status(501).json({ error: "Not implemented" });
+});
+
+export default router;

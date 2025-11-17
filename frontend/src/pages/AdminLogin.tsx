@@ -16,19 +16,27 @@ const AdminLogin = () => {
     e.preventDefault();
     setLoading(true);
 
-    // For now, a simple client-side check. In a real app, this would be an API call.
-    // The actual token validation will happen on the backend when making API calls.
-    if (token === 'supersecrettokenpleasereplaceme') { // This should ideally be validated via an API call
-      localStorage.setItem('admin_token', token);
-      toast({
-        title: 'Login Successful',
-        description: 'Redirecting to admin dashboard...',
-      });
-      navigate('/admin/dashboard');
-    } else {
+    try {
+      // Validate token with backend
+      const response = await api.admin.auth.login(token);
+      if (response.success) {
+        localStorage.setItem('admin_token', token);
+        toast({
+          title: 'Login Successful',
+          description: 'Redirecting to admin dashboard...',
+        });
+        navigate('/admin/dashboard');
+      } else {
+        toast({
+          title: 'Login Failed',
+          description: response.message || 'Invalid token.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error: any) {
       toast({
         title: 'Login Failed',
-        description: 'Invalid token.',
+        description: error.message || 'An error occurred during login.',
         variant: 'destructive',
       });
     }
