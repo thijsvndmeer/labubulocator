@@ -8,11 +8,17 @@ import { ListingRepository } from "./repositories/listingRepository";
 import { PriceHistoryRepository } from "./repositories/priceHistoryRepository";
 import { UserRepository } from "./repositories/userRepository";
 import { RoleRepository } from "./repositories/roleRepository";
+import { ContentRepository } from "./repositories/contentRepository";
+import { NavigationRepository } from "./repositories/navigationRepository";
+import { SettingsRepository } from "./repositories/settingsRepository";
 import db from "./lib/database";
 import { syncLabubus } from "./services/labubuSyncService";
 import { startApiSync } from "./services/scheduler";
 import { UserService } from "./services/userService";
 import { RoleService } from "./services/roleService";
+import { ContentService } from "./services/contentService";
+import { NavigationService } from "./services/navigationService";
+import { SettingsService } from "./services/settingsService";
 import fs from 'fs';
 import path from 'path';
 
@@ -69,8 +75,6 @@ const findImageRecursively = (filename: string, currentDir: string): string | nu
   }
   return null;
 };
-
-import bodyParser from "body-parser";
 
 app.use(bodyParser.json());
 app.use((req, res, next) => {

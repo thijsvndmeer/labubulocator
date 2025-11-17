@@ -1,4 +1,4 @@
-import { HttpOptions, Labubu, Listing, PriceEntry, User, Role } from "@labubu/common";
+import { HttpOptions, Labubu, Listing, PriceEntry, User, Role, Content, Navigation, Settings } from "@labubu/common";
 
 export const API_ROOT_URL = "https://api.labubulocator.me";
 const API_BASE_URL = `${API_ROOT_URL}/api`;
@@ -88,6 +88,27 @@ export const api = {
       create: (data: Role) => fetchFromApi<Role>("/admin/roles", undefined, "POST", data, true),
       update: (id: number, data: Partial<Role>) => fetchFromApi<Role>(`/admin/roles/${id}`, undefined, "PUT", data, true),
       delete: (id: number) => fetchFromApi<void>(`/admin/roles/${id}`, undefined, "DELETE", undefined, true),
+    },
+    content: {
+      get: (options?: any) => fetchFromApi<Content[]>("/admin/content", options, "GET", undefined, true),
+      getById: (id: number) => fetchFromApi<Content>(`/admin/content/${id}`, undefined, "GET", undefined, true),
+      create: (data: Content) => fetchFromApi<Content>("/admin/content", undefined, "POST", data, true),
+      update: (id: number, data: Partial<Content>) => fetchFromApi<Content>(`/admin/content/${id}`, undefined, "PUT", data, true),
+      delete: (id: number) => fetchFromApi<void>(`/admin/content/${id}`, undefined, "DELETE", undefined, true),
+    },
+    navigation: {
+      get: (options?: any) => fetchFromApi<Navigation[]>("/admin/navigation", options, "GET", undefined, true),
+      getById: (id: number) => fetchFromApi<Navigation>(`/admin/navigation/${id}`, undefined, "GET", undefined, true),
+      create: (data: Navigation) => fetchFromApi<Navigation>("/admin/navigation", undefined, "POST", data, true),
+      update: (id: number, data: Partial<Navigation>) => fetchFromApi<Navigation>(`/admin/navigation/${id}`, undefined, "PUT", data, true),
+      delete: (id: number) => fetchFromApi<void>(`/admin/navigation/${id}`, undefined, "DELETE", undefined, true),
+    },
+    settings: {
+      get: (options?: any) => fetchFromApi<Settings[]>("/admin/settings", options, "GET", undefined, true),
+      getById: (id: number) => fetchFromApi<Settings>(`/admin/settings/${id}`, undefined, "GET", undefined, true),
+      create: (data: Settings) => fetchFromApi<Settings>("/admin/settings", undefined, "POST", data, true),
+      update: (id: number, data: Partial<Settings>) => fetchFromApi<Settings>(`/admin/settings/${id}`, undefined, "PUT", data, true),
+      delete: (id: number) => fetchFromApi<void>(`/admin/settings/${id}`, undefined, "DELETE", undefined, true),
     },
   },
 };
