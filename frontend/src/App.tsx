@@ -95,6 +95,7 @@ export const AppContent = () => {
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboardPage />} /> {/* Admin Dashboard homepage */}
+            <Route path="dashboard" element={<AdminDashboardPage />} />
             <Route path="catalog" element={<AdminCatalog />} />
             <Route path="variant/:id?" element={<AdminVariantEditorPage />} />
           </Route>
