@@ -2,8 +2,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { Variant } from '@/types/variant';
-import { CatalogVariantFormState } from './catalogTypes';
+import { Labubu } from '@labubu/common';
+import { CatalogVariantFormState, buildCatalogPayload } from './catalogTypes';
 import {
   Card,
   CardContent,
@@ -29,22 +29,26 @@ const initialVariantState: CatalogVariantFormState = {
   sku: '',
   name: '',
   series: '',
-  rarity: 'common', // Default to common
+  rarity: 'common',
   description: '',
-  msrp: 0,
+  msrp: undefined,
   variant: '',
+  stockStatus: '',
+  kicksdevId: '',
+  ebaySearchOverride: '',
 };
 
 const EditCatalogItem = () => {
   const { sku } = useParams<{ sku: string }>();
   const [variant, setVariant] = useState<CatalogVariantFormState>(initialVariantState);
+  const [originalRecord, setOriginalRecord] = useState<Labubu | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   // Fetch existing variant data
-  const { data: existingVariant, isLoading: isLoadingVariant, error: variantError } = useQuery<Variant>({
+  const { data: existingVariant, isLoading: isLoadingVariant, error: variantError } = useQuery<Labubu>({
     queryKey: ['adminVariant', sku],
     queryFn: () => api.admin.labubus.getBySku(sku!),
     enabled: !!sku, // Only run if sku is available
@@ -52,24 +56,33 @@ const EditCatalogItem = () => {
 
   useEffect(() => {
     if (existingVariant) {
+      setOriginalRecord(existingVariant);
       setVariant({
         sku: existingVariant.sku,
         name: existingVariant.name,
         series: existingVariant.series,
         rarity: existingVariant.rarity,
         description: existingVariant.description || '',
-        msrp: existingVariant.msrp || 0,
+        msrp: existingVariant.msrp,
         variant: existingVariant.variant || '',
         kicksdevId: existingVariant.kicksdevId,
         ebaySearchOverride: existingVariant.ebaySearchOverride,
-        stockStatus: existingVariant.stockStatus,
-        estimatedValue: existingVariant.estimatedValue,
+        stockStatus: existingVariant.stockStatus || '',
       });
     }
   }, [existingVariant]);
 
   const updateMutation = useMutation({
-    mutationFn: (updatedVariant: CatalogVariantFormState) => api.admin.labubus.update(sku!, updatedVariant as Variant),
+    mutationFn: (updatedVariant: CatalogVariantFormState) => {
+      if (!originalRecord) {
+        throw new Error('Unable to update without the original catalog entry.');
+      }
+      const payload = {
+        ...originalRecord,
+        ...buildCatalogPayload(updatedVariant),
+      };
+      return api.admin.labubus.update(sku!, payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminVariants'] });
       queryClient.invalidateQueries({ queryKey: ['adminVariant', sku] }); // Invalidate single variant query
@@ -90,7 +103,7 @@ const EditCatalogItem = () => {
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
-    const numericFields = new Set(['msrp', 'releasePrice', 'isRetired']);
+    const numericFields = new Set(['msrp']);
     setVariant((prev) => ({
       ...prev,
       [id]: numericFields.has(id) ? Number(value) : value,
@@ -191,54 +204,27 @@ const EditCatalogItem = () => {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="releaseDate">Release Date</Label>
+              <Label htmlFor="stockStatus">Stock Status</Label>
               <Input
-                id="releaseDate"
-                type="date"
-                value={variant.releaseDate || ''}
+                id="stockStatus"
+                value={variant.stockStatus || ''}
+                onChange={handleChange}
+                placeholder="e.g., in_stock"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="kicksdevId">KicksDev ID</Label>
+              <Input
+                id="kicksdevId"
+                value={variant.kicksdevId || ''}
                 onChange={handleChange}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="isRetired">Is Retired (0 or 1)</Label>
+              <Label htmlFor="ebaySearchOverride">eBay Search Override</Label>
               <Input
-                id="isRetired"
-                type="number"
-                value={variant.isRetired ?? 0}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="stockXUrl">StockX URL</Label>
-              <Input
-                id="stockXUrl"
-                value={variant.stockXUrl || ''}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="ebayUrl">eBay URL</Label>
-              <Input
-                id="ebayUrl"
-                value={variant.ebayUrl || ''}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="funkoId">Funko ID</Label>
-              <Input
-                id="funkoId"
-                value={variant.funkoId || ''}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="releasePrice">Release Price</Label>
-              <Input
-                id="releasePrice"
-                type="number"
-                step="0.01"
-                value={variant.releasePrice ?? 0}
+                id="ebaySearchOverride"
+                value={variant.ebaySearchOverride || ''}
                 onChange={handleChange}
               />
             </div>

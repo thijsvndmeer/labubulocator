@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { Variant } from '@/types/variant';
-import { CatalogVariantFormState } from './catalogTypes';
+import { CatalogVariantFormState, buildCatalogPayload } from './catalogTypes';
 import {
   Card,
   CardContent,
@@ -29,10 +29,13 @@ const initialVariantState: CatalogVariantFormState = {
   sku: '',
   name: '',
   series: '',
-  rarity: 'common', // Default to common
+  rarity: 'common',
   description: '',
-  msrp: 0,
+  msrp: undefined,
   variant: '',
+  stockStatus: '',
+  kicksdevId: '',
+  ebaySearchOverride: '',
 };
 
 const AddCatalogItem = () => {
@@ -43,7 +46,8 @@ const AddCatalogItem = () => {
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
-    mutationFn: (newVariant: CatalogVariantFormState) => api.admin.labubus.create(newVariant as Variant),
+    mutationFn: (newVariant: CatalogVariantFormState) =>
+      api.admin.labubus.create(buildCatalogPayload(newVariant) as Variant),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminVariants'] });
       toast({
@@ -63,7 +67,7 @@ const AddCatalogItem = () => {
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
-    const numericFields = new Set(['msrp', 'releasePrice', 'isRetired']);
+    const numericFields = new Set(['msrp']);
     setVariant((prev) => ({
       ...prev,
       [id]: numericFields.has(id) ? Number(value) : value,
@@ -155,54 +159,27 @@ const AddCatalogItem = () => {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="releaseDate">Release Date</Label>
+              <Label htmlFor="stockStatus">Stock Status</Label>
               <Input
-                id="releaseDate"
-                type="date"
-                value={variant.releaseDate || ''}
+                id="stockStatus"
+                value={variant.stockStatus || ''}
+                onChange={handleChange}
+                placeholder="e.g., in_stock"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="kicksdevId">KicksDev ID</Label>
+              <Input
+                id="kicksdevId"
+                value={variant.kicksdevId || ''}
                 onChange={handleChange}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="isRetired">Is Retired (0 or 1)</Label>
+              <Label htmlFor="ebaySearchOverride">eBay Search Override</Label>
               <Input
-                id="isRetired"
-                type="number"
-                value={variant.isRetired ?? 0}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="stockXUrl">StockX URL</Label>
-              <Input
-                id="stockXUrl"
-                value={variant.stockXUrl || ''}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="ebayUrl">eBay URL</Label>
-              <Input
-                id="ebayUrl"
-                value={variant.ebayUrl || ''}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="funkoId">Funko ID</Label>
-              <Input
-                id="funkoId"
-                value={variant.funkoId || ''}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="releasePrice">Release Price</Label>
-              <Input
-                id="releasePrice"
-                type="number"
-                step="0.01"
-                value={variant.releasePrice ?? 0}
+                id="ebaySearchOverride"
+                value={variant.ebaySearchOverride || ''}
                 onChange={handleChange}
               />
             </div>
