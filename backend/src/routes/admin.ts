@@ -100,7 +100,10 @@ router.put("/labubus/:sku", adminAuth, async (req, res) => {
 
 router.delete("/labubus/:sku", adminAuth, async (req, res) => {
   try {
-    // Add delete functionality to repository if needed
+    const deleted = await labubuRepository.delete({ filter: { sku: req.params.sku } });
+    if (deleted === 0) {
+      return res.status(404).json({ error: `Labubu with sku "${req.params.sku}" not found` });
+    }
     res.status(200).json({ message: 'Labubu deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: "An error occurred while deleting the labubu.", details: err });

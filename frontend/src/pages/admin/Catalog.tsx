@@ -1,7 +1,7 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { Labubu } from '@labubu/common';
+import { Variant } from '@/types/variant';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,24 +23,24 @@ const AdminCatalog = () => {
   const [fileInputKey, setFileInputKey] = useState(0);
   const [lastUploadSummary, setLastUploadSummary] = useState<string | null>(null);
 
-  const { data: labubus, isLoading, error } = useQuery<Labubu[]>({
-    queryKey: ['adminLabubus'],
-    queryFn: () => api.labubus.get(), // Using the public get for listing
+  const { data: labubus, isLoading, error } = useQuery<Variant[]>({
+    queryKey: ['adminVariants'],
+    queryFn: () => api.admin.labubus.get(),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (sku: string) => api.admin.labubus.delete(sku),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminLabubus'] });
+      queryClient.invalidateQueries({ queryKey: ['adminVariants'] });
       toast({
         title: 'Success',
-        description: 'Labubu item deleted successfully.',
+        description: 'Variant deleted successfully.',
       });
     },
     onError: (err) => {
       toast({
         title: 'Error',
-        description: `Failed to delete Labubu item: ${err.message}`,
+        description: `Failed to delete variant: ${err.message}`,
         variant: 'destructive',
       });
     },
@@ -49,13 +49,13 @@ const AdminCatalog = () => {
   const uploadMutation = useMutation({
     mutationFn: (file: File) => api.admin.labubus.uploadCatalog(file),
     onSuccess: (response) => {
-      queryClient.invalidateQueries({ queryKey: ['adminLabubus'] });
+      queryClient.invalidateQueries({ queryKey: ['adminVariants'] });
       setSelectedFile(null);
       setFileInputKey((key) => key + 1);
       setLastUploadSummary(`Processed ${response.processed} rows from the uploaded catalog.`);
       toast({
         title: 'Catalog replaced',
-        description: response.message || 'The Labubu catalog was updated successfully.',
+        description: response.message || 'The catalog was updated successfully.',
       });
     },
     onError: (err: Error) => {
@@ -86,7 +86,7 @@ const AdminCatalog = () => {
   };
 
   const handleDelete = (sku: string) => {
-    if (window.confirm(`Are you sure you want to delete Labubu with SKU: ${sku}?`)) {
+    if (window.confirm(`Are you sure you want to delete the variant with SKU: ${sku}?`)) {
       deleteMutation.mutate(sku);
     }
   };
@@ -105,7 +105,7 @@ const AdminCatalog = () => {
         <h1 className="text-3xl font-bold">Catalog Management</h1>
         <Button asChild>
           <Link to="/admin/catalog/add">
-            <PlusCircle className="mr-2 h-4 w-4" /> Add New Labubu
+            <PlusCircle className="mr-2 h-4 w-4" /> Add New Variant
           </Link>
         </Button>
       </div>
@@ -114,7 +114,7 @@ const AdminCatalog = () => {
           <div>
             <h2 className="text-xl font-semibold">Replace entire catalog</h2>
             <p className="text-sm text-muted-foreground">
-              Upload a CSV file to overwrite every Labubu entry. This is the fastest way to switch to a brand new catalog.
+              Upload a CSV file to overwrite every variant entry. This is the fastest way to switch to a brand new catalog.
             </p>
           </div>
           <form className="flex flex-col gap-2 md:flex-row md:items-center" onSubmit={handleUpload}>

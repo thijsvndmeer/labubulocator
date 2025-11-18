@@ -23,11 +23,8 @@ const Random = lazy(() => import("./pages/Random"));
 const Home = lazy(() => import("./pages/Home"));
 const AdminDashboardPage = lazy(() => import("./pages/admin/Dashboard"));
 const AdminLayout = lazy(() => import("./components/AdminLayout"));
-const AdminVariantEditorPage = lazy(() => import("./pages/admin/EditCatalogItem"));
-
 const AdminLogin = lazy(() => import("./pages/AdminLogin")); // Import AdminLogin
 
-const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
 const AdminCatalog = lazy(() => import("./pages/admin/Catalog"));
 const AdminUsers = lazy(() => import("./pages/admin/Users"));
 const AdminRoles = lazy(() => import("./pages/admin/Roles"));
@@ -93,11 +90,14 @@ export const AppContent = () => {
           <Route path="/home" element={<Home />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboardPage />} /> {/* Admin Dashboard homepage */}
-            <Route path="dashboard" element={<AdminDashboardPage />} />
-            <Route path="catalog" element={<AdminCatalog />} />
-            <Route path="variant/:id?" element={<AdminVariantEditorPage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboardPage />} /> {/* Admin Dashboard homepage */}
+              <Route path="dashboard" element={<AdminDashboardPage />} />
+              <Route path="catalog" element={<AdminCatalog />} />
+              <Route path="catalog/add" element={<AddCatalogItem />} />
+              <Route path="catalog/edit/:sku" element={<EditCatalogItem />} />
+            </Route>
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

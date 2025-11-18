@@ -1,5 +1,11 @@
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'secret';
-export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock' | 'pre_order' | 'discontinued';
+export type StockStatus =
+  | 'in_stock'
+  | 'low_stock'
+  | 'out_of_stock'
+  | 'pre_order'
+  | 'discontinued'
+  | (string & {});
 
 export interface PriceSource {
   source: string;
@@ -28,17 +34,21 @@ export interface Variant {
   variant?: string;
   sku: string;
   rarity: Rarity;
-  images: string[];
-  description: string;
-  msrp: number;
-  retailUrl: string;
+  images?: string[];
+  description?: string;
+  msrp?: number;
+  retailUrl?: string;
+  lowestPrice?: number;
   lastSalePrice?: number;
   floorPrice?: number;
+  stockxPrice?: number;
+  ebayLowestPrice?: number | null;
   priceSources?: PriceData[];
-  affiliateLinks: AffiliateLink[];
-  stockStatus: StockStatus;
-  attributes: Record<string, string>;
+  affiliateLinks?: AffiliateLink[];
+  stockStatus?: StockStatus;
+  attributes?: Record<string, string>;
   estimatedValue?: number;
+  estimatedValueLastCalculated?: string;
   priceRange?: {
     low: number;
     high: number;
@@ -47,6 +57,17 @@ export interface Variant {
   priceChange24h?: number;
   recentSales?: Sale[];
   priceHistory?: PriceSnapshot[];
+  volatility?: number;
+  kicksdevId?: string;
+  ebaySearchOverride?: string;
+  stockxLastRefreshed?: string;
+  ebayLastRefreshed?: string;
+  stockXUrl?: string;
+  ebayUrl?: string;
+  funkoId?: string;
+  releaseDate?: string;
+  releasePrice?: number;
+  isRetired?: number;
 }
 
 export interface Sale {

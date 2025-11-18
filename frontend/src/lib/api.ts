@@ -1,6 +1,5 @@
 import {
   HttpOptions,
-  Variant,
   Listing,
   PriceEntry,
   Character,
@@ -9,6 +8,7 @@ import {
   SiteConfig,
   SearchSettings,
 } from "@labubu/common";
+import type { Variant } from "@/types/variant";
 
 export const API_ROOT_URL = "https://api.labubulocator.me";
 const API_BASE_URL = `${API_ROOT_URL}/api`;

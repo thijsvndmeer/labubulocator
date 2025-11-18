@@ -2,7 +2,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { Labubu } from '@labubu/common';
+import { Variant } from '@/types/variant';
+import { CatalogVariantFormState } from './catalogTypes';
 import {
   Card,
   CardContent,
@@ -23,8 +24,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-// Define initial form state for a new Labubu item
-const initialLabubuState: Partial<Labubu> = {
+// Define initial form state for editing
+const initialVariantState: CatalogVariantFormState = {
   sku: '',
   name: '',
   series: '',
@@ -36,48 +37,52 @@ const initialLabubuState: Partial<Labubu> = {
 
 const EditCatalogItem = () => {
   const { sku } = useParams<{ sku: string }>();
-  const [labubu, setLabubu] = useState<Partial<Labubu>>(initialLabubuState);
+  const [variant, setVariant] = useState<CatalogVariantFormState>(initialVariantState);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // Fetch existing Labubu data
-  const { data: existingLabubu, isLoading: isLoadingLabubu, error: labubuError } = useQuery<Labubu>({
-    queryKey: ['labubu', sku],
-    queryFn: () => api.labubus.getBySku(sku!),
+  // Fetch existing variant data
+  const { data: existingVariant, isLoading: isLoadingVariant, error: variantError } = useQuery<Variant>({
+    queryKey: ['adminVariant', sku],
+    queryFn: () => api.admin.labubus.getBySku(sku!),
     enabled: !!sku, // Only run if sku is available
   });
 
   useEffect(() => {
-    if (existingLabubu) {
-      setLabubu({
-        sku: existingLabubu.sku,
-        name: existingLabubu.name,
-        series: existingLabubu.series,
-        rarity: existingLabubu.rarity,
-        description: existingLabubu.description || '',
-        msrp: existingLabubu.msrp || 0,
-        variant: existingLabubu.variant || '',
+    if (existingVariant) {
+      setVariant({
+        sku: existingVariant.sku,
+        name: existingVariant.name,
+        series: existingVariant.series,
+        rarity: existingVariant.rarity,
+        description: existingVariant.description || '',
+        msrp: existingVariant.msrp || 0,
+        variant: existingVariant.variant || '',
+        kicksdevId: existingVariant.kicksdevId,
+        ebaySearchOverride: existingVariant.ebaySearchOverride,
+        stockStatus: existingVariant.stockStatus,
+        estimatedValue: existingVariant.estimatedValue,
       });
     }
-  }, [existingLabubu]);
+  }, [existingVariant]);
 
   const updateMutation = useMutation({
-    mutationFn: (updatedLabubu: Labubu) => api.admin.labubus.update(sku!, updatedLabubu),
+    mutationFn: (updatedVariant: CatalogVariantFormState) => api.admin.labubus.update(sku!, updatedVariant as Variant),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminLabubus'] });
-      queryClient.invalidateQueries({ queryKey: ['labubu', sku] }); // Invalidate single labubu query
+      queryClient.invalidateQueries({ queryKey: ['adminVariants'] });
+      queryClient.invalidateQueries({ queryKey: ['adminVariant', sku] }); // Invalidate single variant query
       toast({
         title: 'Success',
-        description: 'Labubu item updated successfully.',
+        description: 'Variant updated successfully.',
       });
       navigate('/admin/catalog');
     },
     onError: (err) => {
       toast({
         title: 'Error',
-        description: `Failed to update Labubu item: ${err.message}`,
+        description: `Failed to update variant: ${err.message}`,
         variant: 'destructive',
       });
     },
@@ -85,14 +90,15 @@ const EditCatalogItem = () => {
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
-    setLabubu((prev) => ({
+    const numericFields = new Set(['msrp', 'releasePrice', 'isRetired']);
+    setVariant((prev) => ({
       ...prev,
-      [id]: id === 'msrp' ? Number(value) : value,
+      [id]: numericFields.has(id) ? Number(value) : value,
     }));
   }, []);
 
   const handleSelectChange = useCallback((id: string, value: string) => {
-    setLabubu((prev) => ({
+    setVariant((prev) => ({
       ...prev,
       [id]: value,
     }));
@@ -101,25 +107,25 @@ const EditCatalogItem = () => {
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await updateMutation.mutateAsync(labubu as Labubu);
+    await updateMutation.mutateAsync(variant);
     setLoading(false);
-  }, [labubu, updateMutation]);
+  }, [variant, updateMutation]);
 
-  if (isLoadingLabubu) {
-    return <div>Loading Labubu data...</div>;
+  if (isLoadingVariant) {
+    return <div>Loading variant data...</div>;
   }
 
-  if (labubuError) {
-    return <div>Error loading Labubu data: {labubuError.message}</div>;
+  if (variantError) {
+    return <div>Error loading variant data: {variantError.message}</div>;
   }
 
   return (
     <div className="space-y-4">
-      <h1 className="text-3xl font-bold">Edit Catalog Item: {labubu.name} ({labubu.sku})</h1>
+      <h1 className="text-3xl font-bold">Edit Catalog Item: {variant.name} ({variant.sku})</h1>
       <Card>
         <CardHeader>
-          <CardTitle>Labubu Details</CardTitle>
-          <CardDescription>Edit the details for the Labubu item.</CardDescription>
+          <CardTitle>Variant Details</CardTitle>
+          <CardDescription>Edit the details for this catalog variant.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -127,7 +133,7 @@ const EditCatalogItem = () => {
               <Label htmlFor="sku">SKU</Label>
               <Input
                 id="sku"
-                value={labubu.sku}
+                value={variant.sku}
                 onChange={handleChange}
                 required
                 disabled // SKU should not be editable
@@ -137,7 +143,7 @@ const EditCatalogItem = () => {
               <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
-                value={labubu.name}
+                value={variant.name}
                 onChange={handleChange}
                 required
               />
@@ -146,14 +152,14 @@ const EditCatalogItem = () => {
               <Label htmlFor="series">Series</Label>
               <Input
                 id="series"
-                value={labubu.series}
+                value={variant.series}
                 onChange={handleChange}
                 required
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="rarity">Rarity</Label>
-              <Select onValueChange={(value) => handleSelectChange('rarity', value)} value={labubu.rarity}>
+              <Select onValueChange={(value) => handleSelectChange('rarity', value)} value={variant.rarity}>
                 <SelectTrigger id="rarity">
                   <SelectValue placeholder="Select a rarity" />
                 </SelectTrigger>
@@ -171,7 +177,7 @@ const EditCatalogItem = () => {
                 id="msrp"
                 type="number"
                 step="0.01"
-                value={labubu.msrp || ''}
+                value={variant.msrp ?? ''}
                 onChange={handleChange}
               />
             </div>
@@ -179,7 +185,7 @@ const EditCatalogItem = () => {
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                value={labubu.description || ''}
+                value={variant.description || ''}
                 onChange={handleChange}
                 rows={3}
               />
@@ -189,7 +195,7 @@ const EditCatalogItem = () => {
               <Input
                 id="releaseDate"
                 type="date"
-                value={labubu.releaseDate || ''}
+                value={variant.releaseDate || ''}
                 onChange={handleChange}
               />
             </div>
@@ -198,7 +204,7 @@ const EditCatalogItem = () => {
               <Input
                 id="isRetired"
                 type="number"
-                value={labubu.isRetired || 0}
+                value={variant.isRetired ?? 0}
                 onChange={handleChange}
               />
             </div>
@@ -206,7 +212,7 @@ const EditCatalogItem = () => {
               <Label htmlFor="stockXUrl">StockX URL</Label>
               <Input
                 id="stockXUrl"
-                value={labubu.stockXUrl || ''}
+                value={variant.stockXUrl || ''}
                 onChange={handleChange}
               />
             </div>
@@ -214,7 +220,7 @@ const EditCatalogItem = () => {
               <Label htmlFor="ebayUrl">eBay URL</Label>
               <Input
                 id="ebayUrl"
-                value={labubu.ebayUrl || ''}
+                value={variant.ebayUrl || ''}
                 onChange={handleChange}
               />
             </div>
@@ -222,7 +228,7 @@ const EditCatalogItem = () => {
               <Label htmlFor="funkoId">Funko ID</Label>
               <Input
                 id="funkoId"
-                value={labubu.funkoId || ''}
+                value={variant.funkoId || ''}
                 onChange={handleChange}
               />
             </div>
@@ -232,7 +238,7 @@ const EditCatalogItem = () => {
                 id="releasePrice"
                 type="number"
                 step="0.01"
-                value={labubu.releasePrice || 0}
+                value={variant.releasePrice ?? 0}
                 onChange={handleChange}
               />
             </div>
@@ -241,7 +247,7 @@ const EditCatalogItem = () => {
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? 'Updating...' : 'Update Labubu'}
+                {loading ? 'Updating...' : 'Update Variant'}
               </Button>
             </div>
           </form>

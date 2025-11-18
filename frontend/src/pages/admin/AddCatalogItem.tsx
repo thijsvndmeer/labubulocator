@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { Labubu } from '@labubu/common';
+import { Variant } from '@/types/variant';
+import { CatalogVariantFormState } from './catalogTypes';
 import {
   Card,
   CardContent,
@@ -23,8 +24,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'; // Assuming Select component exists
 
-// Define initial form state for a new Labubu item
-const initialLabubuState: Partial<Labubu> = {
+// Define initial form state for a new Variant item
+const initialVariantState: CatalogVariantFormState = {
   sku: '',
   name: '',
   series: '',
@@ -35,26 +36,26 @@ const initialLabubuState: Partial<Labubu> = {
 };
 
 const AddCatalogItem = () => {
-  const [labubu, setLabubu] = useState(initialLabubuState);
+  const [variant, setVariant] = useState<CatalogVariantFormState>(initialVariantState);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
-    mutationFn: (newLabubu: Labubu) => api.admin.labubus.create(newLabubu),
+    mutationFn: (newVariant: CatalogVariantFormState) => api.admin.labubus.create(newVariant as Variant),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['adminLabubus'] });
+      queryClient.invalidateQueries({ queryKey: ['adminVariants'] });
       toast({
         title: 'Success',
-        description: 'Labubu item added successfully.',
+        description: 'Variant added successfully.',
       });
       navigate('/admin/catalog');
     },
     onError: (err) => {
       toast({
         title: 'Error',
-        description: `Failed to add Labubu item: ${err.message}`,
+        description: `Failed to add variant: ${err.message}`,
         variant: 'destructive',
       });
     },
@@ -62,14 +63,15 @@ const AddCatalogItem = () => {
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
-    setLabubu((prev) => ({
+    const numericFields = new Set(['msrp', 'releasePrice', 'isRetired']);
+    setVariant((prev) => ({
       ...prev,
-      [id]: id === 'releasePrice' || id === 'isRetired' ? Number(value) : value,
+      [id]: numericFields.has(id) ? Number(value) : value,
     }));
   }, []);
 
   const handleSelectChange = useCallback((id: string, value: string) => {
-    setLabubu((prev) => ({
+    setVariant((prev) => ({
       ...prev,
       [id]: value,
     }));
@@ -78,18 +80,17 @@ const AddCatalogItem = () => {
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Cast to Labubu as the backend expects all fields, even if some are optional/auto-generated
-    await createMutation.mutateAsync(labubu as Labubu);
+    await createMutation.mutateAsync(variant);
     setLoading(false);
-  }, [labubu, createMutation]);
+  }, [variant, createMutation]);
 
   return (
     <div className="space-y-4">
       <h1 className="text-3xl font-bold">Add New Catalog Item</h1>
       <Card>
         <CardHeader>
-          <CardTitle>Labubu Details</CardTitle>
-          <CardDescription>Fill in the details for the new Labubu item.</CardDescription>
+          <CardTitle>Variant Details</CardTitle>
+          <CardDescription>Fill in the details for the new catalog variant.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -97,7 +98,7 @@ const AddCatalogItem = () => {
               <Label htmlFor="sku">SKU</Label>
               <Input
                 id="sku"
-                value={labubu.sku}
+                value={variant.sku}
                 onChange={handleChange}
                 required
               />
@@ -106,7 +107,7 @@ const AddCatalogItem = () => {
               <Label htmlFor="name">Name</Label>
               <Input
                 id="name"
-                value={labubu.name}
+                value={variant.name}
                 onChange={handleChange}
                 required
               />
@@ -115,14 +116,14 @@ const AddCatalogItem = () => {
               <Label htmlFor="series">Series</Label>
               <Input
                 id="series"
-                value={labubu.series}
+                value={variant.series}
                 onChange={handleChange}
                 required
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="rarity">Rarity</Label>
-              <Select onValueChange={(value) => handleSelectChange('rarity', value)} value={labubu.rarity}>
+              <Select onValueChange={(value) => handleSelectChange('rarity', value)} value={variant.rarity}>
                 <SelectTrigger id="rarity">
                   <SelectValue placeholder="Select a rarity" />
                 </SelectTrigger>
@@ -140,7 +141,7 @@ const AddCatalogItem = () => {
                 id="msrp"
                 type="number"
                 step="0.01"
-                value={labubu.msrp || ''}
+                value={variant.msrp ?? ''}
                 onChange={handleChange}
               />
             </div>
@@ -148,7 +149,7 @@ const AddCatalogItem = () => {
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                value={labubu.description || ''}
+                value={variant.description || ''}
                 onChange={handleChange}
                 rows={3}
               />
@@ -158,7 +159,7 @@ const AddCatalogItem = () => {
               <Input
                 id="releaseDate"
                 type="date"
-                value={labubu.releaseDate || ''}
+                value={variant.releaseDate || ''}
                 onChange={handleChange}
               />
             </div>
@@ -167,7 +168,7 @@ const AddCatalogItem = () => {
               <Input
                 id="isRetired"
                 type="number"
-                value={labubu.isRetired || 0}
+                value={variant.isRetired ?? 0}
                 onChange={handleChange}
               />
             </div>
@@ -175,7 +176,7 @@ const AddCatalogItem = () => {
               <Label htmlFor="stockXUrl">StockX URL</Label>
               <Input
                 id="stockXUrl"
-                value={labubu.stockXUrl || ''}
+                value={variant.stockXUrl || ''}
                 onChange={handleChange}
               />
             </div>
@@ -183,7 +184,7 @@ const AddCatalogItem = () => {
               <Label htmlFor="ebayUrl">eBay URL</Label>
               <Input
                 id="ebayUrl"
-                value={labubu.ebayUrl || ''}
+                value={variant.ebayUrl || ''}
                 onChange={handleChange}
               />
             </div>
@@ -191,7 +192,7 @@ const AddCatalogItem = () => {
               <Label htmlFor="funkoId">Funko ID</Label>
               <Input
                 id="funkoId"
-                value={labubu.funkoId || ''}
+                value={variant.funkoId || ''}
                 onChange={handleChange}
               />
             </div>
@@ -201,7 +202,7 @@ const AddCatalogItem = () => {
                 id="releasePrice"
                 type="number"
                 step="0.01"
-                value={labubu.releasePrice || 0}
+                value={variant.releasePrice ?? 0}
                 onChange={handleChange}
               />
             </div>
@@ -210,7 +211,7 @@ const AddCatalogItem = () => {
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? 'Adding...' : 'Add Labubu'}
+                {loading ? 'Adding...' : 'Add Variant'}
               </Button>
             </div>
           </form>
