@@ -30,7 +30,7 @@ export const priceHistoryRepository = new PriceHistoryRepository(db);
 export const characterRepository = new CharacterRepository(db); // Instantiate CharacterRepository
 
 (async () => {
-  await syncLabubus();
+  await syncLabubus(labubuRepository);
   startApiSync();
 })();
 

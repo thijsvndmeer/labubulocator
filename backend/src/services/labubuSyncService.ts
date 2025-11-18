@@ -1,10 +1,12 @@
 import { parse } from "csv-parse";
 import fs from "fs";
-import { labubuRepository } from "../index";
+import { promises as fsPromises } from "fs";
 import { Labubu } from "@labubu/common/src/types/labubu";
 import path from "path";
+import { LabubuRepository } from "../repositories/labubuRepository";
 
-const csvPath = path.resolve("src", "data", "labubus.csv");
+const dataDirectory = path.resolve(process.cwd(), "src", "data");
+export const LABUBU_CSV_PATH = path.join(dataDirectory, "labubus.csv");
 
 const getSeriesFolderName = (series: string): string => {
     const seriesLower = series.toLowerCase();
@@ -20,10 +22,10 @@ const getSeriesFolderName = (series: string): string => {
     return series.toLowerCase().replace(/ /g, '-');
 }
 
-export const syncLabubus = async () => {
-  console.log("LABUBU SYNC: Starting Labubu synchronization from CSV.");
+export const syncLabubus = async (repository: LabubuRepository, csvFilePath: string = LABUBU_CSV_PATH): Promise<number> => {
+  console.log(`LABUBU SYNC: Starting Labubu synchronization from CSV at ${csvFilePath}.`);
   try {
-    const parser = fs.createReadStream(csvPath).pipe(
+    const parser = fs.createReadStream(csvFilePath).pipe(
       parse({
         columns: true,
         trim: true,
@@ -31,6 +33,7 @@ export const syncLabubus = async () => {
       })
     );
 
+    let processedCount = 0;
     for await (const record of parser) {
       console.log(`LABUBU SYNC: Processing record for SKU: ${record.sku}`);
       const labubuData: Partial<Labubu> = {
@@ -51,12 +54,29 @@ export const syncLabubus = async () => {
         labubuData.ebaySearchOverride = record.ebaySearchOverride;
       }
 
-      await labubuRepository.updateOrCreate(labubuData as Labubu);
+      await repository.updateOrCreate(labubuData as Labubu);
       console.log(`LABUBU SYNC: Upserted Labubu with SKU: ${record.sku}`);
+      processedCount += 1;
     }
 
-    console.log(`LABUBU SYNC: Succesfully synced ${csvPath} with the database`);
+    console.log(`LABUBU SYNC: Succesfully synced ${csvFilePath} with the database (${processedCount} rows).`);
+    return processedCount;
   } catch (err) {
-    console.error(`LABUBU SYNC: Error processing ${csvPath}:`, err);
+    console.error(`LABUBU SYNC: Error processing ${csvFilePath}:`, err);
+    throw err;
   }
+};
+
+export const replaceLabubuCatalog = async (
+  repository: LabubuRepository,
+  csvBuffer: Buffer,
+  targetFilePath: string = LABUBU_CSV_PATH
+) => {
+  console.log(`LABUBU SYNC: Replacing catalog with data from uploaded CSV.`);
+  await fsPromises.mkdir(path.dirname(targetFilePath), { recursive: true });
+  await fsPromises.writeFile(targetFilePath, csvBuffer);
+  console.log(`LABUBU SYNC: Saved uploaded CSV to ${targetFilePath}. Clearing existing catalog...`);
+  await repository.delete();
+  const processedCount = await syncLabubus(repository, targetFilePath);
+  return { processedCount, filePath: targetFilePath };
 };

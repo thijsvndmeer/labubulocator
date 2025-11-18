@@ -1,8 +1,10 @@
+import { useState, ChangeEvent, FormEvent } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { Labubu } from '@labubu/common';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -17,6 +19,9 @@ import { useToast } from '@/hooks/use-toast';
 const AdminCatalog = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileInputKey, setFileInputKey] = useState(0);
+  const [lastUploadSummary, setLastUploadSummary] = useState<string | null>(null);
 
   const { data: labubus, isLoading, error } = useQuery<Labubu[]>({
     queryKey: ['adminLabubus'],
@@ -41,6 +46,45 @@ const AdminCatalog = () => {
     },
   });
 
+  const uploadMutation = useMutation({
+    mutationFn: (file: File) => api.admin.labubus.uploadCatalog(file),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: ['adminLabubus'] });
+      setSelectedFile(null);
+      setFileInputKey((key) => key + 1);
+      setLastUploadSummary(`Processed ${response.processed} rows from the uploaded catalog.`);
+      toast({
+        title: 'Catalog replaced',
+        description: response.message || 'The Labubu catalog was updated successfully.',
+      });
+    },
+    onError: (err: Error) => {
+      toast({
+        title: 'Upload failed',
+        description: err.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    setSelectedFile(file);
+  };
+
+  const handleUpload = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!selectedFile) {
+      toast({
+        title: 'No file selected',
+        description: 'Choose a CSV file before uploading.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    uploadMutation.mutate(selectedFile);
+  };
+
   const handleDelete = (sku: string) => {
     if (window.confirm(`Are you sure you want to delete Labubu with SKU: ${sku}?`)) {
       deleteMutation.mutate(sku);
@@ -64,6 +108,36 @@ const AdminCatalog = () => {
             <PlusCircle className="mr-2 h-4 w-4" /> Add New Labubu
           </Link>
         </Button>
+      </div>
+      <div className="space-y-3 rounded-lg border bg-card p-4 shadow-sm">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h2 className="text-xl font-semibold">Replace entire catalog</h2>
+            <p className="text-sm text-muted-foreground">
+              Upload a CSV file to overwrite every Labubu entry. This is the fastest way to switch to a brand new catalog.
+            </p>
+          </div>
+          <form className="flex flex-col gap-2 md:flex-row md:items-center" onSubmit={handleUpload}>
+            <Input
+              key={fileInputKey}
+              type="file"
+              accept=".csv,text/csv"
+              onChange={handleFileChange}
+              className="md:w-64"
+            />
+            <Button type="submit" disabled={!selectedFile || uploadMutation.isPending}>
+              {uploadMutation.isPending ? 'Uploading...' : 'Upload CSV'}
+            </Button>
+          </form>
+        </div>
+        {selectedFile && (
+          <p className="text-sm text-muted-foreground">
+            Ready to replace catalog with <span className="font-medium">{selectedFile.name}</span>
+          </p>
+        )}
+        {lastUploadSummary && (
+          <p className="text-sm text-muted-foreground">{lastUploadSummary}</p>
+        )}
       </div>
 
       <Table>

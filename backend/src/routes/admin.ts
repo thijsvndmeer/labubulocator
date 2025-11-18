@@ -1,6 +1,8 @@
 import { Router } from "express";
+import multer, { FileFilterCallback } from "multer";
 import { labubuRepository, characterRepository } from "../index";
 import { Labubu, labubuSchema, User, Role, Content, Settings, Character, characterSchema } from "@labubu/common";
+import { replaceLabubuCatalog } from "../services/labubuSyncService";
 
 const router = Router();
 
@@ -15,6 +17,18 @@ const adminAuth = (req: any, res: any, next: any) => {
     res.status(401).json({ error: 'Unauthorized' });
   }
 };
+
+const csvUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit to prevent runaway uploads
+  fileFilter: (req, file, cb: FileFilterCallback) => {
+    if (file.mimetype === "text/csv" || file.originalname.toLowerCase().endsWith(".csv")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only CSV files are allowed"));
+    }
+  },
+});
 
 //============================================================================================================================================================================================
 // Auth routes
@@ -90,6 +104,24 @@ router.delete("/labubus/:sku", adminAuth, async (req, res) => {
     res.status(200).json({ message: 'Labubu deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: "An error occurred while deleting the labubu.", details: err });
+  }
+});
+
+router.post("/labubus/upload", adminAuth, csvUpload.single("catalog"), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: "A CSV file must be provided using the 'catalog' field." });
+  }
+
+  try {
+    const { processedCount } = await replaceLabubuCatalog(labubuRepository, req.file.buffer);
+    res.status(200).json({
+      message: "Catalog uploaded successfully. The labubu catalog has been replaced.",
+      processed: processedCount,
+    });
+  } catch (error) {
+    console.error("ADMIN: Failed to upload catalog", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    res.status(500).json({ error: "Failed to upload catalog", details: message });
   }
 });
 
