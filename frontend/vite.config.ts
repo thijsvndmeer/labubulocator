@@ -22,18 +22,6 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    preserveSymlinks: true,
-  },
-  optimizeDeps: {
-    include: ["@labubu/common"],
-    esbuildOptions: {
-      preserveSymlinks: true,
-    },
-  },
-  build: {
-    commonjsOptions: {
-      include: [/node_modules/, /common/],
-    },
   },
   test: {
     globals: true,
