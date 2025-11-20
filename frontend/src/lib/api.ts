@@ -7,6 +7,7 @@ import {
   Collection,
   SiteConfig,
   SearchSettings,
+  Content,
 } from "@labubu/common";
 import type { Variant } from "@/types/variant";
 
@@ -183,6 +184,10 @@ export const api = {
     update: (id: string, data: Partial<Listing>) => updateResource<Listing>("/listings", id, data),
     remove: (id: string) => removeResource<Listing>("/listings", id),
   },
+  content: {
+    getAll: () => fetchFromApi<Content[]>("/content"),
+    getByKey: (key: string) => fetchFromApi<Content>(`/content/${key}`),
+  },
   admin: {
     labubus: {
       get: (options?: HttpOptions<Variant[]>) =>
@@ -228,13 +233,13 @@ export const api = {
         fetchFromApi<{ message: string }>(`/admin/roles/${id}`, withAdminAuth({ method: 'DELETE' })),
     },
     content: {
-      get: () => fetchFromApi<unknown[]>("/admin/content", withAdminAuth()),
+      get: () => fetchFromApi<Content[]>("/admin/content", withAdminAuth()),
       getById: (id: number) =>
-        fetchFromApi<unknown>(`/admin/content/${id}`, withAdminAuth()),
-      create: (data: unknown) =>
-        fetchFromApi<unknown>("/admin/content", withAdminAuth({ method: 'POST', body: data })),
-      update: (id: number, data: unknown) =>
-        fetchFromApi<unknown>(`/admin/content/${id}`, withAdminAuth({ method: 'PUT', body: data })),
+        fetchFromApi<Content>(`/admin/content/${id}`, withAdminAuth()),
+      create: (data: Partial<Content>) =>
+        fetchFromApi<Content>("/admin/content", withAdminAuth({ method: 'POST', body: data })),
+      update: (id: number, data: Partial<Content>) =>
+        fetchFromApi<Content>(`/admin/content/${id}`, withAdminAuth({ method: 'PUT', body: data })),
       delete: (id: number) =>
         fetchFromApi<{ message: string }>(`/admin/content/${id}`, withAdminAuth({ method: 'DELETE' })),
     },

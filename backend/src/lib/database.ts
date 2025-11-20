@@ -286,6 +286,36 @@ db.serialize(() => {
       }
     }
   );
+
+  // Create table for site content management
+  db.run(
+    `
+    CREATE TABLE IF NOT EXISTS site_content (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      key TEXT UNIQUE NOT NULL,
+      value TEXT,
+      last_updated TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `,
+    (err) => {
+      if (err) {
+        console.error("DATABASE: Error creating site_content table", err.message);
+      } else {
+        console.log("DATABASE: site_content table created or already exists.");
+      }
+    }
+  );
+
+  db.run(
+    `CREATE UNIQUE INDEX IF NOT EXISTS idx_site_content_key ON site_content (key)`,
+    (err) => {
+      if (err) {
+        console.error("DATABASE: Error creating index on site_content(key)", err.message);
+      } else {
+        console.log("DATABASE: Index on site_content(key) created or already exists.");
+      }
+    }
+  );
 });
 
 //============================================================================================================================================================================================

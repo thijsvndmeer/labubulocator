@@ -2,9 +2,9 @@ import { VariantCard } from '@/components/VariantCard';
 import { CardSkeleton } from '@/components/CardSkeleton';
 import { Gem, Flame, TrendingDown } from 'lucide-react';
 import { api, API_ROOT_URL } from '@/lib/api';
-const heroBanner = `${API_ROOT_URL}/images/hero-banner.jpg`;
 import { Labubu } from '@labubu/common';
 import { useQuery } from '@tanstack/react-query';
+import { useSiteContent } from '@/hooks/useSiteContent';
 import {
   Carousel,
   CarouselContent,
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/carousel"
 
 const Index = () => {
+  const { getContent } = useSiteContent();
   const { data: variants = [], isLoading } = useQuery<Labubu[]>({
     queryKey: ['variants'],
     queryFn: () => api.labubus.get(),
@@ -34,6 +35,13 @@ const Index = () => {
     .sort((a, b) => (a.priceChange24h || 0) - (b.priceChange24h || 0))
     .slice(0, 15);
 
+  const heroImageSetting = getContent("homepage.hero.image", "/images/hero-banner.jpg");
+  const heroBanner = heroImageSetting.startsWith("http")
+    ? heroImageSetting
+    : `${API_ROOT_URL}${heroImageSetting.startsWith("/") ? heroImageSetting : `/${heroImageSetting}`}`;
+
+  const footerDisclaimer = getContent("footer.disclaimer");
+
   return (
     <div className="min-h-screen">
 
@@ -49,10 +57,10 @@ const Index = () => {
         <div className="relative container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-2xl">
             <h2 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-4">
-              Track Your Labubu Collection Value
+              {getContent("homepage.hero.title", "Track Your Labubu Collection Value")}
             </h2>
             <p className="text-lg text-primary-foreground/90 mb-8">
-              Real-time value estimates and price comparisons for your Labubu collection
+              {getContent("homepage.hero.subtitle", "Real-time value estimates and price comparisons for your Labubu collection")}
             </p>
           </div>
         </div>
@@ -65,8 +73,8 @@ const Index = () => {
             <div className="flex items-center gap-3 mb-8">
               <Flame className="h-8 w-8 text-primary" />
               <div>
-                <h2 className="text-3xl font-bold">What's Hot</h2>
-                <p className="text-muted-foreground">Top daily price increases</p>
+                <h2 className="text-3xl font-bold">{getContent("homepage.sections.hot.title", "What's Hot")}</h2>
+                <p className="text-muted-foreground">{getContent("homepage.sections.hot.subtitle", "Top daily price increases")}</p>
               </div>
             </div>
             
@@ -108,8 +116,8 @@ const Index = () => {
             <div className="flex items-center gap-3 mb-8">
               <TrendingDown className="h-8 w-8 text-destructive" />
               <div>
-                <h2 className="text-3xl font-bold">Biggest Losers</h2>
-                <p className="text-muted-foreground">Top daily price decreases</p>
+                <h2 className="text-3xl font-bold">{getContent("homepage.sections.losers.title", "Biggest Losers")}</h2>
+                <p className="text-muted-foreground">{getContent("homepage.sections.losers.subtitle", "Top daily price decreases")}</p>
               </div>
             </div>
             
@@ -151,8 +159,8 @@ const Index = () => {
             <div className="flex items-center gap-3 mb-8">
               <Gem className="h-8 w-8 text-primary" />
               <div>
-                <h2 className="text-3xl font-bold">Highest Value</h2>
-                <p className="text-muted-foreground">Highest value Labubus</p>
+                <h2 className="text-3xl font-bold">{getContent("homepage.sections.highest.title", "Highest Value")}</h2>
+                <p className="text-muted-foreground">{getContent("homepage.sections.highest.subtitle", "Highest value Labubus")}</p>
               </div>
             </div>
             
@@ -189,19 +197,13 @@ const Index = () => {
         )}
 
         {/* Footer */}
-        <footer className="text-center py-8 border-t">
-          <p className="text-xs text-muted-foreground mt-4">
-          <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through these links.
-          Prices and availability are subject to change.
-          <br></br>
-          <br></br>Estimated values shown on Labubu Locator are generated using an algorithm that analyzes historical sales, current listings, and market trends. These figures are approximations and not guaranteed market prices.
-          <br></br>
-          <br></br>
-          StockX prices are algorithmically estimated. Labubu Locator does not communicate with or receive data directly from StockX. eBay data is retrieved via the official eBay Browse API.
-          <br></br>
-          <br></br>
-          While we strive for accuracy, estimates may vary due to limited data, market volatility, item uniqueness, or other factors. Values provided are for informational purposes only and should not be relied upon as financial or investment advice.
-        </p>
+        <footer className="text-center py-8 border-t space-y-4">
+          <div className="text-xs text-muted-foreground whitespace-pre-line">
+            {footerDisclaimer}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            While we strive for accuracy, estimates may vary due to limited data, market volatility, item uniqueness, or other factors. Values provided are for informational purposes only and should not be relied upon as financial or investment advice.
+          </p>
         </footer>
       </div>
     </div>

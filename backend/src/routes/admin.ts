@@ -1,7 +1,7 @@
 import { Router } from "express";
 import multer, { FileFilterCallback } from "multer";
-import { labubuRepository, characterRepository } from "../index";
-import { Labubu, labubuSchema, User, Role, Content, Settings, Character, characterSchema } from "@labubu/common";
+import { labubuRepository, characterRepository, contentRepository } from "../index";
+import { Labubu, labubuSchema, User, Role, Content, Settings, Character, characterSchema, contentSchema } from "@labubu/common";
 import { replaceLabubuCatalog } from "../services/labubuSyncService";
 
 const router = Router();
@@ -240,23 +240,62 @@ router.delete("/roles/:id", adminAuth, async (req, res) => {
 //============================================================================================================================================================================================
 
 router.get("/content", adminAuth, async (req, res) => {
-  res.status(200).json([]);
+  try {
+    const result = await contentRepository.get({});
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching content entries.", details: err });
+  }
 });
 
 router.get("/content/:id", adminAuth, async (req, res) => {
-  res.status(404).json({ error: "Content not found" });
+  try {
+    const id = parseInt(req.params.id);
+    const result = await contentRepository.get({ filter: { id } });
+    if (result.length === 0) {
+      return res.status(404).json({ error: `Content entry with id "${req.params.id}" not found` });
+    }
+    res.status(200).json(result[0]);
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching the content entry.", details: err });
+  }
 });
 
 router.post("/content", adminAuth, async (req, res) => {
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const payload = contentSchema.pick({ key: true, value: true }).parse(req.body);
+    const id = await contentRepository.create({ key: payload.key, value: payload.value ?? "" });
+    const created = await contentRepository.get({ filter: { id } });
+    res.status(201).json(created[0]);
+  } catch (err) {
+    res.status(400).json({ error: "Invalid content data", details: err });
+  }
 });
 
 router.put("/content/:id", adminAuth, async (req, res) => {
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const contentData = contentSchema.pick({ key: true, value: true }).partial().parse(req.body);
+    const updated = await contentRepository.update({ filter: { id: parseInt(req.params.id) } }, contentData);
+    if (updated === 0) {
+      return res.status(404).json({ error: `Content entry with id "${req.params.id}" not found` });
+    }
+    const fresh = await contentRepository.get({ filter: { id: parseInt(req.params.id) } });
+    res.status(200).json(fresh[0]);
+  } catch (err) {
+    res.status(400).json({ error: "Invalid content data", details: err });
+  }
 });
 
 router.delete("/content/:id", adminAuth, async (req, res) => {
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const deleted = await contentRepository.delete({ filter: { id: parseInt(req.params.id) } });
+    if (deleted === 0) {
+      return res.status(404).json({ error: `Content entry with id "${req.params.id}" not found` });
+    }
+    res.status(200).json({ message: "Content deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while deleting the content entry.", details: err });
+  }
 });
 
 //============================================================================================================================================================================================

@@ -2,14 +2,17 @@ import 'dotenv/config';
 import express, { Request, Response } from "express";
 import labubuRoutes from "./routes/labubus";
 import listingRoutes from "./routes/listings";
+import contentRoutes from "./routes/content";
 import adminRoutes from "./routes/admin";
 import { LabubuRepository } from "./repositories/labubuRepository";
 import { ListingRepository } from "./repositories/listingRepository";
 import { PriceHistoryRepository } from "./repositories/priceHistoryRepository";
 import { CharacterRepository } from "./repositories/characterRepository"; // Import CharacterRepository
+import { ContentRepository } from "./repositories/contentRepository";
 import db from "./lib/database";
 import { syncLabubus } from "./services/labubuSyncService";
 import { startApiSync } from "./services/scheduler";
+import { ensureDefaultContent } from "./services/contentService";
 import fs from 'fs';
 import path from 'path';
 
@@ -28,9 +31,11 @@ export const labubuRepository = new LabubuRepository(db);
 export const listingRepository = new ListingRepository(db);
 export const priceHistoryRepository = new PriceHistoryRepository(db);
 export const characterRepository = new CharacterRepository(db); // Instantiate CharacterRepository
+export const contentRepository = new ContentRepository(db);
 
 (async () => {
   await syncLabubus(labubuRepository);
+  await ensureDefaultContent(contentRepository);
   startApiSync();
 })();
 
@@ -101,6 +106,7 @@ app.use("/api/labubus", labubuRoutes);
 app.use("/api/listings", listingRoutes);
 
 app.use("/api/admin", adminRoutes);
+app.use("/api/content", contentRoutes);
 
 //============================================================================================================================================================================================
 // Start the server

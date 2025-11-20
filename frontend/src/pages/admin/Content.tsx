@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { api } from '@/lib/api';
-import { Content, contentSchema } from '@labubu/common';
+import { Content, contentSchema, defaultSiteContent, siteContentDefinitions } from '@labubu/common';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -50,7 +50,7 @@ const AdminContent = () => {
   });
 
   const addContentMutation = useMutation({
-    mutationFn: (newContent: Content) => api.admin.content.create(newContent),
+    mutationFn: (newContent: Partial<Content>) => api.admin.content.create(newContent),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminContent'] });
       toast({ title: 'Success', description: 'Content entry added successfully.' });
@@ -87,7 +87,7 @@ const AdminContent = () => {
   });
 
   const handleAddContent = (values: ContentFormValues) => {
-    addContentMutation.mutate(values as Content);
+    addContentMutation.mutate(values);
   };
 
   const handleEditContent = (values: ContentFormValues) => {
@@ -101,6 +101,17 @@ const AdminContent = () => {
       deleteContentMutation.mutate(selectedContent.id);
     }
   };
+
+  const handleCreateDefault = (key: string) => {
+    const defaultValue = defaultSiteContent[key] ?? '';
+    addContentMutation.mutate({ key, value: defaultValue });
+  };
+
+  const existingKeys = new Set(contentEntries?.map((entry) => entry.key));
+  const recommendedRows = siteContentDefinitions.map((definition) => ({
+    ...definition,
+    hasValue: existingKeys.has(definition.key),
+  }));
 
   if (isLoadingContent) return <div>Loading...</div>;
   if (contentError) return <div>Error loading content entries: {contentError.message}</div>;
@@ -160,6 +171,34 @@ const AdminContent = () => {
         </Dialog>
       </CardHeader>
       <CardContent>
+        <div className="space-y-4 mb-8">
+          <h3 className="text-lg font-semibold">Recommended Content Keys</h3>
+          <p className="text-sm text-muted-foreground">
+            These entries power important sections of the public site. Keep them up to date to instantly refresh copy without deploying code.
+          </p>
+          <div className="grid gap-4">
+            {recommendedRows.map((definition) => (
+              <div key={definition.key} className="flex flex-col gap-2 rounded-lg border p-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="font-medium">{definition.label}</p>
+                  <p className="text-sm text-muted-foreground">{definition.description}</p>
+                  <code className="text-xs bg-muted px-2 py-1 rounded">{definition.key}</code>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant={definition.hasValue ? "secondary" : "default"}
+                    size="sm"
+                    disabled={definition.hasValue || addContentMutation.isPending}
+                    onClick={() => handleCreateDefault(definition.key)}
+                  >
+                    {definition.hasValue ? "Configured" : "Add default"}
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -176,7 +215,7 @@ const AdminContent = () => {
                 <TableRow key={content.id}>
                   <TableCell>{content.id}</TableCell>
                   <TableCell>{content.key}</TableCell>
-                  <TableCell className="max-w-[300px] truncate">{content.value}</TableCell>
+                <TableCell className="max-w-[300px] whitespace-pre-line">{content.value}</TableCell>
                   <TableCell>{content.last_updated ? new Date(content.last_updated).toLocaleString() : 'N/A'}</TableCell>
                   <TableCell className="text-right">
                     <Dialog open={isEditModalOpen && selectedContent?.id === content.id} onOpenChange={setIsEditModalOpen}>
