@@ -1,7 +1,30 @@
 import { Router } from "express";
 import multer, { FileFilterCallback } from "multer";
-import { labubuRepository, characterRepository } from "../index";
-import { Labubu, labubuSchema, User, Role, Content, Settings, Character, characterSchema } from "@labubu/common";
+import {
+  labubuRepository,
+  characterRepository,
+  userRepository,
+  roleRepository,
+  contentRepository,
+  settingsRepository,
+  navigationRepository,
+} from "../index";
+import {
+  Labubu,
+  labubuSchema,
+  User,
+  userSchema,
+  Role,
+  roleSchema,
+  Content,
+  contentSchema,
+  Settings,
+  settingsSchema,
+  Character,
+  characterSchema,
+  Navigation,
+  navigationSchema,
+} from "@labubu/common";
 import { replaceLabubuCatalog } from "../services/labubuSyncService";
 
 const router = Router();
@@ -188,23 +211,59 @@ router.delete("/characters/:id", adminAuth, async (req, res) => {
 //============================================================================================================================================================================================
 
 router.get("/users", adminAuth, async (req, res) => {
-  res.status(200).json([]);
+  try {
+    const users = await userRepository.get({});
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching users.", details: err });
+  }
 });
 
 router.get("/users/:id", adminAuth, async (req, res) => {
-  res.status(404).json({ error: "User not found" });
+  try {
+    const id = parseInt(req.params.id);
+    const result = await userRepository.get({ filter: { id } });
+    if (result.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json(result[0]);
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching the user.", details: err });
+  }
 });
 
 router.post("/users", adminAuth, async (req, res) => {
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const user = userSchema.parse(req.body as User);
+    const id = await userRepository.create({ username: user.username, password: user.password, role_id: user.role_id });
+    res.status(201).json({ message: "User created successfully", id });
+  } catch (err) {
+    res.status(400).json({ error: "Invalid data", details: err });
+  }
 });
 
 router.put("/users/:id", adminAuth, async (req, res) => {
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const id = parseInt(req.params.id);
+    const user = userSchema.parse({ ...req.body, id } as User);
+    await userRepository.update({ filter: { id } }, { username: user.username, password: user.password, role_id: user.role_id });
+    res.status(200).json({ message: "User updated successfully" });
+  } catch (err) {
+    res.status(400).json({ error: "Invalid data", details: err });
+  }
 });
 
 router.delete("/users/:id", adminAuth, async (req, res) => {
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const id = parseInt(req.params.id);
+    const deleted = await userRepository.delete({ filter: { id } });
+    if (deleted === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while deleting the user.", details: err });
+  }
 });
 
 //============================================================================================================================================================================================
@@ -212,27 +271,59 @@ router.delete("/users/:id", adminAuth, async (req, res) => {
 //============================================================================================================================================================================================
 
 router.get("/roles", adminAuth, async (req, res) => {
-  res.status(200).json([
-    { id: 1, name: 'Admin' },
-    { id: 2, name: 'Editor' },
-    { id: 3, name: 'Viewer' }
-  ]);
+  try {
+    const roles = await roleRepository.get({});
+    res.status(200).json(roles);
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching roles.", details: err });
+  }
 });
 
 router.get("/roles/:id", adminAuth, async (req, res) => {
-  res.status(404).json({ error: "Role not found" });
+  try {
+    const id = parseInt(req.params.id);
+    const result = await roleRepository.get({ filter: { id } });
+    if (result.length === 0) {
+      return res.status(404).json({ error: "Role not found" });
+    }
+    res.status(200).json(result[0]);
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching the role.", details: err });
+  }
 });
 
 router.post("/roles", adminAuth, async (req, res) => {
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const role = roleSchema.parse(req.body as Role);
+    const id = await roleRepository.create({ name: role.name });
+    res.status(201).json({ message: "Role created successfully", id });
+  } catch (err) {
+    res.status(400).json({ error: "Invalid data", details: err });
+  }
 });
 
 router.put("/roles/:id", adminAuth, async (req, res) => {
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const id = parseInt(req.params.id);
+    const role = roleSchema.parse({ ...req.body, id } as Role);
+    await roleRepository.update({ filter: { id } }, { name: role.name });
+    res.status(200).json({ message: "Role updated successfully" });
+  } catch (err) {
+    res.status(400).json({ error: "Invalid data", details: err });
+  }
 });
 
 router.delete("/roles/:id", adminAuth, async (req, res) => {
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const id = parseInt(req.params.id);
+    const deleted = await roleRepository.delete({ filter: { id } });
+    if (deleted === 0) {
+      return res.status(404).json({ error: "Role not found" });
+    }
+    res.status(200).json({ message: "Role deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while deleting the role.", details: err });
+  }
 });
 
 //============================================================================================================================================================================================
@@ -240,23 +331,62 @@ router.delete("/roles/:id", adminAuth, async (req, res) => {
 //============================================================================================================================================================================================
 
 router.get("/content", adminAuth, async (req, res) => {
-  res.status(200).json([]);
+  try {
+    const content = await contentRepository.get({});
+    res.status(200).json(content);
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching content.", details: err });
+  }
 });
 
 router.get("/content/:id", adminAuth, async (req, res) => {
-  res.status(404).json({ error: "Content not found" });
+  try {
+    const id = parseInt(req.params.id);
+    const result = await contentRepository.get({ filter: { id } });
+    if (result.length === 0) {
+      return res.status(404).json({ error: "Content not found" });
+    }
+    res.status(200).json(result[0]);
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching the content entry.", details: err });
+  }
 });
 
 router.post("/content", adminAuth, async (req, res) => {
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const content = contentSchema.parse(req.body as Content);
+    const id = await contentRepository.create({ key: content.key, value: content.value, last_updated: new Date().toISOString() });
+    res.status(201).json({ message: "Content created successfully", id });
+  } catch (err) {
+    res.status(400).json({ error: "Invalid data", details: err });
+  }
 });
 
 router.put("/content/:id", adminAuth, async (req, res) => {
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const id = parseInt(req.params.id);
+    const content = contentSchema.parse({ ...req.body, id } as Content);
+    await contentRepository.update(
+      { filter: { id } },
+      { key: content.key, value: content.value, last_updated: new Date().toISOString() }
+    );
+    res.status(200).json({ message: "Content updated successfully" });
+  } catch (err) {
+    res.status(400).json({ error: "Invalid data", details: err });
+  }
 });
 
 router.delete("/content/:id", adminAuth, async (req, res) => {
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const id = parseInt(req.params.id);
+    const deleted = await contentRepository.delete({ filter: { id } });
+    if (deleted === 0) {
+      return res.status(404).json({ error: "Content not found" });
+    }
+    res.status(200).json({ message: "Content deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while deleting the content entry.", details: err });
+  }
 });
 
 //============================================================================================================================================================================================
@@ -264,23 +394,125 @@ router.delete("/content/:id", adminAuth, async (req, res) => {
 //============================================================================================================================================================================================
 
 router.get("/settings", adminAuth, async (req, res) => {
-  res.status(200).json([]);
+  try {
+    const settings = await settingsRepository.get({});
+    res.status(200).json(settings);
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching settings.", details: err });
+  }
 });
 
 router.get("/settings/:id", adminAuth, async (req, res) => {
-  res.status(404).json({ error: "Setting not found" });
+  try {
+    const id = parseInt(req.params.id);
+    const result = await settingsRepository.get({ filter: { id } });
+    if (result.length === 0) {
+      return res.status(404).json({ error: "Setting not found" });
+    }
+    res.status(200).json(result[0]);
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching the setting.", details: err });
+  }
 });
 
 router.post("/settings", adminAuth, async (req, res) => {
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const setting = settingsSchema.parse(req.body as Settings);
+    const id = await settingsRepository.create({ key: setting.key, value: setting.value, last_updated: new Date().toISOString() });
+    res.status(201).json({ message: "Setting created successfully", id });
+  } catch (err) {
+    res.status(400).json({ error: "Invalid data", details: err });
+  }
 });
 
 router.put("/settings/:id", adminAuth, async (req, res) => {
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const id = parseInt(req.params.id);
+    const setting = settingsSchema.parse({ ...req.body, id } as Settings);
+    await settingsRepository.update(
+      { filter: { id } },
+      { key: setting.key, value: setting.value, last_updated: new Date().toISOString() }
+    );
+    res.status(200).json({ message: "Setting updated successfully" });
+  } catch (err) {
+    res.status(400).json({ error: "Invalid data", details: err });
+  }
 });
 
 router.delete("/settings/:id", adminAuth, async (req, res) => {
-  res.status(501).json({ error: "Not implemented" });
+  try {
+    const id = parseInt(req.params.id);
+    const deleted = await settingsRepository.delete({ filter: { id } });
+    if (deleted === 0) {
+      return res.status(404).json({ error: "Setting not found" });
+    }
+    res.status(200).json({ message: "Setting deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while deleting the setting.", details: err });
+  }
+});
+
+//==============================================================================================================================
+// Navigation admin routes
+//==============================================================================================================================
+
+router.get("/navigation", adminAuth, async (_req, res) => {
+  try {
+    const navigations = await navigationRepository.get({});
+    res.status(200).json(navigations);
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching navigation entries.", details: err });
+  }
+});
+
+router.get("/navigation/:id", adminAuth, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const result = await navigationRepository.get({ filter: { id } });
+    if (result.length === 0) {
+      return res.status(404).json({ error: "Navigation entry not found" });
+    }
+    res.status(200).json(result[0]);
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while fetching the navigation entry.", details: err });
+  }
+});
+
+router.post("/navigation", adminAuth, async (req, res) => {
+  try {
+    const navigation = navigationSchema.parse(req.body as Navigation);
+    const id = await navigationRepository.create({ ...navigation, last_updated: new Date().toISOString() });
+    res.status(201).json({ message: "Navigation entry created successfully", id });
+  } catch (err) {
+    res.status(400).json({ error: "Invalid data", details: err });
+  }
+});
+
+router.put("/navigation/:id", adminAuth, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const navigation = navigationSchema.parse({ ...req.body, id } as Navigation);
+    await navigationRepository.update(
+      { filter: { id } },
+      { name: navigation.name, structure: navigation.structure, last_updated: new Date().toISOString() }
+    );
+    res.status(200).json({ message: "Navigation entry updated successfully" });
+  } catch (err) {
+    res.status(400).json({ error: "Invalid data", details: err });
+  }
+});
+
+router.delete("/navigation/:id", adminAuth, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const deleted = await navigationRepository.delete({ filter: { id } });
+    if (deleted === 0) {
+      return res.status(404).json({ error: "Navigation entry not found" });
+    }
+    res.status(200).json({ message: "Navigation entry deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "An error occurred while deleting the navigation entry.", details: err });
+  }
 });
 
 export default router;
