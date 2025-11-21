@@ -7,6 +7,11 @@ import { LabubuRepository } from "./repositories/labubuRepository";
 import { ListingRepository } from "./repositories/listingRepository";
 import { PriceHistoryRepository } from "./repositories/priceHistoryRepository";
 import { CharacterRepository } from "./repositories/characterRepository"; // Import CharacterRepository
+import { UserRepository } from "./repositories/userRepository";
+import { RoleRepository } from "./repositories/roleRepository";
+import { ContentRepository } from "./repositories/contentRepository";
+import { SettingsRepository } from "./repositories/settingsRepository";
+import { NavigationRepository } from "./repositories/navigationRepository";
 import db from "./lib/database";
 import { syncLabubus } from "./services/labubuSyncService";
 import { startApiSync } from "./services/scheduler";
@@ -28,6 +33,11 @@ export const labubuRepository = new LabubuRepository(db);
 export const listingRepository = new ListingRepository(db);
 export const priceHistoryRepository = new PriceHistoryRepository(db);
 export const characterRepository = new CharacterRepository(db); // Instantiate CharacterRepository
+export const userRepository = new UserRepository(db);
+export const roleRepository = new RoleRepository(db);
+export const contentRepository = new ContentRepository(db);
+export const settingsRepository = new SettingsRepository(db);
+export const navigationRepository = new NavigationRepository(db);
 
 (async () => {
   await syncLabubus(labubuRepository);
