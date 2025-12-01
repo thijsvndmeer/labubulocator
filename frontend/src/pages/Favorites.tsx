@@ -10,8 +10,11 @@ import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
 import { Labubu } from '@labubu/common/src/types/labubu';
 import { useQuery } from '@tanstack/react-query';
+import { useConfig } from '@/providers/ConfigProvider';
+import { MarketDataNotice } from '@/components/MarketDataNotice';
 
 export const FavoritesPage = () => {
+  const { copy } = useConfig();
   const { data: allVariants = [], isLoading, isFetching } = useQuery<Labubu[]>({
     queryKey: ['variants'],
     queryFn: () => api.labubus.get(),
@@ -84,7 +87,7 @@ export const FavoritesPage = () => {
               <div>
                 <h2 className="text-3xl font-bold">My Favorites</h2>
                 <p className="text-muted-foreground">
-                  {favoritedVariants.length} favorited Labubu variants.
+                  {favoritedVariants.length} favorited {copy.pluralCollectible}.
                 </p>
               </div>
             </div>
@@ -132,17 +135,11 @@ export const FavoritesPage = () => {
 
         <footer className="text-center py-8 border-t">
         <p className="text-xs text-muted-foreground mt-4">
-          <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through these links.
-          Prices and availability are subject to change.
-          <br></br>
-          <br></br>Estimated values shown on Labubu Locator are generated using an algorithm that analyzes historical sales, current listings, and market trends. These figures are approximations and not guaranteed market prices.
-          <br></br>
-          <br></br>
-          StockX prices are algorithmically estimated. Labubu Locator does not communicate with or receive data directly from StockX. eBay data is retrieved via the official eBay Browse API.
-          <br></br>
-          <br></br>
-          While we strive for accuracy, estimates may vary due to limited data, market volatility, item uniqueness, or other factors. Values provided are for informational purposes only and should not be relied upon as financial or investment advice.
+          <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through these links. Prices and availability are subject to change.
         </p>
+        <div className="mt-4 text-xs">
+          <MarketDataNotice />
+        </div>
         </footer>
       </div>
     </div>

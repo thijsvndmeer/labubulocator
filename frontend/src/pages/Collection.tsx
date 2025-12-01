@@ -11,8 +11,11 @@ import { CardSkeleton } from '@/components/CardSkeleton';
 import { api } from '@/lib/api';
 import { Labubu } from '@labubu/common/src/types/labubu';
 import { useQuery } from '@tanstack/react-query';
+import { useConfig } from '@/providers/ConfigProvider';
+import { MarketDataNotice } from '@/components/MarketDataNotice';
 
 export default function Collection() {
+  const { copy } = useConfig();
   const { data: allVariants = [], isLoading, isFetching } = useQuery<Labubu[]>({
     queryKey: ['variants'],
     queryFn: () => api.labubus.get(),
@@ -104,7 +107,7 @@ export default function Collection() {
               <div>
                 <h2 className="text-3xl font-bold">Your Collection</h2>
                 <p className="text-muted-foreground">
-                  {collectedVariants.length} collected Labubu variants.
+                  {collectedVariants.length} collected {copy.pluralCollectible}.
                 </p>
               </div>
             </div>
@@ -138,7 +141,7 @@ export default function Collection() {
             </div>
           ) : filteredVariants.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">No Labubus found in your collection matching the current filters.</p>
+              <p className="text-muted-foreground">No {copy.pluralCollectible.toLowerCase()} found in your collection matching the current filters.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -151,17 +154,11 @@ export default function Collection() {
 
         <footer className="text-center py-8 border-t">
           <p className="text-xs text-muted-foreground mt-4">
-          <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through these links.
-          Prices and availability are subject to change.
-          <br></br>
-          <br></br>Estimated values shown on Labubu Locator are generated using an algorithm that analyzes historical sales, current listings, and market trends. These figures are approximations and not guaranteed market prices.
-          <br></br>
-          <br></br>
-          StockX prices are algorithmically estimated. Labubu Locator does not communicate with or receive data directly from StockX. eBay data is retrieved via the official eBay Browse API.
-          <br></br>
-          <br></br>
-          While we strive for accuracy, estimates may vary due to limited data, market volatility, item uniqueness, or other factors. Values provided are for informational purposes only and should not be relied upon as financial or investment advice.
-        </p>
+            <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through these links. Prices and availability are subject to change.
+          </p>
+          <div className="mt-4 text-xs">
+            <MarketDataNotice />
+          </div>
         </footer>
       </div>
     </div>

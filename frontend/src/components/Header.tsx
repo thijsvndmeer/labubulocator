@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { getFavorites } from '@/lib/favorites';
 import { getCollection } from '@/lib/collection';
+import { useConfig } from '@/providers/ConfigProvider';
 
 interface HeaderProps {
   searchQuery: string;
@@ -16,6 +17,7 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
   const navigate = useNavigate();
   const [favoriteCount, setFavoriteCount] = useState<number>(0);
   const [collectionCount, setCollectionCount] = useState<number>(0);
+  const { copy, navigation } = useConfig();
 
   useEffect(() => {
     const updateCounts = () => {
@@ -51,24 +53,31 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
               <div className="flex items-center gap-2">
                 <LocateFixed className="h-6 w-6 text-primary" />
                 <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                  Labubu Locator
+                  {copy.brandName}
                 </h1>
               </div>
             </Link>
           </div>
-          
+
           <form onSubmit={handleSearchSubmit} className="flex items-center gap-4 flex-wrap justify-end">
+            {navigation.length > 0 && navigation.map((item) => (
+              <Link key={item.path} to={item.path} className="hidden md:flex">
+                <Button variant="outline" className="flex items-center justify-center md:w-auto w-10 h-10 p-0 md:px-4 md:py-2">
+                  <span className="hidden md:inline">{item.label}</span>
+                </Button>
+              </Link>
+            ))}
             <Link to="/catalog" className="hidden md:flex">
               <Button variant="outline" className="flex items-center justify-center md:w-auto w-10 h-10 p-0 md:px-4 md:py-2">
                 <Package className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">Catalog</span>
+                <span className="hidden md:inline">{copy.catalogLabel}</span>
               </Button>
             </Link>
             <div className="relative flex-grow min-w-[200px] max-w-[500px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search in catalog..."
+                placeholder={`Search ${copy.pluralCollectible.toLowerCase()}...`}
                 className="pl-10 transition-all duration-300 ease-in-out focus:shadow-card focus:border-primary focus:scale-[1.01]"
                 value={searchQuery}
                 onChange={handleSearchChange}

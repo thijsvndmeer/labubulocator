@@ -3,6 +3,7 @@ import express, { Request, Response } from "express";
 import labubuRoutes from "./routes/labubus";
 import listingRoutes from "./routes/listings";
 import adminRoutes from "./routes/admin";
+import configRoutes from "./routes/config";
 import { LabubuRepository } from "./repositories/labubuRepository";
 import { ListingRepository } from "./repositories/listingRepository";
 import { PriceHistoryRepository } from "./repositories/priceHistoryRepository";
@@ -15,6 +16,7 @@ import { NavigationRepository } from "./repositories/navigationRepository";
 import db from "./lib/database";
 import { syncLabubus } from "./services/labubuSyncService";
 import { startApiSync } from "./services/scheduler";
+import { ensureDefaultConfig } from "./services/configDefaults";
 import fs from 'fs';
 import path from 'path';
 
@@ -41,6 +43,7 @@ export const navigationRepository = new NavigationRepository(db);
 
 (async () => {
   await syncLabubus(labubuRepository);
+  await ensureDefaultConfig(settingsRepository, contentRepository);
   startApiSync();
 })();
 
@@ -66,7 +69,7 @@ const findImageRecursively = (filename: string, currentDir: string): string | nu
 };
 
 app.use((req, res, next) => {
-  const allowedOrigins = ["https://labubulocator.me","http://localhost:4173"];
+  const allowedOrigins = ["https://labubulocator.me","http://localhost:4173","http://localhost:5173"];
   const origin = req.headers.origin;
   if (origin && allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
@@ -111,6 +114,7 @@ app.use("/api/labubus", labubuRoutes);
 app.use("/api/listings", listingRoutes);
 
 app.use("/api/admin", adminRoutes);
+app.use("/api", configRoutes);
 
 //============================================================================================================================================================================================
 // Start the server

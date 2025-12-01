@@ -9,6 +9,7 @@ import {
   SearchSettings,
 } from "@labubu/common";
 import type { Variant } from "@/types/variant";
+import { SiteConfigurationResponse } from "@/types/config";
 
 export const API_ROOT_URL = "https://api.labubulocator.me";
 const API_BASE_URL = `${API_ROOT_URL}/api`;
@@ -249,9 +250,22 @@ export const api = {
       delete: (id: number) =>
         fetchFromApi<{ message: string }>(`/admin/settings/${id}`, withAdminAuth({ method: 'DELETE' })),
     },
+    navigation: {
+      get: () => fetchFromApi<unknown[]>("/admin/navigation", withAdminAuth()),
+      getById: (id: number) => fetchFromApi<unknown>(`/admin/navigation/${id}`, withAdminAuth()),
+      create: (data: unknown) =>
+        fetchFromApi<unknown>("/admin/navigation", withAdminAuth({ method: 'POST', body: data })),
+      update: (id: number, data: unknown) =>
+        fetchFromApi<unknown>(`/admin/navigation/${id}`, withAdminAuth({ method: 'PUT', body: data })),
+      delete: (id: number) =>
+        fetchFromApi<{ message: string }>(`/admin/navigation/${id}`, withAdminAuth({ method: 'DELETE' })),
+    },
     auth: {
       login: (token: string) => fetchFromApi<{ success: boolean; message: string }>("/admin/auth/login", { method: 'POST', body: { token } }),
       verify: (token: string) => fetchFromApi<{ valid: boolean }>("/admin/auth/verify", { method: 'POST', body: { token } }),
     },
+  },
+  config: {
+    get: () => fetchFromApi<SiteConfigurationResponse>("/config"),
   },
 };

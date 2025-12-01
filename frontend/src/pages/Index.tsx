@@ -2,7 +2,6 @@ import { VariantCard } from '@/components/VariantCard';
 import { CardSkeleton } from '@/components/CardSkeleton';
 import { Gem, Flame, TrendingDown } from 'lucide-react';
 import { api, API_ROOT_URL } from '@/lib/api';
-const heroBanner = `${API_ROOT_URL}/images/hero-banner.jpg`;
 import { Labubu } from '@labubu/common';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -12,8 +11,14 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import { useConfig } from '@/providers/ConfigProvider';
+import { MarketDataNotice } from '@/components/MarketDataNotice';
 
 const Index = () => {
+  const { copy } = useConfig();
+  const heroBanner = copy.heroImage.startsWith('http')
+    ? copy.heroImage
+    : `${API_ROOT_URL}${copy.heroImage.startsWith('/') ? '' : '/'}${copy.heroImage}`;
   const { data: variants = [], isLoading } = useQuery<Labubu[]>({
     queryKey: ['variants'],
     queryFn: () => api.labubus.get(),
@@ -49,10 +54,10 @@ const Index = () => {
         <div className="relative container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-2xl">
             <h2 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-4">
-              Track Your Labubu Collection Value
+              {copy.heroTitle}
             </h2>
             <p className="text-lg text-primary-foreground/90 mb-8">
-              Real-time value estimates and price comparisons for your Labubu collection
+              {copy.heroSubtitle}
             </p>
           </div>
         </div>
@@ -152,7 +157,7 @@ const Index = () => {
               <Gem className="h-8 w-8 text-primary" />
               <div>
                 <h2 className="text-3xl font-bold">Highest Value</h2>
-                <p className="text-muted-foreground">Highest value Labubus</p>
+                <p className="text-muted-foreground">Highest value {copy.pluralCollectible}</p>
               </div>
             </div>
             
@@ -191,17 +196,11 @@ const Index = () => {
         {/* Footer */}
         <footer className="text-center py-8 border-t">
           <p className="text-xs text-muted-foreground mt-4">
-          <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through these links.
-          Prices and availability are subject to change.
-          <br></br>
-          <br></br>Estimated values shown on Labubu Locator are generated using an algorithm that analyzes historical sales, current listings, and market trends. These figures are approximations and not guaranteed market prices.
-          <br></br>
-          <br></br>
-          StockX prices are algorithmically estimated. Labubu Locator does not communicate with or receive data directly from StockX. eBay data is retrieved via the official eBay Browse API.
-          <br></br>
-          <br></br>
-          While we strive for accuracy, estimates may vary due to limited data, market volatility, item uniqueness, or other factors. Values provided are for informational purposes only and should not be relied upon as financial or investment advice.
-        </p>
+            <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through these links. Prices and availability are subject to change.
+          </p>
+          <div className="mt-4 text-xs">
+            <MarketDataNotice />
+          </div>
         </footer>
       </div>
     </div>

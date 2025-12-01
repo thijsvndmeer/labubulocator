@@ -9,6 +9,8 @@ import { useLocation } from 'react-router-dom';
 import { getCollection } from '@/lib/collection';
 import { Labubu } from '@labubu/common/src/types/labubu';
 import { useQuery } from '@tanstack/react-query';
+import { useConfig } from '@/providers/ConfigProvider';
+import { MarketDataNotice } from '@/components/MarketDataNotice';
 
 interface CatalogPageProps {
   searchQuery: string;
@@ -16,8 +18,9 @@ interface CatalogPageProps {
 }
 
 export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) => {
-  const { data: variants = [], isLoading, isFetching } = useQuery<Labubu[]>({ 
-    queryKey: ['variants'], 
+  const { copy } = useConfig();
+  const { data: variants = [], isLoading, isFetching } = useQuery<Labubu[]>({
+    queryKey: ['variants'],
     queryFn: () => api.labubus.get(),
     keepPreviousData: true,
   });
@@ -68,9 +71,9 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
           <div className="flex items-center gap-3 mb-8">
             <Package className="h-8 w-8 text-primary" />
             <div>
-              <h2 className="text-3xl font-bold">Complete Catalog</h2>
+              <h2 className="text-3xl font-bold">{copy.catalogLabel}</h2>
               <p className="text-muted-foreground">
-                Tracking {variants.length} Labubu variants across all series
+                Tracking {variants.length} {copy.pluralCollectible} across all series
               </p>
             </div>
           </div>
@@ -118,17 +121,11 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
 
         <footer className="text-center py-8 border-t">
           <p className="text-xs text-muted-foreground mt-4">
-          <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through these links.
-          Prices and availability are subject to change.
-          <br></br>
-          <br></br>Estimated values shown on Labubu Locator are generated using an algorithm that analyzes historical sales, current listings, and market trends. These figures are approximations and not guaranteed market prices.
-          <br></br>
-          <br></br>
-          StockX prices are algorithmically estimated. Labubu Locator does not communicate with or receive data directly from StockX. eBay data is retrieved via the official eBay Browse API.
-          <br></br>
-          <br></br>
-          While we strive for accuracy, estimates may vary due to limited data, market volatility, item uniqueness, or other factors. Values provided are for informational purposes only and should not be relied upon as financial or investment advice.
-        </p>
+            <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through these links. Prices and availability are subject to change.
+          </p>
+          <div className="mt-4 text-xs">
+            <MarketDataNotice />
+          </div>
         </footer>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { PanelLeft, Boxes, Users, FileText, Menu, Settings, LogOut, LayoutDashboard } from 'lucide-react';
+import { PanelLeft, Boxes, Users, FileText, Menu, Settings, LogOut, LayoutDashboard, Navigation as NavigationIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -98,6 +98,18 @@ const AdminLayout = () => {
               </TooltipTrigger>
               <TooltipContent side="right">Content Management</TooltipContent>
             </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to="/admin/navigation"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8"
+                >
+                  <NavigationIcon className="h-5 w-5" />
+                  <span className="sr-only">Navigation</span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">Navigation</TooltipContent>
+            </Tooltip>
           </TooltipProvider>
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
@@ -154,6 +166,10 @@ const AdminLayout = () => {
                 <Link to="/admin/content" className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
                   <FileText className="h-5 w-5" />
                   Content Management
+                </Link>
+                <Link to="/admin/navigation" className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
+                  <NavigationIcon className="h-5 w-5" />
+                  Navigation
                 </Link>
                 <Link to="/admin/settings" className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
                   <Settings className="h-5 w-5" />

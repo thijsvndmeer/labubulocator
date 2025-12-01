@@ -10,6 +10,7 @@ import Spinner from "./components/Spinner";
 import { Header } from "./components/Header";
 import { useState, useEffect, lazy, Suspense } from "react";
 import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
+import { ConfigProvider } from "./providers/ConfigProvider";
 
 const Index = lazy(() => import("./pages/Index"));
 const VariantDetail = lazy(() => import("./pages/VariantDetail"));
@@ -97,6 +98,11 @@ export const AppContent = () => {
               <Route path="catalog" element={<AdminCatalog />} />
               <Route path="catalog/add" element={<AddCatalogItem />} />
               <Route path="catalog/edit/:sku" element={<EditCatalogItem />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="roles" element={<AdminRoles />} />
+              <Route path="content" element={<AdminContent />} />
+              <Route path="navigation" element={<AdminNavigation />} />
+              <Route path="settings" element={<AdminSettings />} />
             </Route>
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
@@ -117,13 +123,15 @@ const App = () => {
       client={queryClient}
       persistOptions={{ persister }}
     >
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <div className="min-h-screen bg-gradient-subtle">
-          <AppContent />
-        </div>
-      </TooltipProvider>
+      <ConfigProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <div className="min-h-screen bg-gradient-subtle">
+            <AppContent />
+          </div>
+        </TooltipProvider>
+      </ConfigProvider>
     </PersistQueryClientProvider>
   );
 };
