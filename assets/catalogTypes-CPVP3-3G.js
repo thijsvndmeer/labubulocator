@@ -1,1 +1,0 @@
-const r=["sku","name","series","rarity","description","msrp","variant","stockStatus","kicksdevId","ebaySearchOverride"],o=t=>{const e={};return r.forEach(s=>{const a=t[s];a!==void 0&&a!==""&&(e[s]=a)}),e};export{o as b};
