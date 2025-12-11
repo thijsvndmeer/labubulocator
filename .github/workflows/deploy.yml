@@ -19,14 +19,14 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Build
-        run: bun run --filter=vite_react_shadcn_ts build
+- name: Build
+        run: cd frontend && bun run build
 
-      - name: Add 404 fallback for SPA
-        run: cp ./frontend/dist/index.html ./frontend/dist/404.html
+- name: Add 404 fallback for SPA
+        run: cd frontend && cp ./dist/index.html ./dist/404.html
 
       - name: Copy CNAME
-        run: cp CNAME ./frontend/dist
+        run: cd frontend && cp ../CNAME ./dist/
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
