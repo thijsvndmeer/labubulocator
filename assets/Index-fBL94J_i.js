@@ -1,4 +1,4 @@
-import{c as de,r as T,j as v,a as gt,B as Kt,u as me,b as pe}from"./index-EWpK4vo4.js";import{T as ge,V as he}from"./VariantCard-C_wdoJFH.js";import{A as xe}from"./arrow-left-CilOzoc1.js";import"./card-CB2SxaG-.js";import"./StockStatusBadge-B-E6MDe8.js";/**
+import{c as de,r as T,j as v,a as gt,B as Kt,u as me,b as pe}from"./index-DBNBaAOX.js";import{T as ge,V as he}from"./VariantCard-BXQZtdYq.js";import{A as xe}from"./arrow-left-D8Eh6Zi1.js";import"./card-v_YfNDGE.js";import"./StockStatusBadge-CbTVWL4G.js";/**
  * @license lucide-react v0.462.0 - ISC
  *
  * This source code is licensed under the ISC license.
