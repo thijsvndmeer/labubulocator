@@ -3,6 +3,7 @@ import { Labubu } from "@labubu/common/src/types/labubu";
 import axios from "axios";
 import pLimit from "p-limit";
 import { calculateEstimatedValueForLabubu } from "./estimatedValueService";
+import { enforcePriceDiscrepancyRule } from "../utils/priceUtils";
 
 const KICKS_DEV_API_KEY = process.env.KICKS_DEV_API_KEY;
 const KICKS_DEV_API_BASE_URL = "https://api.kicks.dev/v3/stockx/products";
@@ -170,16 +171,29 @@ export const processStockxLabubu = async (labubu: Labubu) => {
 
       if (currentLowestAsk !== undefined) {
         const adjustedLowestAsk = currentLowestAsk + 7;
-        updateData.stockxPrice = adjustedLowestAsk;
         console.log(`STOCKX: Adjusted lowest ask for Labubu ${labubu.name} (SKU: ${labubu.sku}) from ${currentLowestAsk} to ${adjustedLowestAsk} (+7).`);
 
         const existingLabubu = await labubuRepository.get({ filter: { sku: labubu.sku } }, ["ebayLowestPrice"]);
         const ebayLowestPrice = existingLabubu[0]?.ebayLowestPrice;
 
-        if (ebayLowestPrice !== undefined && ebayLowestPrice !== null) {
-          updateData.lowestPrice = Math.min(adjustedLowestAsk, ebayLowestPrice);
+        const priceDecision = enforcePriceDiscrepancyRule(adjustedLowestAsk, ebayLowestPrice);
+
+        if (priceDecision.stockxPrice !== undefined) {
+          updateData.stockxPrice = priceDecision.stockxPrice;
         } else {
-          updateData.lowestPrice = adjustedLowestAsk;
+          updateData.stockxPrice = null;
+          console.log(`STOCKX: Discarding StockX price for ${labubu.name} (SKU: ${labubu.sku}) due to >50% discrepancy with eBay.`);
+        }
+
+        if (priceDecision.ebayLowestPrice !== undefined) {
+          updateData.ebayLowestPrice = priceDecision.ebayLowestPrice;
+        } else if (ebayLowestPrice !== undefined && ebayLowestPrice !== null) {
+          updateData.ebayLowestPrice = null;
+          console.log(`STOCKX: Discarding eBay price for ${labubu.name} (SKU: ${labubu.sku}) due to >50% discrepancy with StockX.`);
+        }
+
+        if (priceDecision.lowestPrice !== undefined) {
+          updateData.lowestPrice = priceDecision.lowestPrice;
         }
       }
       if (currentKicksdevId && !labubu.kicksdevId) {
