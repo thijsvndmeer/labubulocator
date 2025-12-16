@@ -55,13 +55,10 @@ async function adminFetch<T>(path: string, method: string, data?: any | FormData
 
   // Automatically retrieve token from localStorage
   const token = localStorage.getItem('adminToken');
-  if (token) {
-    headers['x-admin-token'] = token;
-  } else {
-    console.warn(`Admin API call to ${path} made without a token.`);
-    // If a token is mandatory for all admin calls, consider throwing an error here.
-    // throw new Error('Admin token is missing. Please log in.');
+  if (!token) {
+    throw new Error('Admin token is required before calling admin APIs.');
   }
+  headers['x-admin-token'] = token;
 
   let body: BodyInit | undefined;
   if (data instanceof FormData) {

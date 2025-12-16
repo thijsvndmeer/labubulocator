@@ -61,13 +61,12 @@ const Admin = () => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [loadedConfig, setLoadedConfig] = useState<AdminConfig | null>(null);
   const [defaults, setDefaults] = useState<AdminConfig | null>(null);
-  const [themeText, setThemeText] = useState('');
-  const [contentText, setContentText] = useState('');
-  const [layoutText, setLayoutText] = useState('');
-  const [catalogText, setCatalogText] = useState('');
-  const [navigationText, setNavigationText] = useState('');
-  const [featureFlagsText, setFeatureFlagsText] = useState('');
-  const [token, setToken] = useState(() => localStorage.getItem('adminToken') || ''); // Keep this for saving configs
+  const [themeText, setThemeText] = useState(() => toPretty(initialThemeConfig));
+  const [contentText, setContentText] = useState(() => toPretty(initialContentConfig));
+  const [layoutText, setLayoutText] = useState(() => toPretty(initialLayoutConfig));
+  const [catalogText, setCatalogText] = useState(() => toPretty(initialCatalogConfig));
+  const [navigationText, setNavigationText] = useState(() => toPretty(initialNavigationConfig));
+  const [featureFlagsText, setFeatureFlagsText] = useState(() => toPretty(initialFeatureFlags));
   const [isSaving, setIsSaving] = useState(false);
   const [showUiContentEditor, setShowUiContentEditor] = useState(true);
   const [showUiFeatureFlagsEditor, setShowUiFeatureFlagsEditor] = useState(true);
@@ -76,13 +75,19 @@ const Admin = () => {
   const [showUiCatalogEditor, setShowUiCatalogEditor] = useState(true);
   const [showUiThemeEditor, setShowUiThemeEditor] = useState(true);
 
-  const { logout } = useAdminAuth(); // Use the logout function
+  const { token, login, logout } = useAdminAuth(); // Use the logout function
+  const [tokenInput, setTokenInput] = useState(token ?? '');
   const navigate = useNavigate(); // Import useNavigate
 
   const handleLogout = () => {
     logout();
+    setTokenInput('');
     navigate('/'); // Navigate to a non-protected route to force re-evaluation
   };
+
+  useEffect(() => {
+    setTokenInput(token ?? '');
+  }, [token]);
 
   const setEditorsFromConfig = (config: AdminConfig) => {
     setThemeText(toPretty(config.theme));
@@ -94,11 +99,15 @@ const Admin = () => {
   };
 
   useEffect(() => {
+    if (!token) {
+      return;
+    }
+
     const loadConfig = async () => {
       try {
         const [configRes, defaultsRes] = await Promise.all([
-          fetch('/admin-api/config'),
-          fetch('/admin-api/defaults'),
+          fetch('/admin-api/config', { headers: { 'x-admin-token': token } }),
+          fetch('/admin-api/defaults', { headers: { 'x-admin-token': token } }),
         ]);
 
         if (configRes.ok) {
@@ -118,10 +127,6 @@ const Admin = () => {
     };
 
     loadConfig();
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('adminToken', token);
   }, [token]);
 
   const parsedPayload = useMemo(() => {
@@ -170,6 +175,11 @@ const Admin = () => {
   }, [parsedPayload]); // Depend on parsedPayload to trigger updates
 
   const handleSaveOnly = async () => {
+    if (!token) {
+      toast.error('Admin token required before saving.');
+      return;
+    }
+
     if (!parsedPayload || parsedPayload instanceof Error) {
       toast.error((parsedPayload as Error)?.message || 'Unable to save.');
       return;
@@ -237,8 +247,16 @@ const Admin = () => {
           <label className="text-sm font-medium" htmlFor="admin-token">Admin Token</label>
           <Input
             id="admin-token"
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
+            value={tokenInput}
+            onChange={(e) => {
+              const newValue = e.target.value;
+              setTokenInput(newValue);
+              if (newValue) {
+                login(newValue);
+              } else {
+                logout();
+              }
+            }}
             placeholder="Provide ADMIN_TOKEN if set"
             className="min-w-[240px]"
           />

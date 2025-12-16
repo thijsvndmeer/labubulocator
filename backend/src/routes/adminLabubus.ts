@@ -8,6 +8,23 @@ import fs from 'fs'; // For file system operations
 
 const router = Router();
 
+const isLocalRequest = (req: Request) => {
+  const remoteAddress = req.ip?.replace('::ffff:', '') || '';
+  return remoteAddress === '127.0.0.1' || remoteAddress === '::1';
+};
+
+const restrictToLocalhost = (req: Request, res: Response, next: NextFunction) => {
+  if (process.env.ALLOW_REMOTE_ADMIN === 'true') {
+    return next();
+  }
+
+  if (!isLocalRequest(req)) {
+    return res.status(403).json({ message: 'Admin API is only available from localhost.' });
+  }
+
+  next();
+};
+
 // --- Zod Schemas for Validation ---
 // Use z.enum for string literal union types
 const RarityEnumSchema = z.enum(['common', 'uncommon', 'rare', 'epic', 'legendary', 'secret', 'chase'] as const);
@@ -71,7 +88,8 @@ const upload = multer({ dest: 'uploads/' });
 
 // --- Admin Labubu Routes ---
 
-// Apply authentication middleware to all admin routes
+// Apply authentication and locality middleware to all admin routes
+router.use(restrictToLocalhost);
 router.use(adminAuth);
 
 // Get all labubus (admin view, potentially more detailed)
