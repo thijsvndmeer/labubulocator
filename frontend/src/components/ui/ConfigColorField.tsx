@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { HexColorPicker } from 'react-colorful';
+import React, { useState, useEffect } from 'react';
+import { HslaColorPicker } from 'react-colorful';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -11,10 +11,35 @@ import {
 } from "@/components/ui/tooltip";
 import { HelpCircle } from "lucide-react";
 
+type Hsla = { h: number; s: number; l: number; a: number };
+
+// Converts "280 10% 10%" or "280 10% 10% / 0.5" to { h: 280, s: 10, l: 10, a: 0.5 }
+const parseHslaString = (hslaString: string): Hsla => {
+  const match = hslaString.match(/(\d+)\s+(\d+)%\s+(\d+)%(?:\s*\/\s*([\d.]+))?/);
+  if (match) {
+    return {
+      h: parseFloat(match[1]),
+      s: parseFloat(match[2]),
+      l: parseFloat(match[3]),
+      a: match[4] ? parseFloat(match[4]) : 1,
+    };
+  }
+  return { h: 0, s: 0, l: 0, a: 1 }; // Default fallback
+};
+
+// Converts { h: 280, s: 10, l: 10, a: 1 } to "280 10% 10%" or "280 10% 10% / 0.5"
+const formatHslaString = (hsla: Hsla): string => {
+  const { h, s, l, a } = hsla;
+  if (a === 1) {
+    return `${Math.round(h)} ${Math.round(s)}% ${Math.round(l)}%`;
+  }
+  return `${Math.round(h)} ${Math.round(s)}% ${Math.round(l)}% / ${a}`;
+};
+
 interface ConfigColorFieldProps {
   id: string;
   label: string;
-  value: string;
+  value: string; // Expects HSL string format
   onChange: (value: string) => void;
   description?: string;
   className?: string;
@@ -28,19 +53,33 @@ export const ConfigColorField: React.FC<ConfigColorFieldProps> = ({
   description,
   className,
 }) => {
-  const [color, setColor] = useState(value);
+  const [internalHsla, setInternalHsla] = useState<Hsla>(parseHslaString(value));
+  const [textValue, setTextValue] = useState(value);
 
-  const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newColor = e.target.value;
-    setColor(newColor);
-    if (/^#([A-Fa-f0-9]{3,4}){1,2}$/.test(newColor)) { // Basic hex validation
-      onChange(newColor);
+  useEffect(() => {
+    setInternalHsla(parseHslaString(value));
+    setTextValue(value);
+  }, [value]);
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newText = e.target.value;
+    setTextValue(newText);
+    // Attempt to parse new text value to update picker
+    const parsed = parseHslaString(newText);
+    if (parsed) {
+      setInternalHsla(parsed);
+      onChange(formatHslaString(parsed));
+    } else {
+        // If text is invalid, maybe only update internal text field and not the picker/output
+        // or provide a visual cue for invalid input
     }
   };
 
-  const handlePickerChange = (newColor: string) => {
-    setColor(newColor);
-    onChange(newColor);
+  const handlePickerChange = (newHsla: Hsla) => {
+    setInternalHsla(newHsla);
+    const formatted = formatHslaString(newHsla);
+    setTextValue(formatted);
+    onChange(formatted);
   };
 
   return (
@@ -64,20 +103,20 @@ export const ConfigColorField: React.FC<ConfigColorFieldProps> = ({
         <Input
           id={id}
           type="text"
-          value={color}
-          onChange={handleHexChange}
-          placeholder="#RRGGBB"
+          value={textValue}
+          onChange={handleTextChange}
+          placeholder="H S% L% [/ A]"
           className="flex-1"
         />
         <Popover>
           <PopoverTrigger asChild>
             <div
               className="w-8 h-8 rounded-md border cursor-pointer"
-              style={{ backgroundColor: color }}
+              style={{ backgroundColor: `hsla(${internalHsla.h}, ${internalHsla.s}%, ${internalHsla.l}%, ${internalHsla.a})` }}
             />
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0">
-            <HexColorPicker color={color} onChange={handlePickerChange} />
+            <HslaColorPicker color={internalHsla} onChange={handlePickerChange} />
           </PopoverContent>
         </Popover>
       </div>

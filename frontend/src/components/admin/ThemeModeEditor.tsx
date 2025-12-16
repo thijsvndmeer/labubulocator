@@ -1,6 +1,10 @@
 import { ThemeModeTokens } from '@/types/admin-config';
 import { ConfigField } from '@/components/ui/ConfigField';
 import { ConfigColorField } from '@/components/ui/ConfigColorField';
+import { ConfigGradientField } from '@/components/ui/ConfigGradientField';
+import { ConfigShadowField } from '@/components/ui/ConfigShadowField';
+import { ConfigTransitionField } from '@/components/ui/ConfigTransitionField';
+import { ConfigRadiusField } from '@/components/ui/ConfigRadiusField';
 import { SidebarEditor } from './SidebarEditor';
 import { RarityEditor } from './RarityEditor';
 import React from 'react';
@@ -70,12 +74,24 @@ export const ThemeModeEditor: React.FC<ThemeModeEditorProps> = ({ mode, value, o
   const directProps = Object.keys(descriptions) as Array<keyof Omit<ThemeModeTokens, 'rarity' | 'sidebar'>>;
 
   const nonColorProps = [
+  ];
+
+  const gradientProps = [
     'gradientPrimary',
     'gradientSecondary',
     'gradientSubtle',
+  ];
+
+  const shadowProps = [
     'shadowCard',
     'shadowCardHover',
+  ];
+
+  const transitionProps = [
     'transitionSmooth',
+  ];
+
+  const radiusProps = [
     'radius',
   ];
 
@@ -86,16 +102,35 @@ export const ThemeModeEditor: React.FC<ThemeModeEditorProps> = ({ mode, value, o
       </CardHeader>
       <CardContent className="space-y-4">
         {directProps.map((key) => {
-          const isColorField = !nonColorProps.includes(key);
-          const FieldComponent = isColorField ? ConfigColorField : ConfigField;
-          const fieldType = (key.includes('gradient') || key.includes('shadow') || key === 'transitionSmooth' || key === 'radius') ? 'textarea' : 'string';
+          const isGradientField = gradientProps.includes(key);
+          const isShadowField = shadowProps.includes(key);
+          const isTransitionField = transitionProps.includes(key);
+          const isRadiusField = radiusProps.includes(key);
+          const isColorField = !nonColorProps.includes(key) && !isGradientField && !isShadowField && !isTransitionField && !isRadiusField;
+
+          let FieldComponent;
+          if (isGradientField) {
+            FieldComponent = ConfigGradientField;
+          } else if (isShadowField) {
+            FieldComponent = ConfigShadowField;
+          } else if (isTransitionField) {
+            FieldComponent = ConfigTransitionField;
+          } else if (isRadiusField) {
+            FieldComponent = ConfigRadiusField;
+          } else if (isColorField) {
+            FieldComponent = ConfigColorField;
+          } else {
+            FieldComponent = ConfigField;
+          }
+
+          const fieldType = 'string';
 
           return (
             <FieldComponent
               key={key}
               id={`${mode}-${key}`}
               label={key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
-              type={isColorField ? undefined : fieldType}
+              {...(isColorField || isGradientField || isShadowField || isTransitionField || isRadiusField ? {} : { type: fieldType })}
               value={value[key] as string}
               onChange={(val) => handleChange(key, val as string)}
               description={descriptions[key]}
