@@ -7,6 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { ContentConfigEditor } from '@/components/admin/ContentConfigEditor';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
 const toPretty = (value: unknown) => JSON.stringify(value, null, 2);
 
@@ -57,6 +60,7 @@ const Admin = () => {
   const [featureFlagsText, setFeatureFlagsText] = useState('');
   const [token, setToken] = useState(() => localStorage.getItem('adminToken') || '');
   const [isSaving, setIsSaving] = useState(false);
+  const [showUiContentEditor, setShowUiContentEditor] = useState(true);
 
   const setEditorsFromConfig = (config: AdminConfig) => {
     setThemeText(toPretty(config.theme));
@@ -216,12 +220,33 @@ const Admin = () => {
               />
             </TabsContent>
             <TabsContent value="content">
-              <JsonEditor
-                label="Copy"
-                value={contentText}
-                onChange={setContentText}
-                resetValue={toPretty(loadedConfig?.content ?? {})}
-              />
+              <div className="flex items-center space-x-2 mb-4">
+                <Switch
+                  id="toggle-content-editor"
+                  checked={showUiContentEditor}
+                  onCheckedChange={setShowUiContentEditor}
+                />
+                <Label htmlFor="toggle-content-editor">Show UI Editor</Label>
+              </div>
+              {showUiContentEditor ? (
+                <ContentConfigEditor
+                  value={(() => {
+                    try {
+                      return JSON.parse(contentText) as ContentConfig;
+                    } catch {
+                      return {} as ContentConfig;
+                    }
+                  })()}
+                  onChange={(newConfig) => setContentText(toPretty(newConfig))}
+                />
+              ) : (
+                <JsonEditor
+                  label="Copy"
+                  value={contentText}
+                  onChange={setContentText}
+                  resetValue={toPretty(loadedConfig?.content ?? {})}
+                />
+              )}
             </TabsContent>
             <TabsContent value="layout">
               <JsonEditor
