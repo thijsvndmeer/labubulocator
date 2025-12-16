@@ -1,6 +1,5 @@
 import { Card } from '@/components/ui/card';
 import { RarityBadge } from '@/components/RarityBadge';
-import { VolatilityMetric } from '@/components/VolatilityMetric';
 import { StockStatusBadge } from '@/components/StockStatusBadge';
 import { ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -76,7 +75,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              Floor: ${lowestPrice > 0 && lowestPrice !== Infinity ? lowestPrice.toFixed(2) : 'N/A'} • Range: ${variant.priceRange?.low || 'N/A'}-${variant.priceRange?.high || 'N/A'}
+              Floor: ${lowestPrice > 0 && lowestPrice !== Infinity ? lowestPrice.toFixed(2) : 'N/A'}
             </p>
           </div>
         </Link>
@@ -102,10 +101,6 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
             </Button>
           )}
         </div>
-
-        <Link to={`/variant/${variant.sku}`}>
-          <VolatilityMetric volatility={variant.volatility || 0} />
-        </Link>
       </div>
     </Card>
   );
