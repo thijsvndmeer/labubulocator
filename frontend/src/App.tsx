@@ -8,19 +8,19 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { api } from './lib/api';
 import Spinner from "./components/Spinner";
 import { Header } from "./components/Header";
-import { ThemeUpdater } from "./components/ThemeUpdater";
+// import { ThemeUpdater } from "./components/ThemeUpdater";
 import { useState, useEffect, lazy, Suspense } from "react";
 
 const Index = lazy(() => import("./pages/Index"));
-const VariantDetail = lazy(() => import("./pages/VariantDetail"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const CatalogPage = lazy(() => import("./pages/Catalog").then(module => ({ default: module.CatalogPage })));
-const FavoritesPage = lazy(() => import("./pages/Favorites").then(module => ({ default: module.FavoritesPage })));
-const Collection = lazy(() => import("./pages/Collection"));
-const SharedCollection = lazy(() => import("./pages/SharedCollection"));
-const SharedFavorites = lazy(() => import("./pages/SharedFavorites"));
-const Random = lazy(() => import("./pages/Random"));
-const Admin = lazy(() => import("./pages/Admin"));
+// const VariantDetail = lazy(() => import("./pages/VariantDetail"));
+// const NotFound = lazy(() => import("./pages/NotFound"));
+// const CatalogPage = lazy(() => import("./pages/Catalog").then(module => ({ default: module.CatalogPage })));
+// const FavoritesPage = lazy(() => import("./pages/Favorites").then(module => ({ default: module.FavoritesPage })));
+// const Collection = lazy(() => import("./pages/Collection"));
+// const SharedCollection = lazy(() => import("./pages/SharedCollection"));
+// const SharedFavorites = lazy(() => import("./pages/SharedFavorites"));
+// const Random = lazy(() => import("./pages/Random"));
+// const Admin = lazy(() => import("./pages/Admin"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -64,21 +64,21 @@ export const AppContent = () => {
 
   return (
     <>
-      <ThemeUpdater />
+      {/* <ThemeUpdater /> */}
       {showHeader && <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />}
       <Suspense fallback={<Spinner />}>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/catalog" element={<CatalogPage searchQuery={searchQuery} setSearchQuery={setSearchQuery} />} />
-          <Route path="/variant/:sku" element={<VariantDetail />} />
-          <Route path="/favorites" element={<FavoritesPage />} />
-          <Route path="/collection" element={<Collection />} />
-          <Route path="/sharedcollection" element={<SharedCollection />} />
-          <Route path="/sharedfavorites" element={<SharedFavorites />} />
-          <Route path="/random" element={<Random />} />
-          <Route path="/admin" element={<Admin />} />
+          {/* <Route path="/catalog" element={<CatalogPage searchQuery={searchQuery} setSearchQuery={setSearchQuery} />} /> */}
+          {/* <Route path="/variant/:sku" element={<VariantDetail />} /> */}
+          {/* <Route path="/favorites" element={<FavoritesPage />} /> */}
+          {/* <Route path="/collection" element={<Collection />} /> */}
+          {/* <Route path="/sharedcollection" element={<SharedCollection />} /> */}
+          {/* <Route path="/sharedfavorites" element={<SharedFavorites />} /> */}
+          {/* <Route path="/random" element={<Random />} /> */}
+          {/* <Route path="/admin" element={<Admin />} /> */}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
+          {/* <Route path="*" element={<NotFound />} /> */}
         </Routes>
       </Suspense>
     </>

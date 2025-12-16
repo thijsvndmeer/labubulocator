@@ -17,41 +17,18 @@ const Index = () => {
   const { content, layout } = useConfig();
   const [variants, setVariants] = useState<Labubu[]>([]);
 
+  // useEffect to load variants
   useEffect(() => {
     const loadVariants = async () => {
       try {
-        const variants = await api.labubus.get();
-        setVariants(variants);
+        const fetchedVariants = await api.labubus.get();
+        setVariants(fetchedVariants);
       } catch (error) {
         console.error("Error fetching variants:", error);
       }
     };
     loadVariants();
-  }, []);
-
-  const sortedVariants = useMemo(() => {
-    let sorted = [...variants];
-    const sortBy = layout.homepage.trendingCarousel.trendingSortBy;
-
-    if (sortBy === 'lowestPrice') {
-      sorted.sort((a, b) => (b.lowestPrice || 0) - (a.lowestPrice || 0));
-    } else if (sortBy === 'biggestLoss24h') {
-      sorted.sort((a, b) => {
-        const aChange = a.priceChange24h || 0;
-        const bChange = b.priceChange24h || 0;
-        return aChange - bChange;
-      });
-    } else if (sortBy === 'biggestGain24h') {
-      sorted.sort((a, b) => {
-        const aChange = a.priceChange24h || 0;
-        const bChange = b.priceChange24h || 0;
-        return bChange - aChange;
-      });
-    }
-    return sorted.slice(0, 15);
-  }, [variants, layout.homepage.trendingCarousel.trendingSortBy]);
-
-  const carouselConfig = layout.homepage.trendingCarousel;
+  }, []); // Empty dependency array means this runs once on mount
 
   return (
     <div className="min-h-screen">
@@ -77,42 +54,83 @@ const Index = () => {
       </section>
 
       <div className="container mx-auto px-4 py-12 space-y-16">
-        {/* Trending Section */}
-        {console.log({ showTrendingCarousel: layout.homepage.showTrendingCarousel })}
-        {layout.homepage.showTrendingCarousel && (
-          <section>
-            <div className="flex items-center gap-3 mb-8">
-              <TrendingUp className="h-8 w-8 text-primary" />
-              <div>
-                <h2 className="text-3xl font-bold">{content.trending.title}</h2>
-                <p className="text-muted-foreground">{content.trending.description}</p>
-              </div>
-            </div>
+        {/* Carousels Section */}
+        {layout.homepage.carousels.map((carousel) => {
+          if (!carousel.enabled) return null; // Only render enabled carousels
 
-            <Carousel
-              opts={{
-                align: carouselConfig.align as any,
-                loop: carouselConfig.loop,
-              }}
-              className="w-full"
-            >
-              <CarouselContent>
-                {sortedVariants.map((variant) => (
-                  <CarouselItem
-                    key={variant.sku}
-                    className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
-                  >
-                    <div className="p-1">
-                      <VariantCard variant={variant} />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
-            </Carousel>
-          </section>
-        )}
+          const sortedCarouselVariants = useMemo(() => {
+            let sorted = [...variants];
+            const sortBy = carousel.sortBy;
+
+            if (sortBy === 'lowestPrice') {
+              sorted.sort((a, b) => (b.lowestPrice || 0) - (a.lowestPrice || 0));
+            } else if (sortBy === 'highestPrice') {
+                sorted.sort((a, b) => (a.lowestPrice || 0) - (b.lowestPrice || 0)); // Ascending for highest price
+            } else if (sortBy === 'biggestLoss24h') {
+              sorted.sort((a, b) => {
+                const aChange = a.priceChange24h || 0;
+                const bChange = b.priceChange24h || 0;
+                return aChange - bChange;
+              });
+            } else if (sortBy === 'biggestGain24h') {
+              sorted.sort((a, b) => {
+                const aChange = a.priceChange24h || 0;
+                const bChange = b.priceChange24h || 0;
+                return bChange - aChange;
+              });
+            } else if (sortBy === 'newest') {
+                // Assuming releaseDate is a string and needs parsing
+                sorted.sort((a, b) => {
+                    const dateA = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
+                    const dateB = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
+                    return dateB - dateA; // Newest first
+                });
+            } else if (sortBy === 'oldest') {
+                // Assuming releaseDate is a string and needs parsing
+                sorted.sort((a, b) => {
+                    const dateA = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
+                    const dateB = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
+                    return dateA - dateB; // Oldest first
+                });
+            }
+            return sorted.slice(0, carousel.limit);
+          }, [variants, carousel.sortBy, carousel.limit]);
+
+          return (
+            <section key={carousel.id}>
+              <div className="flex items-center gap-3 mb-8">
+                <TrendingUp className="h-8 w-8 text-primary" /> {/* Using TrendingUp for now */}
+                <div>
+                  <h2 className="text-3xl font-bold">{carousel.title}</h2>
+                  <p className="text-muted-foreground">{carousel.description}</p>
+                </div>
+              </div>
+
+              <Carousel
+                opts={{
+                  align: carousel.align as any,
+                  loop: carousel.loop,
+                }}
+                className="w-full"
+              >
+                <CarouselContent>
+                  {sortedCarouselVariants.map((variant) => (
+                    <CarouselItem
+                      key={variant.sku}
+                      className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
+                    >
+                      <div className="p-1">
+                        <VariantCard variant={variant} />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious />
+                <CarouselNext />
+              </Carousel>
+            </section>
+          );
+        })}
 
         {/* Footer */}
         <footer className="text-center py-8 border-t">
@@ -127,5 +145,3 @@ const Index = () => {
     </div>
   );
 };
-
-export default Index;

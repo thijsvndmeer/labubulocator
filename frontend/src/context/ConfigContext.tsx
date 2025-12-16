@@ -32,8 +32,34 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
     const handleMessage = (event: MessageEvent) => {
       // Basic security: check origin if possible, and data structure.
       // For now, we'll be lenient as it's a local dev tool.
-      if (event.data && typeof event.data === 'object' && 'theme' in event.data && 'content' in event.data) {
-        setConfig(event.data);
+      if (
+        event.data &&
+        typeof event.data === 'object' &&
+        'theme' in event.data &&
+        'content' in event.data &&
+        'layout' in event.data &&
+        'catalog' in event.data &&
+        'navigation' in event.data &&
+        'featureFlags' in event.data
+      ) {
+        try {
+          // Attempt to validate the incoming data against AdminConfig structure
+          // This would require a validation schema (e.g., Zod) for AdminConfig
+          // For now, a simple type assertion might suffice if runtime validation is not critical
+          const newConfig = event.data as AdminConfig; // Type assertion
+
+          // Further check for required properties in newConfig, e.g. for layout.homepage.carousels
+          if (!newConfig.layout || !newConfig.layout.homepage || !Array.isArray(newConfig.layout.homepage.carousels)) {
+            console.error("ConfigProvider: Incoming config is missing required layout.homepage.carousels", newConfig);
+            return;
+          }
+
+          setConfig(newConfig);
+        } catch (error) {
+          console.error("ConfigProvider: Error setting config from postMessage:", error, event.data);
+        }
+      } else {
+        console.warn("ConfigProvider: Received invalid message data format:", event.data);
       }
     };
 

@@ -4,10 +4,6 @@
     "subtitle": "Real-time pricing from Amazon, eBay, StockX, and trusted resellers",
     "helpText": "Live data refreshed every 30 minutes across the full catalog."
   },
-  "trending": {
-    "title": "Trending Now",
-    "description": "Highest value Labubus"
-  },
   "footer": {
     "disclosure": "Affiliate Disclosure: We may earn a commission from purchases made through our links.",
     "details": "Price data aggregated from Pop Mart, Amazon, eBay, StockX, and verified resellers. Updated every 30 minutes. All prices in USD unless noted."

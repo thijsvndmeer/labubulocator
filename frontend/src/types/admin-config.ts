@@ -52,30 +52,33 @@ export interface ContentConfig {
     subtitle: string;
     helpText: string;
   };
-  trending: {
-    title: string;
-    description: string;
-  };
   footer: {
     disclosure: string;
     details: string;
   };
 }
 
+export interface CarouselConfig {
+  id: string; // Unique identifier for the carousel
+  title: string;
+  description: string;
+  enabled: boolean;
+  loop: boolean;
+  align: "start" | "center" | "end";
+  baseVariable: "estimatedValue" | "lowestPrice" | "highestPrice" | "priceChange24h" | "releaseDate"; // NEW
+  sortDirection: "ASC" | "DESC"; // NEW // Expanded sorting options
+  slidesPerBreakpoint: {
+    md: number;
+    lg: number;
+    xl: number;
+  };
+  limit: number; // Number of items to display
+}
+
 export interface LayoutConfig {
   homepage: {
     heroOverlay: boolean;
-    showTrendingCarousel: boolean;
-    trendingCarousel: {
-      loop: boolean;
-      align: "start" | "center" | "end";
-      trendingSortBy: "lowestPrice" | "biggestLoss24h" | "biggestGain24h";
-      slidesPerBreakpoint: {
-        md: number;
-        lg: number;
-        xl: number;
-      };
-    };
+    carousels: CarouselConfig[]; // NEW
   };
   cards: {
     showCollectionStatus: boolean;

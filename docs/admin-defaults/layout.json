@@ -1,15 +1,24 @@
 {
   "homepage": {
     "heroOverlay": true,
-    "trendingCarousel": {
-      "loop": true,
-      "align": "start",
-      "slidesPerBreakpoint": {
-        "md": 2,
-        "lg": 3,
-        "xl": 4
+    "carousels": [
+      {
+        "id": "trending-carousel-default",
+        "title": "Trending Now (Default)",
+        "description": "Highest value Labubus (Default)",
+        "enabled": true,
+        "loop": true,
+        "align": "start",
+        "baseVariable": "estimatedValue",
+        "sortDirection": "DESC",
+        "slidesPerBreakpoint": {
+          "md": 2,
+          "lg": 3,
+          "xl": 4
+        },
+        "limit": 15
       }
-    }
+    ]
   },
   "cards": {
     "showCollectionStatus": true,

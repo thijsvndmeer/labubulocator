@@ -1,17 +1,24 @@
 {
   "homepage": {
     "heroOverlay": true,
-    "showTrendingCarousel": true,
-    "trendingCarousel": {
-      "loop": true,
-      "align": "start",
-      "trendingSortBy": "lowestPrice",
-      "slidesPerBreakpoint": {
-        "md": 2,
-        "lg": 3,
-        "xl": 4
+    "carousels": [
+      {
+        "id": "trending-carousel",
+        "title": "Trending Now",
+        "description": "Highest value Labubus",
+        "enabled": true,
+        "loop": true,
+        "align": "start",
+        "baseVariable": "estimatedValue",
+        "sortDirection": "DESC",
+        "slidesPerBreakpoint": {
+          "md": 2,
+          "lg": 3,
+          "xl": 4
+        },
+        "limit": 15
       }
-    }
+    ]
   },
   "cards": {
     "showCollectionStatus": true,

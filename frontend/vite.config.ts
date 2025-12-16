@@ -120,13 +120,55 @@ function validateConfig(payload: AdminConfig): AdminConfig {
   validateThemeMode((payload as any).theme?.modes?.light, 'theme.modes.light');
   validateThemeMode((payload as any).theme?.modes?.dark, 'theme.modes.dark');
 
-  ['hero', 'trending', 'footer'].forEach((key) => {
+  // Validate ContentConfig
+  ['hero', 'footer'].forEach((key) => {
     if (!(payload as any).content?.[key]) throw new Error(`content.${key} is required`);
   });
 
-  if (typeof (payload as any).layout?.homepage?.heroOverlay !== 'boolean') {
+  // Validate LayoutConfig
+  const homepage = (payload as any).layout?.homepage;
+  if (!homepage) throw new Error('layout.homepage is required');
+  if (typeof homepage.heroOverlay !== 'boolean') {
     throw new Error('layout.homepage.heroOverlay must be a boolean');
   }
+  if (!Array.isArray(homepage.carousels)) {
+    throw new Error('layout.homepage.carousels must be an array');
+  }
+  homepage.carousels.forEach((carousel: any, index: number) => {
+    if (typeof carousel.id !== 'string' || carousel.id.length === 0) {
+      throw new Error(`Carousel ${index}: id must be a non-empty string`);
+    }
+    if (typeof carousel.title !== 'string' || carousel.title.length === 0) {
+      throw new Error(`Carousel ${index}: title must be a non-empty string`);
+    }
+    if (typeof carousel.description !== 'string') {
+      throw new Error(`Carousel ${index}: description must be a string`);
+    }
+    if (typeof carousel.enabled !== 'boolean') {
+      throw new Error(`Carousel ${index}: enabled must be a boolean`);
+    }
+    if (typeof carousel.loop !== 'boolean') {
+      throw new Error(`Carousel ${index}: loop must be a boolean`);
+    }
+    if (!['start', 'center', 'end'].includes(carousel.align)) {
+      throw new Error(`Carousel ${index}: align must be 'start', 'center', or 'end'`);
+    }
+    const validBaseVariables = ['estimatedValue', 'lowestPrice', 'highestPrice', 'priceChange24h', 'releaseDate'];
+    if (!validBaseVariables.includes(carousel.baseVariable)) {
+      throw new Error(`Carousel ${index}: baseVariable must be one of ${validBaseVariables.join(', ')}`);
+    }
+    if (!['ASC', 'DESC'].includes(carousel.sortDirection)) {
+      throw new Error(`Carousel ${index}: sortDirection must be 'ASC' or 'DESC'`);
+    }
+    const sbp = carousel.slidesPerBreakpoint;
+    if (!sbp || typeof sbp.md !== 'number' || typeof sbp.lg !== 'number' || typeof sbp.xl !== 'number') {
+      throw new Error(`Carousel ${index}: slidesPerBreakpoint must have md, lg, xl numbers`);
+    }
+    if (typeof carousel.limit !== 'number' || carousel.limit <= 0) {
+      throw new Error(`Carousel ${index}: limit must be a positive number`);
+    }
+  });
+
 
   const catalog = (payload as any).catalog;
   if (!catalog || typeof catalog !== 'object') throw new Error('catalog is required');
@@ -276,6 +318,6 @@ export default defineConfig(({ mode }) => ({
   test: {
     globals: true,
     environment: "jsdom",
-    setupFiles: "./src/setupTests.ts",
+    setupFiles: "./frontend/src/setupTests.ts",
   },
 }));

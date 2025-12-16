@@ -12,8 +12,6 @@ const descriptions: Record<string, string> = {
   'hero.title': 'The main title displayed in the hero section of the homepage.',
   'hero.subtitle': 'The secondary text displayed under the hero title.',
   'hero.helpText': 'Additional helper text displayed in the hero section.',
-  'trending.title': 'The title for the trending section.',
-  'trending.description': 'A short description for the trending section.',
   'footer.disclosure': 'The affiliate disclosure text in the footer.',
   'footer.details': 'Additional details or copyright information in the footer.',
 };
@@ -59,30 +57,6 @@ export const ContentConfigEditor: React.FC<ContentConfigEditorProps> = ({ value,
             value={value.hero.helpText}
             onChange={(val) => handleChange('hero', 'helpText', val)}
             description={descriptions['hero.helpText']}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Trending Section</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <ConfigField
-            id="trending-title"
-            label="Title"
-            type="string"
-            value={value.trending.title}
-            onChange={(val) => handleChange('trending', 'title', val)}
-            description={descriptions['trending.title']}
-          />
-          <ConfigField
-            id="trending-description"
-            label="Description"
-            type="string"
-            value={value.trending.description}
-            onChange={(val) => handleChange('trending', 'description', val)}
-            description={descriptions['trending.description']}
           />
         </CardContent>
       </Card>

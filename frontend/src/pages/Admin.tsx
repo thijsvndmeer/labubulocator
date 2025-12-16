@@ -52,14 +52,6 @@ const JsonEditor = ({ label, value, onChange, resetValue }: EditorProps) => {
   );
 };
 
-const parseSection = (value: string, key: keyof AdminConfig) => {
-  try {
-    return JSON.parse(value);
-  } catch (error) {
-    throw new Error(`${key} is not valid JSON: ${(error as Error).message}`);
-  }
-};
-
 const Admin = () => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [loadedConfig, setLoadedConfig] = useState<AdminConfig | null>(null);
@@ -120,20 +112,42 @@ const Admin = () => {
   }, [token]);
 
   const parsedPayload = useMemo(() => {
+    // If no config has been loaded yet, return null.
+    // The UI should handle this by disabling save/preview buttons.
     if (!loadedConfig) return null;
+
     try {
+      const parsedTheme = (() => { try { return JSON.parse(themeText) as ThemeConfig; } catch { return loadedConfig?.theme || initialThemeConfig; } })();
+      const parsedContent = (() => { try { return JSON.parse(contentText) as ContentConfig; } catch { return loadedConfig?.content || initialContentConfig; } })();
+      const parsedLayout = (() => { try { return JSON.parse(layoutText) as LayoutConfig; } catch { return loadedConfig?.layout || initialLayoutConfig; } })();
+      const parsedCatalog = (() => { try { return JSON.parse(catalogText) as CatalogConfig; } catch { return loadedConfig?.catalog || initialCatalogConfig; } })();
+      const parsedNavigation = (() => { try { return JSON.parse(navigationText) as NavigationConfig; } catch { return loadedConfig?.navigation || initialNavigationConfig; } })();
+      const parsedFeatureFlags = (() => { try { return JSON.parse(featureFlagsText) as FeatureFlags; } catch { return loadedConfig?.featureFlags || initialFeatureFlags; } })();
+
+      // Perform a more thorough structural validation to ensure all critical nested properties exist
+      if (!parsedLayout || !parsedLayout.homepage || !Array.isArray(parsedLayout.homepage.carousels)) {
+          throw new Error("Layout configuration is invalid or incomplete (homepage.carousels missing).");
+      }
+      if (!parsedContent || !parsedContent.hero || !parsedContent.footer) {
+          throw new Error("Content configuration is invalid or incomplete (hero or footer missing).");
+      }
+      // Add more checks for other critical sections as needed
+
       return {
-        theme: parseSection(themeText, 'theme'),
-        content: parseSection(contentText, 'content'),
-        layout: parseSection(layoutText, 'layout'),
-        catalog: parseSection(catalogText, 'catalog'),
-        navigation: parseSection(navigationText, 'navigation'),
-        featureFlags: parseSection(featureFlagsText, 'featureFlags'),
+        theme: parsedTheme,
+        content: parsedContent,
+        layout: parsedLayout,
+        catalog: parsedCatalog,
+        navigation: parsedNavigation,
+        featureFlags: parsedFeatureFlags,
       } as AdminConfig;
     } catch (error) {
+      console.error("Admin: Error parsing or validating payload:", error);
       return error as Error;
     }
-  }, [themeText, contentText, layoutText, catalogText, navigationText, featureFlagsText, loadedConfig]);
+  }, [themeText, contentText, layoutText, catalogText, navigationText, featureFlagsText, loadedConfig,
+      initialThemeConfig, initialContentConfig, initialLayoutConfig, initialCatalogConfig, initialNavigationConfig, initialFeatureFlags // Add initial configs to dependencies
+  ]);
 
   // New useEffect for live preview updates
   useEffect(() => {
@@ -169,6 +183,7 @@ const Admin = () => {
       setEditorsFromConfig(saved);
       toast.success('Configuration saved.');
     } catch (error) {
+      console.error("Admin: Error during handleSaveOnly:", error);
       toast.error((error as Error).message);
     } finally {
       setIsSaving(false);
@@ -179,6 +194,7 @@ const Admin = () => {
 
   const handleLoadDefaults = () => {    if (!defaults) {
       toast.error("Default configuration not loaded.");
+      console.error("Admin: Defaults not loaded when handleLoadDefaults called.");
       return;
     }
     setEditorsFromConfig(defaults);
@@ -188,6 +204,7 @@ const Admin = () => {
   const handleReset = () => {
     if (!loadedConfig) {
       toast.error("No configuration loaded yet.");
+      console.error("Admin: No loadedConfig available when handleReset called.");
       return;
     }
     setEditorsFromConfig(loadedConfig);
