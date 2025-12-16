@@ -1,10 +1,6 @@
-import { parse } from "csv-parse";
-import fs from "fs";
 import { labubuRepository } from "../index";
 import { Labubu } from "@labubu/common/src/types/labubu";
-import path from "path";
-
-const csvPath = path.resolve("src", "data", "labubus.csv");
+import { loadLabubusFromCsv, LABUBU_CSV_PATH } from "../utils/labubuCsvManager";
 
 const getSeriesFolderName = (series: string): string => {
     const seriesLower = series.toLowerCase();
@@ -23,15 +19,9 @@ const getSeriesFolderName = (series: string): string => {
 export const syncLabubus = async () => {
   console.log("LABUBU SYNC: Starting Labubu synchronization from CSV.");
   try {
-    const parser = fs.createReadStream(csvPath).pipe(
-      parse({
-        columns: true,
-        trim: true,
-        skip_empty_lines: true,
-      })
-    );
+    const records = await loadLabubusFromCsv();
 
-    for await (const record of parser) {
+    for (const record of records) {
       console.log(`LABUBU SYNC: Processing record for SKU: ${record.sku}`);
       const labubuData: Partial<Labubu> = {
         sku: record.sku,
@@ -55,8 +45,8 @@ export const syncLabubus = async () => {
       console.log(`LABUBU SYNC: Upserted Labubu with SKU: ${record.sku}`);
     }
 
-    console.log(`LABUBU SYNC: Succesfully synced ${csvPath} with the database`);
+    console.log(`LABUBU SYNC: Succesfully synced ${LABUBU_CSV_PATH} with the database`);
   } catch (err) {
-    console.error(`LABUBU SYNC: Error processing ${csvPath}:`, err);
+    console.error(`LABUBU SYNC: Error processing ${LABUBU_CSV_PATH}:`, err);
   }
 };
