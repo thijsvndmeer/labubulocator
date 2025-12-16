@@ -1,7 +1,7 @@
 import { HttpOptions, Labubu, Listing, PriceEntry } from "@labubu/common";
 import { Variant } from '@/types/variant'; // Import Variant type
 
-export const API_ROOT_URL = "https://api.labubulocator.me";
+export const API_ROOT_URL = import.meta.env.VITE_API_ROOT_URL || "https://api.labubulocator.me";
 const API_BASE_URL = `${API_ROOT_URL}/api`;
 const ADMIN_API_BASE_URL = `${API_ROOT_URL}/admin-api`; // New admin API base URL
 

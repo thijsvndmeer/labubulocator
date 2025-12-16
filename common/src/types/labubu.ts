@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z, ZodObject } from "zod";
 
+// --- Custom Types for Labubu ---
+export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'secret' | 'chase'; // Added 'chase'
+export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock' | 'pre_order' | 'discontinued' | 'aftermarketorbb'; // Added 'aftermarketorbb'
+
 //============================================================================================================================================================================================
 // Database entity types
 //============================================================================================================================================================================================

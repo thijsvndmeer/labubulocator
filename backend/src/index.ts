@@ -10,6 +10,8 @@ import { syncLabubus } from "./services/labubuSyncService";
 import { startApiSync } from "./services/scheduler";
 import fs from 'fs';
 import path from 'path';
+import adminLabubuRoutes from './routes/adminLabubus';
+import cors from 'cors'; // Import cors
 
 const app = express();
 console.log("APP: Starting up...");
@@ -50,14 +52,24 @@ const findImageRecursively = (filename: string, currentDir: string): string | nu
   return null;
 };
 
-app.use((req, res, next) => {
-  const allowedOrigins = ["https://labubulocator.me","http://localhost:4173"];
-  const origin = req.headers.origin;
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-  next();
-});
+app.use(express.json()); // Add this line to parse JSON request bodies
+
+// CORS Configuration
+const allowedOrigins = ["https://labubulocator.me","http://localhost:4173"];
+app.use(cors({
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: "Content-Type, x-admin-token", // Allow x-admin-token header
+  credentials: true, // Allow cookies to be sent
+}));
 
 app.use((req, res, next) => {
   console.log(`Request received: ${req.method} ${req.path}`);
@@ -83,8 +95,8 @@ app.use("/images/:filename", (req, res, next) => {
 //============================================================================================================================================================================================
 
 app.use("/api/labubus", labubuRoutes);
-
 app.use("/api/listings", listingRoutes);
+app.use("/admin-api", adminLabubuRoutes); // Mount new admin API routes
 
 //============================================================================================================================================================================================
 // Start the server
@@ -98,6 +110,7 @@ app.get("/", (req: Request, res: Response) => {
 app.listen(port, () => {
   console.log(`Backend server is running at http://localhost:${port}`);
 });
+
 
 // const interval = 0.1 * 60 * 1000 // 15 minutes
 // setInterval(() => {
