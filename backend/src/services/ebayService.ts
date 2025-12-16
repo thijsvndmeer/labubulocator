@@ -184,7 +184,7 @@ export const processEbayLabubu = async (labubu: Labubu) => {
 
   if (labubu.name) {
     try {
-      let stockxPrice = labubu.stockxPrice; // Use stockxPrice
+      const stockxPrice = labubu.stockxPrice ?? undefined; // Normalize null to undefined for downstream typing
       console.log(`EBAY: StockX price for ${labubu.name}: ${stockxPrice}`);
       let ebayListing = await getEbayListing(labubu, stockxPrice);
       console.log(`EBAY: eBay listing for ${labubu.name}:`, ebayListing);

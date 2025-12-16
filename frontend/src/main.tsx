@@ -3,6 +3,9 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App.tsx";
 import "./index.css";
 import { ThemeProvider } from "next-themes";
+import { applyThemeConfig } from './lib/theme';
+
+applyThemeConfig();
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>

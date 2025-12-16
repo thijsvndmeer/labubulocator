@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Labubu } from '@labubu/common';
 import { PriceChangeBadge } from './PriceChangeBadge';
 import { API_ROOT_URL } from '@/lib/api';
+import { featureFlags } from '@/config/feature-flags';
+import { layoutConfig } from '@/config/layout.config';
 
 interface VariantCardProps {
   variant: Labubu;
@@ -26,12 +28,16 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
 
   const cardClasses = [
     "group overflow-hidden transition-all duration-300 hover:shadow-card-hover fade-in",
-    showCollectionStatus && isCollected && "glow-collected",
-    showCollectionStatus && !isCollected && "glow-uncollected",
+    layoutConfig.cards.showCollectionStatus && featureFlags.collectionGlow && showCollectionStatus && isCollected && "glow-collected",
+    layoutConfig.cards.showCollectionStatus && featureFlags.collectionGlow && showCollectionStatus && !isCollected && "glow-uncollected",
   ].filter(Boolean).join(' ');
 
+  const shouldShowStock = featureFlags.stockStatus && !hideStockStatus;
+  const shouldShowAffiliate = featureFlags.affiliateButtons && variant.affiliateLinks && variant.affiliateLinks.length > 0;
+  const shouldShowPriceChange = featureFlags.priceChange && variant.priceChange24h !== undefined;
+
   return (
-    <Card 
+    <Card
       className={cardClasses}
     >
       <Link to={`/variant/${variant.sku}`}>
@@ -45,7 +51,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
           />
         </div>
       </Link>
-      
+
       <div className="p-4 space-y-3">
         <Link to={`/variant/${variant.sku}`}>
           <div className="flex items-start justify-between gap-2">
@@ -60,7 +66,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
           </div>
         </Link>
 
-        {isPopular && (
+        {isPopular && layoutConfig.cards.badgeVariant === 'floating' && (
           <Badge variant="secondary" className="absolute top-2 left-2">Popular</Badge>
         )}
 
@@ -70,8 +76,8 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
               <span className="text-2xl font-bold text-primary">
                 ${(variant.estimatedValue || 0).toFixed(2)}
               </span>
-              {variant.priceChange24h !== undefined && (
-                <PriceChangeBadge priceChange={variant.priceChange24h} />
+              {shouldShowPriceChange && (
+                <PriceChangeBadge priceChange={variant.priceChange24h!} />
               )}
             </div>
             <p className="text-xs text-muted-foreground">
@@ -79,10 +85,10 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
             </p>
           </div>
         </Link>
-          {!hideStockStatus && <StockStatusBadge status={variant.stockStatus as any} />}
+          {shouldShowStock && <StockStatusBadge status={variant.stockStatus as any} />}
         <div className="flex items-center justify-between gap-0 pt-0">
 
-          {variant.affiliateLinks && variant.affiliateLinks.length > 0 && (
+          {shouldShowAffiliate && (
             <Button
               size="sm"
               variant="outline"
@@ -90,7 +96,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
               onClick={(e) => e.stopPropagation()}
             >
               <a
-                href={variant.affiliateLinks[0].url}
+                href={variant.affiliateLinks![0].url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1"

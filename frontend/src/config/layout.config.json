@@ -1,0 +1,18 @@
+{
+  "homepage": {
+    "heroOverlay": true,
+    "trendingCarousel": {
+      "loop": true,
+      "align": "start",
+      "slidesPerBreakpoint": {
+        "md": 2,
+        "lg": 3,
+        "xl": 4
+      }
+    }
+  },
+  "cards": {
+    "showCollectionStatus": true,
+    "badgeVariant": "floating"
+  }
+}
