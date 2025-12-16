@@ -60,46 +60,35 @@ const Index = () => {
 
           const sortedCarouselVariants = useMemo(() => {
             let sorted = [...variants];
-            const sortBy = carousel.sortBy;
+            const { baseVariable, sortDirection } = carousel;
 
-            if (sortBy === 'lowestPrice') {
-              sorted.sort((a, b) => (b.lowestPrice || 0) - (a.lowestPrice || 0));
-            } else if (sortBy === 'highestPrice') {
-                sorted.sort((a, b) => (a.lowestPrice || 0) - (b.lowestPrice || 0)); // Ascending for highest price
-            } else if (sortBy === 'biggestLoss24h') {
-              sorted.sort((a, b) => {
-                const aChange = a.priceChange24h || 0;
-                const bChange = b.priceChange24h || 0;
-                return aChange - bChange;
-              });
-            } else if (sortBy === 'biggestGain24h') {
-              sorted.sort((a, b) => {
-                const aChange = a.priceChange24h || 0;
-                const bChange = b.priceChange24h || 0;
-                return bChange - aChange;
-              });
-            } else if (sortBy === 'newest') {
-                // Assuming releaseDate is a string and needs parsing
-                sorted.sort((a, b) => {
-                    const dateA = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
-                    const dateB = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
-                    return dateB - dateA; // Newest first
-                });
-            } else if (sortBy === 'oldest') {
-                // Assuming releaseDate is a string and needs parsing
-                sorted.sort((a, b) => {
-                    const dateA = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
-                    const dateB = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
-                    return dateA - dateB; // Oldest first
-                });
-            }
+            const compare = (a: Labubu, b: Labubu, variable: typeof baseVariable) => {
+              let valA: any, valB: any;
+
+              if (variable === 'releaseDate') {
+                valA = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
+                valB = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
+              } else {
+                // Ensure the property exists on Labubu and handle potential undefined values
+                valA = (a as any)[variable] !== undefined ? (a as any)[variable] : (sortDirection === 'ASC' ? Infinity : -Infinity);
+                valB = (b as any)[variable] !== undefined ? (b as any)[variable] : (sortDirection === 'ASC' ? Infinity : -Infinity);
+              }
+
+              if (sortDirection === 'ASC') {
+                return valA - valB;
+              } else { // DESC
+                return valB - valA;
+              }
+            };
+
+            sorted.sort((a, b) => compare(a, b, baseVariable));
             return sorted.slice(0, carousel.limit);
-          }, [variants, carousel.sortBy, carousel.limit]);
+          }, [variants, carousel.baseVariable, carousel.sortDirection, carousel.limit]);
 
           return (
             <section key={carousel.id}>
               <div className="flex items-center gap-3 mb-8">
-                <TrendingUp className="h-8 w-8 text-primary" /> {/* Using TrendingUp for now */}
+                <TrendingUp className="h-8 w-8 text-primary" /> {/* Re-enabled */}
                 <div>
                   <h2 className="text-3xl font-bold">{carousel.title}</h2>
                   <p className="text-muted-foreground">{carousel.description}</p>
@@ -145,3 +134,5 @@ const Index = () => {
     </div>
   );
 };
+
+export default Index;

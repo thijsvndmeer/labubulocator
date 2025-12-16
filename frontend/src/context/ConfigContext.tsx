@@ -30,8 +30,13 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      // Basic security: check origin if possible, and data structure.
-      // For now, we'll be lenient as it's a local dev tool.
+      // Filter out messages not originating from the current window (e.g., extensions)
+      // And ensure the message has our specific type identifier
+      if (event.origin !== window.location.origin || !event.data || event.data.type !== 'config-update') {
+          return;
+      }
+
+      // ... (rest of the existing validation and error handling) ...
       if (
         event.data &&
         typeof event.data === 'object' &&
@@ -43,9 +48,6 @@ export const ConfigProvider = ({ children }: { children: ReactNode }) => {
         'featureFlags' in event.data
       ) {
         try {
-          // Attempt to validate the incoming data against AdminConfig structure
-          // This would require a validation schema (e.g., Zod) for AdminConfig
-          // For now, a simple type assertion might suffice if runtime validation is not critical
           const newConfig = event.data as AdminConfig; // Type assertion
 
           // Further check for required properties in newConfig, e.g. for layout.homepage.carousels
