@@ -59,33 +59,12 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
           </div>
 
           <form onSubmit={handleSearchSubmit} className="flex items-center gap-4 flex-wrap justify-end">
-            {navigationConfig.primaryLinks.map((link) => {
-              const isExternal = link.external;
-              const content = (
-                <Button
-                  key={link.href}
-                  variant="outline"
-                  className="flex items-center justify-center md:w-auto w-10 h-10 p-0 md:px-4 md:py-2"
-                >
-                  <Package className="h-4 w-4 md:mr-2" />
-                  <span className="hidden md:inline">{link.label}</span>
-                </Button>
-              );
-
-              if (isExternal) {
-                return (
-                  <a key={link.href} href={link.href} target="_blank" rel="noreferrer" className="hidden md:flex">
-                    {content}
-                  </a>
-                );
-              }
-
-              return (
-                <Link to={link.href} className="hidden md:flex" key={link.href}>
-                  {content}
-                </Link>
-              );
-            })}
+            <Link to="/catalog" className="hidden md:flex">
+              <Button variant="outline" className="flex items-center justify-center md:w-auto w-10 h-10 p-0 md:px-4 md:py-2">
+                <Package className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">Catalog</span>
+              </Button>
+            </Link>
             <div className="relative flex-grow min-w-[200px] max-w-[500px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
