@@ -11,7 +11,11 @@ import { Header } from "./components/Header";
 // import { ThemeUpdater } from "./components/ThemeUpdater";
 import { useState, useEffect, lazy, Suspense } from "react";
 
-const Index = lazy(() => import("./pages/Index"));
+const Index = lazy(() =>
+  import("./pages/Index").then((module) => ({
+    default: module.default ?? module.Index,
+  })),
+);
 // const VariantDetail = lazy(() => import("./pages/VariantDetail"));
 // const NotFound = lazy(() => import("./pages/NotFound"));
 // const CatalogPage = lazy(() => import("./pages/Catalog").then(module => ({ default: module.CatalogPage })));
