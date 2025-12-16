@@ -38,3 +38,10 @@
 4) Build `/admin` React UI with forms per section, preview pane, and reset/apply buttons that call the local API.
 5) Wire the main site to read from the generated config modules (theme tokens into Tailwind/theme provider, content/layout toggles into cards/pages/routes).
 6) Add documentation to `docs/admin-panel-plan.md` (this file) describing usage, safety, and how to commit resulting changes.
+
+## Local Admin Usage
+- Start the frontend dev server (`npm run dev` from `frontend/`). The admin middleware only listens on localhost and will reject remote hosts.
+- Visit `/admin` to load the JSON editors for theme, copy, layout, catalog, navigation, and feature flags. Provide `ADMIN_TOKEN` via the text box if you exported it in your shell.
+- Press **Apply & Preview** to validate and write the JSON configs under `frontend/src/config/*.json`; the change log in `docs/admin-change-log.md` is appended automatically.
+- **Reset all to defaults** restores the checked-in snapshots from `docs/admin-defaults/*.json`.
+- Re-run the build/preview after saving to ensure the compiled site reflects the new settings.

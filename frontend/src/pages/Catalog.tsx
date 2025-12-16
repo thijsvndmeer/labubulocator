@@ -9,6 +9,7 @@ import { useLocation } from 'react-router-dom';
 import { getCollection } from '@/lib/collection';
 import { Labubu } from '@labubu/common/src/types/labubu';
 import { useQuery } from '@tanstack/react-query';
+import { layoutConfig } from '@/config/layout.config';
 
 interface CatalogPageProps {
   searchQuery: string;
@@ -25,9 +26,10 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
   const [popularVariantIds, setPopularVariantIds] = useState<Set<string>>(new Set());
   const [showCollectionStatus, setShowCollectionStatus] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('showCollectionStatus') === 'true';
+      const stored = localStorage.getItem('showCollectionStatus');
+      if (stored !== null) return stored === 'true';
     }
-    return false;
+    return layoutConfig.cards.showCollectionStatus;
   });
   const [userCollection, setUserCollection] = useState<Set<string>>(new Set());
   const location = useLocation();

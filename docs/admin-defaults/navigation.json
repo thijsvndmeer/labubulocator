@@ -1,0 +1,16 @@
+{
+  "primaryLinks": [
+    { "label": "Catalog", "href": "/catalog" },
+    { "label": "Favorites", "href": "/favorites" },
+    { "label": "Collection", "href": "/collection" }
+  ],
+  "footerLinks": [
+    { "label": "Home", "href": "/" },
+    { "label": "Catalog", "href": "/catalog" },
+    { "label": "Randomizer", "href": "/random" }
+  ],
+  "resources": [
+    { "label": "Shared Favorites", "href": "/sharedfavorites" },
+    { "label": "Shared Collection", "href": "/sharedcollection" }
+  ]
+}
