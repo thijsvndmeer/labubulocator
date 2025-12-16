@@ -5,6 +5,13 @@ import { Labubu, Rarity, StockStatus } from '@labubu/common/src/types/labubu'; /
 import Papa from 'papaparse'; // For CSV parsing
 import multer from 'multer'; // Import multer for file uploads
 import fs from 'fs'; // For file system operations
+import path from 'path';
+import {
+  removeLabubuFromCsv,
+  replaceCsvWithLabubus,
+  restoreCsvFromBackup,
+  upsertLabubuInCsv,
+} from '../utils/labubuCsvManager';
 
 const router = Router();
 
@@ -96,6 +103,9 @@ const validate = (schema: z.ZodSchema) => (req: Request, res: Response, next: Ne
 
 // Multer setup for file uploads
 const upload = multer({ dest: 'uploads/' });
+const imageUpload = multer({ dest: 'uploads/' });
+
+const publicImagesPath = path.resolve(process.cwd(), 'public', 'images');
 
 
 // --- Admin Labubu Routes ---
@@ -135,8 +145,14 @@ router.get('/labubus/:sku', async (req: Request, res: Response) => {
 router.post('/labubus', validate(adminLabubuSchema), async (req: Request, res: Response) => {
   try {
     const newLabubuData: Labubu = req.body;
-    await labubuRepository.create(newLabubuData);
-    res.status(201).json({ message: 'Labubu created successfully', sku: newLabubuData.sku });
+    const { previousCsvText } = await upsertLabubuInCsv(newLabubuData);
+    try {
+      await labubuRepository.create(newLabubuData);
+      res.status(201).json({ message: 'Labubu created successfully', sku: newLabubuData.sku });
+    } catch (error) {
+      await restoreCsvFromBackup(previousCsvText);
+      throw error;
+    }
   } catch (error: any) {
     console.error('Error in POST /admin-api/labubus:', error);
     res.status(500).json({ message: 'Error creating labubu', error: error.message });
@@ -148,12 +164,19 @@ router.put('/labubus/:sku', validate(adminUpdateLabubuSchema), async (req: Reque
   try {
     const { sku } = req.params;
     const updatedLabubuData: Partial<Labubu> = req.body;
-    const rowsAffected = await labubuRepository.update({ filter: { sku } }, updatedLabubuData);
+    const { previousCsvText } = await upsertLabubuInCsv({ sku, ...updatedLabubuData });
+    try {
+      const rowsAffected = await labubuRepository.update({ filter: { sku } }, updatedLabubuData);
 
-    if (rowsAffected > 0) {
-      res.json({ message: `Labubu with SKU ${sku} updated successfully.` });
-    } else {
-      res.status(404).json({ message: `Labubu with SKU ${sku} not found.` });
+      if (rowsAffected > 0) {
+        res.json({ message: `Labubu with SKU ${sku} updated successfully.` });
+      } else {
+        await restoreCsvFromBackup(previousCsvText);
+        res.status(404).json({ message: `Labubu with SKU ${sku} not found.` });
+      }
+    } catch (error) {
+      await restoreCsvFromBackup(previousCsvText);
+      throw error;
     }
   } catch (error: any) {
     console.error(`Error in PUT /admin-api/labubus/${req.params.sku}:`, error);
@@ -165,12 +188,19 @@ router.put('/labubus/:sku', validate(adminUpdateLabubuSchema), async (req: Reque
 router.delete('/labubus/:sku', async (req: Request, res: Response) => {
   try {
     const { sku } = req.params;
-    const rowsAffected = await labubuRepository.delete({ filter: { sku } });
+    const { previousCsvText } = await removeLabubuFromCsv(sku);
+    try {
+      const rowsAffected = await labubuRepository.delete({ filter: { sku } });
 
-    if (rowsAffected > 0) {
-      res.json({ message: `Labubu with SKU ${sku} deleted successfully.` });
-    } else {
-      res.status(404).json({ message: `Labubu with SKU ${sku} not found.` });
+      if (rowsAffected > 0) {
+        res.json({ message: `Labubu with SKU ${sku} deleted successfully.` });
+      } else {
+        await restoreCsvFromBackup(previousCsvText);
+        res.status(404).json({ message: `Labubu with SKU ${sku} not found.` });
+      }
+    } catch (error) {
+      await restoreCsvFromBackup(previousCsvText);
+      throw error;
     }
   } catch (error: any) {
     console.error(`Error in DELETE /admin-api/labubus/${req.params.sku}:`, error);
@@ -203,10 +233,6 @@ router.post('/labubus/upload', upload.single('file'), async (req: Request, res: 
       stockStatus: row.stockStatus as StockStatus || undefined,
       kicksdevId: row.kicksdevId || undefined,
       ebaySearchOverride: row.ebaySearchOverride || undefined,
-      images: [],
-      retailUrl: '',
-      affiliateLinks: [],
-      attributes: {},
     }));
 
     for (const labubu of parsedLabubus) {
@@ -221,20 +247,83 @@ router.post('/labubus/upload', upload.single('file'), async (req: Request, res: 
       }
     }
 
-    await labubuRepository.clearAll();
-    for (const labubu of parsedLabubus) {
-      await labubuRepository.create(labubu as Labubu);
+    const { previousCsvText } = await replaceCsvWithLabubus(parsedLabubus);
+
+    try {
+      await labubuRepository.clearAll();
+      for (const labubu of parsedLabubus) {
+        await labubuRepository.create(labubu as Labubu);
+      }
+
+      fs.unlinkSync(req.file.path);
+      res.json({ message: 'CSV processed successfully, catalog replaced.', processed: parsedLabubus.length });
+    } catch (error) {
+      await restoreCsvFromBackup(previousCsvText);
+      throw error;
     }
 
-    fs.unlinkSync(req.file.path);
-    res.json({ message: 'CSV processed successfully, catalog replaced.', processed: parsedLabubus.length });
-
   } catch (error: any) {
-    if (req.file) {
+    if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
     console.error('Error in POST /admin-api/labubus/upload:', error);
     res.status(500).json({ message: 'Error processing CSV upload', error: error.message });
+  }
+});
+
+// --- Image management ---
+router.get('/images', (req: Request, res: Response) => {
+  try {
+    const files = fs.readdirSync(publicImagesPath);
+    res.json({ images: files });
+  } catch (error: any) {
+    console.error('Error listing images:', error);
+    res.status(500).json({ message: 'Error listing images', error: error.message });
+  }
+});
+
+router.post('/images', imageUpload.single('image'), async (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image uploaded.' });
+    }
+
+    const targetName = path.basename((req.body.filename as string) || req.file.originalname);
+    const targetPath = path.join(publicImagesPath, targetName);
+
+    fs.mkdirSync(publicImagesPath, { recursive: true });
+
+    try {
+      fs.renameSync(req.file.path, targetPath);
+    } catch (error) {
+      fs.unlinkSync(req.file.path);
+      throw error;
+    }
+
+    res.status(201).json({ message: 'Image saved successfully', filename: targetName });
+  } catch (error: any) {
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    console.error('Error uploading image:', error);
+    res.status(500).json({ message: 'Error uploading image', error: error.message });
+  }
+});
+
+router.delete('/images/:filename', (req: Request, res: Response) => {
+  try {
+    const filename = path.basename(req.params.filename);
+    const targetPath = path.join(publicImagesPath, filename);
+
+    if (!fs.existsSync(targetPath)) {
+      return res.status(404).json({ message: `Image ${filename} not found.` });
+    }
+
+    fs.unlinkSync(targetPath);
+    res.json({ message: `Image ${filename} deleted successfully.` });
+  } catch (error: any) {
+    console.error('Error deleting image:', error);
+    res.status(500).json({ message: 'Error deleting image', error: error.message });
   }
 });
 
