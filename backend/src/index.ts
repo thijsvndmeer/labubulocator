@@ -56,16 +56,23 @@ const findImageRecursively = (filename: string, currentDir: string): string | nu
 app.use(express.json()); // Add this line to parse JSON request bodies
 
 // CORS Configuration
-const allowedOrigins = ["https://labubulocator.me","http://localhost:4173"];
+const allowedOrigins = ["https://labubulocator.me"];
+const localhostOriginPattern = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
+
 app.use(cors({
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
+
+    if (
+      allowedOrigins.includes(origin) ||
+      localhostOriginPattern.test(origin)
+    ) {
+      return callback(null, true);
     }
-    return callback(null, true);
+
+    const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+    return callback(new Error(msg), false);
   },
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   allowedHeaders: "Content-Type, x-admin-token", // Allow x-admin-token header
@@ -98,17 +105,12 @@ app.use("/images/:filename", (req, res, next) => {
 app.use("/api/labubus", labubuRoutes);
 app.use("/api/listings", listingRoutes);
 
-const isLocalhostOnly = ["localhost", "127.0.0.1", "::1"].includes(
-  (process.env.HOST ?? "").toLowerCase(),
-);
-const allowAdminApi =
-  process.env.ALLOW_REMOTE_ADMIN === "true" ||
-  isLocalhostOnly;
+const allowAdminApi = Boolean(process.env.ADMIN_SECRET_TOKEN);
 
 if (allowAdminApi) {
   app.use("/admin-api", adminLabubuRoutes); // Mount new admin API routes
 } else {
-  console.warn("Admin API disabled: set HOST to localhost or ALLOW_REMOTE_ADMIN=true to enable.");
+  console.warn("Admin API disabled: set ADMIN_SECRET_TOKEN to enable.");
 }
 
 //============================================================================================================================================================================================
