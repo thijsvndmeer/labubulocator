@@ -3,7 +3,6 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RarityBadge } from '@/components/RarityBadge';
-import { VolatilityMetric } from '@/components/VolatilityMetric';
 import { StockStatusBadge } from '@/components/StockStatusBadge';
 import { PriceComparison } from '@/components/PriceComparison';
 import { PriceHistoryChart } from '@/components/PriceHistoryChart';
@@ -266,9 +265,9 @@ export default function VariantDetail() {
                         {/* Price Info */}
 
                         <Card className="p-6 bg-gradient-primary relative">
-                          <div className="space-y-4">
-                            <div>
-                              <p className="text-sm text-primary-foreground/80 mb-1">Estimated Market Value</p>
+                            <div className="space-y-4">
+                              <div>
+                                <p className="text-sm text-primary-foreground/80 mb-1">Estimated Market Value</p>
                               <div className="flex items-baseline gap-3">
                                 <span className="text-4xl font-bold text-primary-foreground">
                                   {typeof mergedVariant.estimatedValue === 'number' ? `$${mergedVariant.estimatedValue.toFixed(2)}` : '--.--'}
@@ -278,15 +277,6 @@ export default function VariantDetail() {
                                 </span>
                               </div>
                             </div>
-          
-                            {mergedVariant.priceRange && (
-                              <div className="flex items-center gap-4 text-sm text-primary-foreground/90">
-                                <div>
-                                  <span className="text-primary-foreground/70">Past Week Range: </span>
-                                  <span className="font-semibold">{typeof mergedVariant.priceRange.low === 'number' ? `$${mergedVariant.priceRange.low.toFixed(2)}` : '--.--'} - {typeof mergedVariant.priceRange.high === 'number' ? `$${mergedVariant.priceRange.high.toFixed(2)}` : '--.--'}</span>
-                                </div>
-                              </div>
-                            )}
 
                             <div className="flex items-center gap-4 text-sm text-primary-foreground/90">
                               <div>
@@ -294,8 +284,6 @@ export default function VariantDetail() {
                                 <span className="font-semibold">{typeof mergedVariant.msrp === 'number' ? `$${mergedVariant.msrp.toFixed(2)}` : '--.--'}</span>
                               </div>
                             </div>
-          
-                            <VolatilityMetric volatility={mergedVariant.volatility || 0} />
                           </div>
                         </Card>
 
