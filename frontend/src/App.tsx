@@ -9,18 +9,36 @@ import { api } from './lib/api';
 import Spinner from "./components/Spinner";
 import { Header } from "./components/Header";
 // import { ThemeUpdater } from "./components/ThemeUpdater";
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense, type ComponentType } from "react";
 
-const Index = lazy(() => import("./pages/Index"));
-// const VariantDetail = lazy(() => import("./pages/VariantDetail"));
-// const NotFound = lazy(() => import("./pages/NotFound"));
-// const CatalogPage = lazy(() => import("./pages/Catalog").then(module => ({ default: module.CatalogPage })));
-// const FavoritesPage = lazy(() => import("./pages/Favorites").then(module => ({ default: module.FavoritesPage })));
-// const Collection = lazy(() => import("./pages/Collection"));
-// const SharedCollection = lazy(() => import("./pages/SharedCollection"));
-// const SharedFavorites = lazy(() => import("./pages/SharedFavorites"));
-// const Random = lazy(() => import("./pages/Random"));
-// const Admin = lazy(() => import("./pages/Admin"));
+const lazyPage = <T extends { default?: ComponentType<any> }>(
+  loader: () => Promise<T>,
+  exportName?: keyof T,
+) =>
+  lazy(async () => {
+    const module = await loader();
+    const component =
+      (exportName ? module[exportName] : module.default) ??
+      module.default ??
+      (exportName ? (module as Record<string, ComponentType<any> | undefined>)[exportName as string] : undefined);
+
+    if (!component) {
+      throw new Error(`Failed to load component${exportName ? `: ${String(exportName)}` : ""}`);
+    }
+
+    return { default: component as ComponentType<any> };
+  });
+
+const Index = lazyPage(() => import("./pages/Index"), "Index");
+const VariantDetail = lazyPage(() => import("./pages/VariantDetail"));
+const NotFound = lazyPage(() => import("./pages/NotFound"));
+const CatalogPage = lazyPage(() => import("./pages/Catalog"));
+const FavoritesPage = lazyPage(() => import("./pages/Favorites"));
+const Collection = lazyPage(() => import("./pages/Collection"));
+const SharedCollection = lazyPage(() => import("./pages/SharedCollection"));
+const SharedFavorites = lazyPage(() => import("./pages/SharedFavorites"));
+const Random = lazyPage(() => import("./pages/Random"));
+const Admin = lazyPage(() => import("./pages/Admin"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -69,16 +87,19 @@ export const AppContent = () => {
       <Suspense fallback={<Spinner />}>
         <Routes>
           <Route path="/" element={<Index />} />
-          {/* <Route path="/catalog" element={<CatalogPage searchQuery={searchQuery} setSearchQuery={setSearchQuery} />} /> */}
-          {/* <Route path="/variant/:sku" element={<VariantDetail />} /> */}
-          {/* <Route path="/favorites" element={<FavoritesPage />} /> */}
-          {/* <Route path="/collection" element={<Collection />} /> */}
-          {/* <Route path="/sharedcollection" element={<SharedCollection />} /> */}
-          {/* <Route path="/sharedfavorites" element={<SharedFavorites />} /> */}
-          {/* <Route path="/random" element={<Random />} /> */}
-          {/* <Route path="/admin" element={<Admin />} /> */}
+          <Route
+            path="/catalog"
+            element={<CatalogPage searchQuery={searchQuery} setSearchQuery={setSearchQuery} />}
+          />
+          <Route path="/variant/:sku" element={<VariantDetail />} />
+          <Route path="/favorites" element={<FavoritesPage />} />
+          <Route path="/collection" element={<Collection />} />
+          <Route path="/sharedcollection" element={<SharedCollection />} />
+          <Route path="/sharedfavorites" element={<SharedFavorites />} />
+          <Route path="/random" element={<Random />} />
+          <Route path="/admin" element={<Admin />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          {/* <Route path="*" element={<NotFound />} /> */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </>

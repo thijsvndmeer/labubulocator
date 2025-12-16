@@ -137,3 +137,5 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
     </div>
   );
 };
+
+export default CatalogPage;
