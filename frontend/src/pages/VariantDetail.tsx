@@ -91,6 +91,8 @@ export default function VariantDetail() {
     };
   }, [variant, listings, priceHistory]);
 
+  const hasStockxSource = !!mergedVariant?.kicksdevId;
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -339,12 +341,19 @@ export default function VariantDetail() {
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-2xl font-bold">{typeof mergedVariant.stockxPrice === 'number' ? `$${mergedVariant.stockxPrice.toFixed(2)}` : '--.--'}</span>
-                              <Button size="sm" asChild>
-                                <a href={`https://stockx.com/${mergedVariant.kicksdevId}`} target="_blank" rel="noopener noreferrer">
+                              {hasStockxSource ? (
+                                <Button size="sm" asChild>
+                                  <a href={`https://stockx.com/${mergedVariant.kicksdevId}`} target="_blank" rel="noopener noreferrer">
+                                    View on StockX
+                                    <ExternalLink className="h-3 w-3 ml-1" />
+                                  </a>
+                                </Button>
+                              ) : (
+                                <Button size="sm" variant="secondary" disabled className="opacity-60 cursor-not-allowed">
                                   View on StockX
                                   <ExternalLink className="h-3 w-3 ml-1" />
-                                </a>
-                              </Button>
+                                </Button>
+                              )}
                             </div>
                           </Card>
 
