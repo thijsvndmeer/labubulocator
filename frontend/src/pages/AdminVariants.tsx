@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/table';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 const AdminVariants = () => {
   const queryClient = useQueryClient();
@@ -22,10 +23,12 @@ const AdminVariants = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileInputKey, setFileInputKey] = useState(0);
   const [lastUploadSummary, setLastUploadSummary] = useState<string | null>(null);
+  const { token } = useAdminAuth();
 
   const { data: labubus, isLoading, error } = useQuery<Variant[]>({
     queryKey: ['adminVariants'],
     queryFn: () => api.admin.labubus.get(),
+    enabled: !!token,
   });
 
   const deleteMutation = useMutation({
@@ -90,6 +93,10 @@ const AdminVariants = () => {
       deleteMutation.mutate(sku);
     }
   };
+
+  if (!token) {
+    return <div className="text-sm text-muted-foreground">Enter an admin token to manage variants.</div>;
+  }
 
   if (isLoading) {
     return <div>Loading variants...</div>;

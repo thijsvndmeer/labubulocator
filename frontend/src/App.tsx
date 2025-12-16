@@ -4,12 +4,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { api } from './lib/api';
 import Spinner from "./components/Spinner";
 import { Header } from "./components/Header";
 import { ThemeUpdater } from "./components/ThemeUpdater";
 import { useState, useEffect, lazy, Suspense } from "react";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
 const Index = lazy(() => import("./pages/Index"));
 const VariantDetail = lazy(() => import("./pages/VariantDetail"));
@@ -21,6 +22,9 @@ const SharedCollection = lazy(() => import("./pages/SharedCollection"));
 const SharedFavorites = lazy(() => import("./pages/SharedFavorites"));
 const Random = lazy(() => import("./pages/Random"));
 const Admin = lazy(() => import("./pages/Admin"));
+const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage"));
+const AddVariant = lazy(() => import("./pages/AddVariant"));
+const EditVariant = lazy(() => import("./pages/EditVariant"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,6 +45,7 @@ export const AppContent = () => {
     return storedSearchQuery || '';
   });
   const location = useLocation();
+  const isLocalAdmin = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 
   useEffect(() => {
     localStorage.setItem('searchQuery', searchQuery);
@@ -76,7 +81,37 @@ export const AppContent = () => {
           <Route path="/sharedcollection" element={<SharedCollection />} />
           <Route path="/sharedfavorites" element={<SharedFavorites />} />
           <Route path="/random" element={<Random />} />
-          <Route path="/admin" element={<Admin />} />
+          {isLocalAdmin ? (
+            <>
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route
+                path="/admin"
+                element={(
+                  <ProtectedAdminRoute>
+                    <Admin />
+                  </ProtectedAdminRoute>
+                )}
+              />
+              <Route
+                path="/admin/variants/add"
+                element={(
+                  <ProtectedAdminRoute>
+                    <AddVariant />
+                  </ProtectedAdminRoute>
+                )}
+              />
+              <Route
+                path="/admin/variants/edit/:sku"
+                element={(
+                  <ProtectedAdminRoute>
+                    <EditVariant />
+                  </ProtectedAdminRoute>
+                )}
+              />
+            </>
+          ) : (
+            <Route path="/admin/*" element={<Navigate to="/" replace />} />
+          )}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
