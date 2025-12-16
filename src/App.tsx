@@ -1,5 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster as Sonner } = "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, useLocation } from "react-router-dom";
@@ -15,12 +15,15 @@ import Random from "./pages/Random";
 import Slots from "./pages/Slots"; // Import the Slots component
 import { Header } from "./components/Header";
 import { useState, useEffect, lazy, Suspense } from "react";
-import LoadingSpinner from "./components/LoadingSpinner"; // Assuming you have a LoadingSpinner component
+import LoadingSpinner from "./components/LoadingSpinner";
+import ProtectedAdminRoute from './components/ProtectedAdminRoute'; // Import ProtectedAdminRoute
+import { useAdminAuth } from './hooks/useAdminAuth'; // Import useAdminAuth
 
-const Admin = lazy(() => import("../frontend/src/pages/Admin")); // Corrected path
+const Admin = lazy(() => import("../frontend/src/pages/Admin"));
 const AdminVariants = lazy(() => import("../frontend/src/pages/AdminVariants"));
 const AddVariant = lazy(() => import("../frontend/src/pages/AddVariant"));
 const EditVariant = lazy(() => import("../frontend/src/pages/EditVariant"));
+const AdminLoginPage = lazy(() => import("../frontend/src/pages/AdminLoginPage"));
 
 const queryClient = new QueryClient();
 
@@ -30,6 +33,7 @@ export const AppContent = () => {
     return storedSearchQuery || '';
   });
   const location = useLocation();
+  const { isAuthenticated } = useAdminAuth(); // Use the auth hook
 
   useEffect(() => {
     localStorage.setItem('searchQuery', searchQuery);
@@ -41,7 +45,6 @@ export const AppContent = () => {
     if (search) {
       setSearchQuery(search);
     } else {
-      // Only clear search query if it's not coming from localStorage
       const storedSearchQuery = localStorage.getItem('searchQuery');
       if (!storedSearchQuery) {
         setSearchQuery('');
@@ -49,7 +52,7 @@ export const AppContent = () => {
     }
   }, [location.search, setSearchQuery]);
 
-  const showHeader = !location.pathname.startsWith("/variant/") && !location.pathname.startsWith("/admin") && location.pathname !== "/random"; // Exclude admin paths from showing header
+  const showHeader = !location.pathname.startsWith("/variant/") && !location.pathname.startsWith("/admin") && location.pathname !== "/random";
 
   return (
     <>
@@ -63,13 +66,19 @@ export const AppContent = () => {
         <Route path="/sharedcollection" element={<SharedCollection />} />
         <Route path="/sharedfavorites" element={<SharedFavorites />} />
         <Route path="/random" element={<Random />} />
-        <Route path="/slots" element={<Slots />} /> {/* Add the Slots route */}
-        {/* Admin routes */}
-        <Route path="/admin" element={<Suspense fallback={<LoadingSpinner />}><Admin /></Suspense>} />
-        <Route path="/admin/variants" element={<Suspense fallback={<LoadingSpinner />}><AdminVariants /></Suspense>} />
-        <Route path="/admin/variants/add" element={<Suspense fallback={<LoadingSpinner />}><AddVariant /></Suspense>} />
-        <Route path="/admin/variants/edit/:sku" element={<Suspense fallback={<LoadingSpinner />}><EditVariant /></Suspense>} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="/slots" element={<Slots />} />
+
+        {/* Admin Login Route */}
+        <Route path="/admin/login" element={<Suspense fallback={<LoadingSpinner />}><AdminLoginPage /></Suspense>} />
+
+        {/* Protected Admin Routes */}
+        <Route element={<ProtectedAdminRoute />}>
+          <Route path="/admin" element={<Suspense fallback={<LoadingSpinner />}><Admin /></Suspense>} />
+          <Route path="/admin/variants" element={<Suspense fallback={<LoadingSpinner />}><AdminVariants /></Suspense>} />
+          <Route path="/admin/variants/add" element={<Suspense fallback={<LoadingSpinner />}><AddVariant /></Suspense>} />
+          <Route path="/admin/variants/edit/:sku" element={<Suspense fallback={<LoadingSpinner />}><EditVariant /></Suspense>} />
+        </Route>
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>

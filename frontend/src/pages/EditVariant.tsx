@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { Labubu } from '@labubu/common'; // Assuming Labubu type is correct
+import { Labubu } from '@labubu/common';
 import { CatalogVariantFormState, buildCatalogPayload } from '@/components/admin/catalogTypes';
 import {
   Card,
@@ -23,29 +23,52 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
-// Define initial form state for editing
-const initialVariantState: CatalogVariantFormState = {
-  sku: '',
-  name: '',
-  series: '',
-  rarity: 'common',
-  description: '',
-  msrp: undefined,
-  variant: '',
-  stockStatus: '',
-  kicksdevId: '',
-  ebaySearchOverride: '',
-};
+// Define the form schema for editing a Variant item
+const variantFormSchema = z.object({
+  sku: z.string().min(1, 'SKU is required.'),
+  name: z.string().min(1, 'Name is required.'),
+  series: z.string().min(1, 'Series is required.'),
+  rarity: z.enum(['common', 'rare', 'secret', 'chase']), // Matches Rarity type
+  description: z.string().optional(),
+  msrp: z.preprocess(
+    (a) => parseFloat(z.string().parse(a)),
+    z.number().min(0, 'MSRP must be a positive number.').optional().or(z.literal(NaN))
+  ).optional(),
+  variant: z.string().optional(),
+  stockStatus: z.string().optional(), // Could be more specific if StockStatus enum is available
+  kicksdevId: z.string().optional(),
+  ebaySearchOverride: z.string().optional(),
+}).transform((data) => ({
+  ...data,
+  msrp: isNaN(data.msrp as number) ? undefined : data.msrp,
+}));
 
 const EditVariant = () => {
   const { sku } = useParams<{ sku: string }>();
-  const [variant, setVariant] = useState<CatalogVariantFormState>(initialVariantState);
-  const [originalRecord, setOriginalRecord] = useState<Labubu | null>(null);
-  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  const form = useForm<z.infer<typeof variantFormSchema>>({
+    resolver: zodResolver(variantFormSchema),
+    defaultValues: {
+      sku: '',
+      name: '',
+      series: '',
+      rarity: 'common',
+      description: '',
+      msrp: undefined,
+      variant: '',
+      stockStatus: '',
+      kicksdevId: '',
+      ebaySearchOverride: '',
+    },
+  });
 
   // Fetch existing variant data
   const { data: existingVariant, isLoading: isLoadingVariant, error: variantError } = useQuery<Labubu>({
@@ -56,30 +79,31 @@ const EditVariant = () => {
 
   useEffect(() => {
     if (existingVariant) {
-      setOriginalRecord(existingVariant);
-      setVariant({
+      // Set form values from existingVariant
+      form.reset({
         sku: existingVariant.sku,
         name: existingVariant.name,
         series: existingVariant.series,
         rarity: existingVariant.rarity,
-        description: existingVariant.description || '',
-        msrp: existingVariant.msrp,
-        variant: existingVariant.variant || '',
-        kicksdevId: existingVariant.kicksdevId,
-        ebaySearchOverride: existingVariant.ebaySearchOverride,
-        stockStatus: existingVariant.stockStatus || '',
+        description: existingVariant.description || undefined,
+        msrp: existingVariant.msrp || undefined,
+        variant: existingVariant.variant || undefined,
+        stockStatus: existingVariant.stockStatus || undefined,
+        kicksdevId: existingVariant.kicksdevId || undefined,
+        ebaySearchOverride: existingVariant.ebaySearchOverride || undefined,
       });
     }
-  }, [existingVariant]);
+  }, [existingVariant, form]);
 
   const updateMutation = useMutation({
     mutationFn: (updatedVariant: CatalogVariantFormState) => {
-      if (!originalRecord) {
+      // The originalRecord logic was tied to a local state, now we use existingVariant
+      if (!existingVariant) {
         throw new Error('Unable to update without the original variant entry.');
       }
       const payload = {
-        ...originalRecord,
-        ...buildCatalogPayload(updatedVariant),
+        ...existingVariant, // Use all existing variant data
+        ...buildCatalogPayload(updatedVariant), // Overlay with updated form data
       };
       return api.admin.labubus.update(sku!, payload);
     },
@@ -90,7 +114,7 @@ const EditVariant = () => {
         title: 'Success',
         description: 'Variant updated successfully.',
       });
-      navigate('/admin/variants'); // Changed navigation target
+      navigate('/admin/variants');
     },
     onError: (err) => {
       toast({
@@ -101,28 +125,13 @@ const EditVariant = () => {
     },
   });
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { id, value } = e.target;
-    const numericFields = new Set(['msrp']);
-    setVariant((prev) => ({
-      ...prev,
-      [id]: numericFields.has(id) ? Number(value) : value,
-    }));
-  }, []);
-
-  const handleSelectChange = useCallback((id: string, value: string) => {
-    setVariant((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
-  }, []);
-
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    await updateMutation.mutateAsync(variant);
-    setLoading(false);
-  }, [variant, updateMutation]);
+  const onSubmit = useCallback(async (values: z.infer<typeof variantFormSchema>) => {
+    const payload = {
+      ...values,
+      msrp: values.msrp === undefined || values.msrp === null ? undefined : Number(values.msrp),
+    };
+    await updateMutation.mutateAsync(payload as CatalogVariantFormState);
+  }, [updateMutation]);
 
   if (isLoadingVariant) {
     return <div>Loading variant data...</div>;
@@ -134,109 +143,172 @@ const EditVariant = () => {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-3xl font-bold">Edit Variant Item: {variant.name} ({variant.sku})</h1>
+      <h1 className="text-3xl font-bold">Edit Variant Item: {existingVariant?.name} ({existingVariant?.sku})</h1>
       <Card>
         <CardHeader>
           <CardTitle>Variant Details</CardTitle>
           <CardDescription>Edit the details for this variant.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="grid gap-2">
-              <Label htmlFor="sku">SKU</Label>
-              <Input
-                id="sku"
-                value={variant.sku}
-                onChange={handleChange}
-                required
-                disabled // SKU should not be editable
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="sku"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>SKU</FormLabel>
+                    <FormControl>
+                      <Input {...field} disabled /> {/* SKU should not be editable */}
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                value={variant.name}
-                onChange={handleChange}
-                required
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} required />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="series">Series</Label>
-              <Input
-                id="series"
-                value={variant.series}
-                onChange={handleChange}
-                required
+              <FormField
+                control={form.control}
+                name="series"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Series</FormLabel>
+                    <FormControl>
+                      <Input {...field} required />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="rarity">Rarity</Label>
-              <Select onValueChange={(value) => handleSelectChange('rarity', value)} value={variant.rarity}>
-                <SelectTrigger id="rarity">
-                  <SelectValue placeholder="Select a rarity" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="common">Common</SelectItem>
-                  <SelectItem value="rare">Rare</SelectItem>
-                  <SelectItem value="secret">Secret</SelectItem>
-                  <SelectItem value="chase">Chase</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="msrp">MSRP</Label>
-              <Input
-                id="msrp"
-                type="number"
-                step="0.01"
-                value={variant.msrp ?? ''}
-                onChange={handleChange}
+              <FormField
+                control={form.control}
+                name="rarity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Rarity</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a rarity" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="common">Common</SelectItem>
+                        <SelectItem value="rare">Rare</SelectItem>
+                        <SelectItem value="secret">Secret</SelectItem>
+                        <SelectItem value="chase">Chase</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={variant.description || ''}
-                onChange={handleChange}
-                rows={3}
+              <FormField
+                control={form.control}
+                name="msrp"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>MSRP</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        {...field}
+                        value={field.value === undefined ? '' : field.value}
+                        onChange={(e) => field.onChange(e.target.value === '' ? undefined : e.target.value)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="stockStatus">Stock Status</Label>
-              <Input
-                id="stockStatus"
-                value={variant.stockStatus || ''}
-                onChange={handleChange}
-                placeholder="e.g., in_stock"
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        rows={3}
+                        {...field}
+                        value={field.value === undefined ? '' : field.value}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="kicksdevId">KicksDev ID</Label>
-              <Input
-                id="kicksdevId"
-                value={variant.kicksdevId || ''}
-                onChange={handleChange}
+              <FormField
+                control={form.control}
+                name="stockStatus"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Stock Status</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., in_stock"
+                        {...field}
+                        value={field.value === undefined ? '' : field.value}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="ebaySearchOverride">eBay Search Override</Label>
-              <Input
-                id="ebaySearchOverride"
-                value={variant.ebaySearchOverride || ''}
-                onChange={handleChange}
+              <FormField
+                control={form.control}
+                name="kicksdevId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>KicksDev ID</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value === undefined ? '' : field.value}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="col-span-1 md:col-span-2 flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => navigate('/admin/variants')}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Updating...' : 'Update Variant'}
-              </Button>
-            </div>
-          </form>
+              <FormField
+                control={form.control}
+                name="ebaySearchOverride"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>eBay Search Override</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value === undefined ? '' : field.value}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="col-span-1 md:col-span-2 flex justify-end gap-2">
+                <Button type="button" variant="outline" onClick={() => navigate('/admin/variants')}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={updateMutation.isPending}>
+                  {updateMutation.isPending ? 'Updating...' : 'Update Variant'}
+                </Button>
+              </div>
+            </form>
+          </Form>
         </CardContent>
       </Card>
     </div>
