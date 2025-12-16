@@ -13,13 +13,25 @@ const isLocalRequest = (req: Request) => {
   return remoteAddress === '127.0.0.1' || remoteAddress === '::1';
 };
 
+const isLocalOrigin = (origin?: string) => {
+  if (!origin) return false;
+
+  try {
+    const { hostname } = new URL(origin);
+    return ['localhost', '127.0.0.1', '::1'].includes(hostname);
+  } catch (error) {
+    console.warn('Invalid origin header on admin request:', origin);
+    return false;
+  }
+};
+
 const restrictToLocalhost = (req: Request, res: Response, next: NextFunction) => {
   if (process.env.ALLOW_REMOTE_ADMIN === 'true') {
     return next();
   }
 
-  if (!isLocalRequest(req)) {
-    return res.status(403).json({ message: 'Admin API is only available from localhost.' });
+  if (!isLocalRequest(req) && !isLocalOrigin(req.headers.origin)) {
+    return res.status(403).json({ message: 'Admin API is only available from localhost-origin requests.' });
   }
 
   next();
