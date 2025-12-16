@@ -68,9 +68,6 @@ export const AppContent = () => {
         <Route path="/random" element={<Random />} />
         <Route path="/slots" element={<Slots />} />
 
-        {/* Admin Login Route */}
-        <Route path="/admin/login" element={<Suspense fallback={<LoadingSpinner />}><AdminLoginPage /></Suspense>} />
-
         {/* Protected Admin Routes */}
         <Route element={<ProtectedAdminRoute />}>
           <Route path="/admin" element={<Suspense fallback={<LoadingSpinner />}><Admin /></Suspense>} />

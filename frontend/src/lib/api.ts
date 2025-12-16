@@ -49,12 +49,18 @@ async function fetchFromApi<T>(path: string, options?: HttpOptions<T>): Promise<
 }
 
 // Generic fetch function for admin API calls
-async function adminFetch<T>(path: string, method: string, data?: any | FormData, token?: string): Promise<T> {
+async function adminFetch<T>(path: string, method: string, data?: any | FormData): Promise<T> {
   const url = new URL(`${ADMIN_API_BASE_URL}${path}`);
   const headers: HeadersInit = {};
 
+  // Automatically retrieve token from localStorage
+  const token = localStorage.getItem('adminToken');
   if (token) {
     headers['x-admin-token'] = token;
+  } else {
+    console.warn(`Admin API call to ${path} made without a token.`);
+    // If a token is mandatory for all admin calls, consider throwing an error here.
+    // throw new Error('Admin token is missing. Please log in.');
   }
 
   let body: BodyInit | undefined;
@@ -76,12 +82,11 @@ async function adminFetch<T>(path: string, method: string, data?: any | FormData
     throw new Error(`Admin API request failed with status ${response.status}: ${errorBody}`);
   }
 
-  // Handle cases where the response might be empty (e.g., successful delete)
   const contentType = response.headers.get('content-type');
   if (contentType && contentType.includes('application/json')) {
     return response.json();
   }
-  return {} as T; // Return an empty object if no JSON content
+  return {} as T;
 }
 
 
@@ -97,15 +102,15 @@ export const api = {
   },
   admin: {
     labubus: {
-      get: async (token?: string) => adminFetch<Variant[]>('/labubus', 'GET', undefined, token),
-      getBySku: async (sku: string, token?: string) => adminFetch<Variant>(`/labubus/${sku}`, 'GET', undefined, token),
-      create: async (variant: Partial<Variant>, token?: string) => adminFetch<Variant>('/labubus', 'POST', variant, token),
-      update: async (sku: string, variant: Partial<Variant>, token?: string) => adminFetch<Variant>(`/labubus/${sku}`, 'PUT', variant, token),
-      delete: async (sku: string, token?: string) => adminFetch<void>(`/labubus/${sku}`, 'DELETE', undefined, token),
-      uploadCatalog: async (file: File, token?: string) => {
+      get: async () => adminFetch<Variant[]>('/labubus', 'GET'),
+      getBySku: async (sku: string) => adminFetch<Variant>(`/labubus/${sku}`, 'GET'),
+      create: async (variant: Partial<Variant>) => adminFetch<Variant>('/labubus', 'POST', variant),
+      update: async (sku: string, variant: Partial<Variant>) => adminFetch<Variant>(`/labubus/${sku}`, 'PUT', variant),
+      delete: async (sku: string) => adminFetch<void>(`/labubus/${sku}`, 'DELETE'),
+      uploadCatalog: async (file: File) => {
         const formData = new FormData();
         formData.append('file', file);
-        return adminFetch<{ message: string; processed: number }>('/labubus/upload', 'POST', formData, token);
+        return adminFetch<{ message: string; processed: number }>('/labubus/upload', 'POST', formData);
       },
     },
   },

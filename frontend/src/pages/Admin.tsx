@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { AdminConfig } from '@/types/admin-config';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ import { ThemeConfigEditor } from '@/components/admin/ThemeConfigEditor';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { useAdminAuth } from '@/hooks/useAdminAuth'; // Import useAdminAuth
 
 const AdminVariants = lazy(() => import('./AdminVariants')); // Lazy load AdminVariants
 
@@ -65,7 +67,7 @@ const Admin = () => {
   const [catalogText, setCatalogText] = useState('');
   const [navigationText, setNavigationText] = useState('');
   const [featureFlagsText, setFeatureFlagsText] = useState('');
-  const [token, setToken] = useState(() => localStorage.getItem('adminToken') || '');
+  const [token, setToken] = useState(() => localStorage.getItem('adminToken') || ''); // Keep this for saving configs
   const [isSaving, setIsSaving] = useState(false);
   const [showUiContentEditor, setShowUiContentEditor] = useState(true);
   const [showUiFeatureFlagsEditor, setShowUiFeatureFlagsEditor] = useState(true);
@@ -73,6 +75,14 @@ const Admin = () => {
   const [showUiNavigationEditor, setShowUiNavigationEditor] = useState(true);
   const [showUiCatalogEditor, setShowUiCatalogEditor] = useState(true);
   const [showUiThemeEditor, setShowUiThemeEditor] = useState(true);
+
+  const { logout } = useAdminAuth(); // Use the logout function
+  const navigate = useNavigate(); // Import useNavigate
+
+  const handleLogout = () => {
+    logout();
+    navigate('/'); // Navigate to a non-protected route to force re-evaluation
+  };
 
   const setEditorsFromConfig = (config: AdminConfig) => {
     setThemeText(toPretty(config.theme));
@@ -232,6 +242,9 @@ const Admin = () => {
             placeholder="Provide ADMIN_TOKEN if set"
             className="min-w-[240px]"
           />
+          <Button onClick={logout} variant="outline" className="min-w-[80px]">
+            Logout
+          </Button>
         </div>
       </div>
 

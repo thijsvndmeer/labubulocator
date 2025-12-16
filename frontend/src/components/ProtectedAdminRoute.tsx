@@ -1,7 +1,9 @@
-import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+import React, { lazy, Suspense } from 'react';
+import { Outlet } from 'react-router-dom';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import LoadingSpinner from './LoadingSpinner';
+
+const AdminLoginPage = lazy(() => import('../pages/AdminLoginPage')); // Lazy load AdminLoginPage
 
 interface ProtectedAdminRouteProps {
   children?: React.ReactNode;
@@ -11,13 +13,15 @@ const ProtectedAdminRoute: React.FC<ProtectedAdminRouteProps> = ({ children }) =
   const { isAuthenticated } = useAdminAuth();
 
   if (!isAuthenticated) {
-    // Redirect them to the /admin/login page, but save the current location they were
-    // trying to go to when they were redirected. This allows us to send them along
-    // to that page after they login, which is a nicer user experience than
-    // sending them to the root page.
-    return <Navigate to="/admin/login" replace />;
+    // If not authenticated, directly render the AdminLoginPage
+    return (
+      <Suspense fallback={<LoadingSpinner />}>
+        <AdminLoginPage />
+      </Suspense>
+    );
   }
 
+  // If authenticated, render the children (the protected routes)
   return children ? <>{children}</> : <Outlet />;
 };
 
