@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { VariantCard } from '@/components/VariantCard';
 import heroBanner from '@/assets/hero-banner.jpg';
 import { TrendingUp } from 'lucide-react';
@@ -29,9 +29,27 @@ const Index = () => {
     loadVariants();
   }, []);
 
-  const trendingVariants = variants
-    .sort((a, b) => (b.lowestPrice || 0) - (a.lowestPrice || 0))
-    .slice(0, 15);
+  const sortedVariants = useMemo(() => {
+    let sorted = [...variants];
+    const sortBy = layout.homepage.trendingCarousel.trendingSortBy;
+
+    if (sortBy === 'lowestPrice') {
+      sorted.sort((a, b) => (b.lowestPrice || 0) - (a.lowestPrice || 0));
+    } else if (sortBy === 'biggestLoss24h') {
+      sorted.sort((a, b) => {
+        const aChange = a.priceChange24h || 0;
+        const bChange = b.priceChange24h || 0;
+        return aChange - bChange;
+      });
+    } else if (sortBy === 'biggestGain24h') {
+      sorted.sort((a, b) => {
+        const aChange = a.priceChange24h || 0;
+        const bChange = b.priceChange24h || 0;
+        return bChange - aChange;
+      });
+    }
+    return sorted.slice(0, 15);
+  }, [variants, layout.homepage.trendingCarousel.trendingSortBy]);
 
   const carouselConfig = layout.homepage.trendingCarousel;
 
@@ -60,38 +78,41 @@ const Index = () => {
 
       <div className="container mx-auto px-4 py-12 space-y-16">
         {/* Trending Section */}
-        <section>
-          <div className="flex items-center gap-3 mb-8">
-            <TrendingUp className="h-8 w-8 text-primary" />
-            <div>
-              <h2 className="text-3xl font-bold">{content.trending.title}</h2>
-              <p className="text-muted-foreground">{content.trending.description}</p>
+        {console.log({ showTrendingCarousel: layout.homepage.showTrendingCarousel })}
+        {layout.homepage.showTrendingCarousel && (
+          <section>
+            <div className="flex items-center gap-3 mb-8">
+              <TrendingUp className="h-8 w-8 text-primary" />
+              <div>
+                <h2 className="text-3xl font-bold">{content.trending.title}</h2>
+                <p className="text-muted-foreground">{content.trending.description}</p>
+              </div>
             </div>
-          </div>
 
-          <Carousel
-            opts={{
-              align: carouselConfig.align as any,
-              loop: carouselConfig.loop,
-            }}
-            className="w-full"
-          >
-            <CarouselContent>
-              {trendingVariants.map((variant) => (
-                <CarouselItem
-                  key={variant.sku}
-                  className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
-                >
-                  <div className="p-1">
-                    <VariantCard variant={variant} />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
-          </Carousel>
-        </section>
+            <Carousel
+              opts={{
+                align: carouselConfig.align as any,
+                loop: carouselConfig.loop,
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {sortedVariants.map((variant) => (
+                  <CarouselItem
+                    key={variant.sku}
+                    className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
+                  >
+                    <div className="p-1">
+                      <VariantCard variant={variant} />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          </section>
+        )}
 
         {/* Footer */}
         <footer className="text-center py-8 border-t">

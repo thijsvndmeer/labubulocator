@@ -8,6 +8,18 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { ContentConfigEditor } from '@/components/admin/ContentConfigEditor';
+import { ContentConfig, FeatureFlags, LayoutConfig, NavigationConfig, ThemeConfig } from '@/types/admin-config';
+import { themeConfig as initialThemeConfig } from '@/config/theme.config';
+import { layoutConfig as initialLayoutConfig } from '@/config/layout.config';
+import { contentConfig as initialContentConfig } from '@/config/content.config';
+import { catalogConfig as initialCatalogConfig } from '@/config/catalog.config';
+import { navigationConfig as initialNavigationConfig } from '@/config/navigation.config';
+import { featureFlags as initialFeatureFlags } from '@/config/feature-flags';
+import { FeatureFlagsEditor } from '@/components/admin/FeatureFlagsEditor';
+import { LayoutConfigEditor } from '@/components/admin/LayoutConfigEditor';
+import { NavigationConfigEditor } from '@/components/admin/NavigationConfigEditor';
+import { CatalogConfigEditor } from '@/components/admin/CatalogConfigEditor';
+import { ThemeConfigEditor } from '@/components/admin/ThemeConfigEditor';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 
@@ -61,6 +73,11 @@ const Admin = () => {
   const [token, setToken] = useState(() => localStorage.getItem('adminToken') || '');
   const [isSaving, setIsSaving] = useState(false);
   const [showUiContentEditor, setShowUiContentEditor] = useState(true);
+  const [showUiFeatureFlagsEditor, setShowUiFeatureFlagsEditor] = useState(true);
+  const [showUiLayoutEditor, setShowUiLayoutEditor] = useState(true);
+  const [showUiNavigationEditor, setShowUiNavigationEditor] = useState(true);
+  const [showUiCatalogEditor, setShowUiCatalogEditor] = useState(true);
+  const [showUiThemeEditor, setShowUiThemeEditor] = useState(true);
 
   const setEditorsFromConfig = (config: AdminConfig) => {
     setThemeText(toPretty(config.theme));
@@ -212,12 +229,33 @@ const Admin = () => {
               <TabsTrigger value="featureFlags">Feature Flags</TabsTrigger>
             </TabsList>
             <TabsContent value="theme">
-              <JsonEditor
-                label="Theme"
-                value={themeText}
-                onChange={setThemeText}
-                resetValue={toPretty(loadedConfig?.theme ?? {})}
-              />
+              <div className="flex items-center space-x-2 mb-4">
+                <Switch
+                  id="toggle-theme-editor"
+                  checked={showUiThemeEditor}
+                  onCheckedChange={setShowUiThemeEditor}
+                />
+                <Label htmlFor="toggle-theme-editor">Show UI Editor</Label>
+              </div>
+              {showUiThemeEditor ? (
+                <ThemeConfigEditor
+                  value={(() => {
+                    try {
+                      return JSON.parse(themeText) as ThemeConfig;
+                    } catch {
+                      return loadedConfig?.theme || initialThemeConfig;
+                    }
+                  })()}
+                  onChange={(newConfig) => setThemeText(toPretty(newConfig))}
+                />
+              ) : (
+                <JsonEditor
+                  label="Theme"
+                  value={themeText}
+                  onChange={setThemeText}
+                  resetValue={toPretty(loadedConfig?.theme ?? {})}
+                />
+              )}
             </TabsContent>
             <TabsContent value="content">
               <div className="flex items-center space-x-2 mb-4">
@@ -234,7 +272,7 @@ const Admin = () => {
                     try {
                       return JSON.parse(contentText) as ContentConfig;
                     } catch {
-                      return {} as ContentConfig;
+                      return loadedConfig?.content || initialContentConfig;
                     }
                   })()}
                   onChange={(newConfig) => setContentText(toPretty(newConfig))}
@@ -249,36 +287,120 @@ const Admin = () => {
               )}
             </TabsContent>
             <TabsContent value="layout">
-              <JsonEditor
-                label="Layout"
-                value={layoutText}
-                onChange={setLayoutText}
-                resetValue={toPretty(loadedConfig?.layout ?? {})}
-              />
+              <div className="flex items-center space-x-2 mb-4">
+                <Switch
+                  id="toggle-layout-editor"
+                  checked={showUiLayoutEditor}
+                  onCheckedChange={setShowUiLayoutEditor}
+                />
+                <Label htmlFor="toggle-layout-editor">Show UI Editor</Label>
+              </div>
+              {showUiLayoutEditor ? (
+                <LayoutConfigEditor
+                  value={(() => {
+                    try {
+                      return JSON.parse(layoutText) as LayoutConfig;
+                    } catch {
+                      return loadedConfig?.layout || initialLayoutConfig;
+                    }
+                  })()}
+                  onChange={(newConfig) => setLayoutText(toPretty(newConfig))}
+                />
+              ) : (
+                <JsonEditor
+                  label="Layout"
+                  value={layoutText}
+                  onChange={setLayoutText}
+                  resetValue={toPretty(loadedConfig?.layout ?? {})}
+                />
+              )}
             </TabsContent>
             <TabsContent value="catalog">
-              <JsonEditor
-                label="Catalog"
-                value={catalogText}
-                onChange={setCatalogText}
-                resetValue={toPretty(loadedConfig?.catalog ?? {})}
-              />
+              <div className="flex items-center space-x-2 mb-4">
+                <Switch
+                  id="toggle-catalog-editor"
+                  checked={showUiCatalogEditor}
+                  onCheckedChange={setShowUiCatalogEditor}
+                />
+                <Label htmlFor="toggle-catalog-editor">Show UI Editor</Label>
+              </div>
+              {showUiCatalogEditor ? (
+                <CatalogConfigEditor
+                  value={(() => {
+                    try {
+                      return JSON.parse(catalogText) as CatalogConfig;
+                    } catch {
+                      return loadedConfig?.catalog || initialCatalogConfig;
+                    }
+                  })()}
+                  onChange={(newConfig) => setCatalogText(toPretty(newConfig))}
+                />
+              ) : (
+                <JsonEditor
+                  label="Catalog"
+                  value={catalogText}
+                  onChange={setCatalogText}
+                  resetValue={toPretty(loadedConfig?.catalog ?? {})}
+                />
+              )}
             </TabsContent>
             <TabsContent value="navigation">
-              <JsonEditor
-                label="Navigation"
-                value={navigationText}
-                onChange={setNavigationText}
-                resetValue={toPretty(loadedConfig?.navigation ?? {})}
-              />
+              <div className="flex items-center space-x-2 mb-4">
+                <Switch
+                  id="toggle-navigation-editor"
+                  checked={showUiNavigationEditor}
+                  onCheckedChange={setShowUiNavigationEditor}
+                />
+                <Label htmlFor="toggle-navigation-editor">Show UI Editor</Label>
+              </div>
+              {showUiNavigationEditor ? (
+                <NavigationConfigEditor
+                  value={(() => {
+                    try {
+                      return JSON.parse(navigationText) as NavigationConfig;
+                    } catch {
+                      return loadedConfig?.navigation || initialNavigationConfig;
+                    }
+                  })()}
+                  onChange={(newConfig) => setNavigationText(toPretty(newConfig))}
+                />
+              ) : (
+                <JsonEditor
+                  label="Navigation"
+                  value={navigationText}
+                  onChange={setNavigationText}
+                  resetValue={toPretty(loadedConfig?.navigation ?? {})}
+                />
+              )}
             </TabsContent>
             <TabsContent value="featureFlags">
-              <JsonEditor
-                label="Feature Flags"
-                value={featureFlagsText}
-                onChange={setFeatureFlagsText}
-                resetValue={toPretty(loadedConfig?.featureFlags ?? {})}
-              />
+              <div className="flex items-center space-x-2 mb-4">
+                <Switch
+                  id="toggle-featureflags-editor"
+                  checked={showUiFeatureFlagsEditor}
+                  onCheckedChange={setShowUiFeatureFlagsEditor}
+                />
+                <Label htmlFor="toggle-featureflags-editor">Show UI Editor</Label>
+              </div>
+              {showUiFeatureFlagsEditor ? (
+                <FeatureFlagsEditor
+                  value={(() => {
+                    try {
+                      return JSON.parse(featureFlagsText) as FeatureFlags;
+                    } catch {
+                      return loadedConfig?.featureFlags || initialFeatureFlags;
+                    }
+                  })()}
+                  onChange={(newConfig) => setFeatureFlagsText(toPretty(newConfig))}
+                />
+              ) : (
+                <JsonEditor
+                  label="Feature Flags"
+                  value={featureFlagsText}
+                  onChange={setFeatureFlagsText}
+                  resetValue={toPretty(loadedConfig?.featureFlags ?? {})}
+                />
+              )}
             </TabsContent>
           </Tabs>
           {validationError && (

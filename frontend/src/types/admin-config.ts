@@ -65,9 +65,11 @@ export interface ContentConfig {
 export interface LayoutConfig {
   homepage: {
     heroOverlay: boolean;
+    showTrendingCarousel: boolean;
     trendingCarousel: {
       loop: boolean;
-      align: string;
+      align: "start" | "center" | "end";
+      trendingSortBy: "lowestPrice" | "biggestLoss24h" | "biggestGain24h";
       slidesPerBreakpoint: {
         md: number;
         lg: number;
