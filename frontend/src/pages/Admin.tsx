@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 import { AdminConfig } from '@/types/admin-config';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -22,6 +22,9 @@ import { CatalogConfigEditor } from '@/components/admin/CatalogConfigEditor';
 import { ThemeConfigEditor } from '@/components/admin/ThemeConfigEditor';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import LoadingSpinner from '@/components/LoadingSpinner';
+
+const AdminVariants = lazy(() => import('./AdminVariants')); // Lazy load AdminVariants
 
 const toPretty = (value: unknown) => JSON.stringify(value, null, 2);
 
@@ -244,6 +247,7 @@ const Admin = () => {
               <TabsTrigger value="catalog">Catalog</TabsTrigger>
               <TabsTrigger value="navigation">Navigation</TabsTrigger>
               <TabsTrigger value="featureFlags">Feature Flags</TabsTrigger>
+              <TabsTrigger value="variants">Variants</TabsTrigger>
             </TabsList>
             <TabsContent value="theme">
               <div className="flex items-center space-x-2 mb-4">
@@ -418,6 +422,11 @@ const Admin = () => {
                   resetValue={toPretty(loadedConfig?.featureFlags ?? {})}
                 />
               )}
+            </TabsContent>
+            <TabsContent value="variants">
+              <Suspense fallback={<LoadingSpinner />}>
+                <AdminVariants />
+              </Suspense>
             </TabsContent>
           </Tabs>
           {validationError && (

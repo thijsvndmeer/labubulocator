@@ -17,6 +17,40 @@
           "xl": 4
         },
         "limit": 15
+      },
+      {
+        "id": "carousel-1765916159888",
+        "title": "New Carousel",
+        "description": "yapyap",
+        "enabled": true,
+        "loop": true,
+        "align": "start",
+        "sortBy": "lowestPrice",
+        "slidesPerBreakpoint": {
+          "md": 2,
+          "lg": 3,
+          "xl": 4
+        },
+        "limit": 15,
+        "baseVariable": "priceChange24h",
+        "sortDirection": "ASC"
+      },
+      {
+        "id": "carousel-1765916226546",
+        "title": "New Carousel",
+        "description": "sussy",
+        "enabled": true,
+        "loop": true,
+        "align": "start",
+        "sortBy": "lowestPrice",
+        "slidesPerBreakpoint": {
+          "md": 2,
+          "lg": 3,
+          "xl": 4
+        },
+        "limit": 15,
+        "baseVariable": "priceChange24h",
+        "sortDirection": "DESC"
       }
     ]
   },

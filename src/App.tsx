@@ -14,7 +14,13 @@ import SharedFavorites from "./pages/SharedFavorites";
 import Random from "./pages/Random";
 import Slots from "./pages/Slots"; // Import the Slots component
 import { Header } from "./components/Header";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
+import LoadingSpinner from "./components/LoadingSpinner"; // Assuming you have a LoadingSpinner component
+
+const Admin = lazy(() => import("../frontend/src/pages/Admin")); // Corrected path
+const AdminVariants = lazy(() => import("../frontend/src/pages/AdminVariants"));
+const AddVariant = lazy(() => import("../frontend/src/pages/AddVariant"));
+const EditVariant = lazy(() => import("../frontend/src/pages/EditVariant"));
 
 const queryClient = new QueryClient();
 
@@ -43,7 +49,7 @@ export const AppContent = () => {
     }
   }, [location.search, setSearchQuery]);
 
-  const showHeader = !location.pathname.startsWith("/variant/") && location.pathname !== "/random";
+  const showHeader = !location.pathname.startsWith("/variant/") && !location.pathname.startsWith("/admin") && location.pathname !== "/random"; // Exclude admin paths from showing header
 
   return (
     <>
@@ -58,6 +64,11 @@ export const AppContent = () => {
         <Route path="/sharedfavorites" element={<SharedFavorites />} />
         <Route path="/random" element={<Random />} />
         <Route path="/slots" element={<Slots />} /> {/* Add the Slots route */}
+        {/* Admin routes */}
+        <Route path="/admin" element={<Suspense fallback={<LoadingSpinner />}><Admin /></Suspense>} />
+        <Route path="/admin/variants" element={<Suspense fallback={<LoadingSpinner />}><AdminVariants /></Suspense>} />
+        <Route path="/admin/variants/add" element={<Suspense fallback={<LoadingSpinner />}><AddVariant /></Suspense>} />
+        <Route path="/admin/variants/edit/:sku" element={<Suspense fallback={<LoadingSpinner />}><EditVariant /></Suspense>} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
