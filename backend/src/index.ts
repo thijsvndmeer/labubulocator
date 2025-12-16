@@ -101,12 +101,14 @@ app.use("/api/listings", listingRoutes);
 const isLocalhostOnly = ["localhost", "127.0.0.1", "::1"].includes(
   (process.env.HOST ?? "").toLowerCase(),
 );
-const allowAdminApi = (process.env.NODE_ENV !== "production" && isLocalhostOnly) || process.env.ALLOW_REMOTE_ADMIN === "true";
+const allowAdminApi =
+  process.env.ALLOW_REMOTE_ADMIN === "true" ||
+  isLocalhostOnly;
 
 if (allowAdminApi) {
   app.use("/admin-api", adminLabubuRoutes); // Mount new admin API routes
 } else {
-  console.warn("Admin API disabled: only available when running on localhost in non-production mode.");
+  console.warn("Admin API disabled: set HOST to localhost or ALLOW_REMOTE_ADMIN=true to enable.");
 }
 
 //============================================================================================================================================================================================
