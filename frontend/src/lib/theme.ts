@@ -1,5 +1,5 @@
-import { ThemeModeTokens } from '@/types/admin-config';
-import { themeConfig } from '@/config/theme.config';
+import { ThemeConfig, ThemeModeTokens } from '@/types/admin-config';
+import { themeConfig as staticThemeConfig } from '@/config/theme.config';
 
 const VARIABLE_MAP: Record<string, keyof ThemeModeTokens> = {
   '--background': 'background',
@@ -78,8 +78,9 @@ function buildCssBlock(selector: string, tokens: ThemeModeTokens) {
   return `${selector} {${lines.join('')}}`;
 }
 
-export function applyThemeConfig() {
-  if (typeof document === 'undefined') return;
+export function applyThemeConfig(theme?: ThemeConfig) {
+  const configToApply = theme || staticThemeConfig;
+  if (typeof document === 'undefined' || !configToApply) return;
   const styleId = 'admin-theme-config';
   let styleEl = document.getElementById(styleId) as HTMLStyleElement | null;
   if (!styleEl) {
@@ -88,7 +89,7 @@ export function applyThemeConfig() {
     document.head.appendChild(styleEl);
   }
 
-  const lightCss = buildCssBlock(':root', themeConfig.modes.light);
-  const darkCss = buildCssBlock('.dark', themeConfig.modes.dark);
+  const lightCss = buildCssBlock(':root', configToApply.modes.light);
+  const darkCss = buildCssBlock('.dark', configToApply.modes.dark);
   styleEl.textContent = `${lightCss}\n${darkCss}`;
 }

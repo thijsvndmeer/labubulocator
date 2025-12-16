@@ -6,7 +6,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { getFavorites } from '@/lib/favorites';
 import { getCollection } from '@/lib/collection';
-import { navigationConfig } from '@/config/navigation.config';
 
 interface HeaderProps {
   searchQuery: string;

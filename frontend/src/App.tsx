@@ -8,6 +8,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { api } from './lib/api';
 import Spinner from "./components/Spinner";
 import { Header } from "./components/Header";
+import { ThemeUpdater } from "./components/ThemeUpdater";
 import { useState, useEffect, lazy, Suspense } from "react";
 
 const Index = lazy(() => import("./pages/Index"));
@@ -63,6 +64,7 @@ export const AppContent = () => {
 
   return (
     <>
+      <ThemeUpdater />
       {showHeader && <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />}
       <Suspense fallback={<Spinner />}>
         <Routes>

@@ -11,10 +11,10 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { contentConfig } from '@/config/content.config';
-import { layoutConfig } from '@/config/layout.config';
+import { useConfig } from '@/context/ConfigContext';
 
 const Index = () => {
+  const { content, layout } = useConfig();
   const [variants, setVariants] = useState<Labubu[]>([]);
 
   useEffect(() => {
@@ -33,13 +33,13 @@ const Index = () => {
     .sort((a, b) => (b.lowestPrice || 0) - (a.lowestPrice || 0))
     .slice(0, 15);
 
-  const carouselConfig = layoutConfig.homepage.trendingCarousel;
+  const carouselConfig = layout.homepage.trendingCarousel;
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        {layoutConfig.homepage.heroOverlay && <div className="absolute inset-0 bg-gradient-primary opacity-90" />}
+        {layout.homepage.heroOverlay && <div className="absolute inset-0 bg-gradient-primary opacity-90" />}
         <img
           src={heroBanner}
           alt="Labubu Collection"
@@ -48,12 +48,12 @@ const Index = () => {
         <div className="relative container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-2xl">
             <h2 className="text-4xl md:text-5xl font-bold text-primary-foreground mb-4">
-              {contentConfig.hero.title}
+              {content.hero.title}
             </h2>
             <p className="text-lg text-primary-foreground/90 mb-8">
-              {contentConfig.hero.subtitle}
+              {content.hero.subtitle}
             </p>
-            <p className="text-sm text-primary-foreground/70">{contentConfig.hero.helpText}</p>
+            <p className="text-sm text-primary-foreground/70">{content.hero.helpText}</p>
           </div>
         </div>
       </section>
@@ -64,8 +64,8 @@ const Index = () => {
           <div className="flex items-center gap-3 mb-8">
             <TrendingUp className="h-8 w-8 text-primary" />
             <div>
-              <h2 className="text-3xl font-bold">{contentConfig.trending.title}</h2>
-              <p className="text-muted-foreground">{contentConfig.trending.description}</p>
+              <h2 className="text-3xl font-bold">{content.trending.title}</h2>
+              <p className="text-muted-foreground">{content.trending.description}</p>
             </div>
           </div>
 
@@ -96,10 +96,10 @@ const Index = () => {
         {/* Footer */}
         <footer className="text-center py-8 border-t">
           <p className="text-sm text-muted-foreground">
-            <strong>{contentConfig.footer.disclosure.split(':')[0]}:</strong> {contentConfig.footer.disclosure.split(':')[1]?.trim()}
+            <strong>{content.footer.disclosure.split(':')[0]}:</strong> {content.footer.disclosure.split(':')[1]?.trim()}
           </p>
           <p className="text-sm text-muted-foreground mt-2">
-            {contentConfig.footer.details}
+            {content.footer.details}
           </p>
         </footer>
       </div>

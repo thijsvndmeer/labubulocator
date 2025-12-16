@@ -8,8 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Labubu } from '@labubu/common';
 import { PriceChangeBadge } from './PriceChangeBadge';
 import { API_ROOT_URL } from '@/lib/api';
-import { featureFlags } from '@/config/feature-flags';
-import { layoutConfig } from '@/config/layout.config';
+import { featureFlags as staticFeatureFlags } from '@/config/feature-flags';
+import { layoutConfig as staticLayoutConfig } from '@/config/layout.config';
+import { useConfig } from '@/context/ConfigContext';
 
 interface VariantCardProps {
   variant: Labubu;
@@ -20,6 +21,7 @@ interface VariantCardProps {
 }
 
 export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectionStatus, isCollected }: VariantCardProps) => {
+  const { featureFlags, layout } = useConfig();
   const lowestPrice = variant.lowestPrice || 0;
 
   const getImageUrl = (variant: Labubu) => {
@@ -28,8 +30,8 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
 
   const cardClasses = [
     "group overflow-hidden transition-all duration-300 hover:shadow-card-hover fade-in",
-    layoutConfig.cards.showCollectionStatus && featureFlags.collectionGlow && showCollectionStatus && isCollected && "glow-collected",
-    layoutConfig.cards.showCollectionStatus && featureFlags.collectionGlow && showCollectionStatus && !isCollected && "glow-uncollected",
+    layout.cards.showCollectionStatus && featureFlags.collectionGlow && showCollectionStatus && isCollected && "glow-collected",
+    layout.cards.showCollectionStatus && featureFlags.collectionGlow && showCollectionStatus && !isCollected && "glow-uncollected",
   ].filter(Boolean).join(' ');
 
   const shouldShowStock = featureFlags.stockStatus && !hideStockStatus;

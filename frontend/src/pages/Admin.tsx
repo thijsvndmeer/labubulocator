@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AdminConfig } from '@/types/admin-config';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -46,6 +46,7 @@ const parseSection = (value: string, key: keyof AdminConfig) => {
 };
 
 const Admin = () => {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [loadedConfig, setLoadedConfig] = useState<AdminConfig | null>(null);
   const [defaults, setDefaults] = useState<AdminConfig | null>(null);
   const [themeText, setThemeText] = useState('');
@@ -54,7 +55,6 @@ const Admin = () => {
   const [catalogText, setCatalogText] = useState('');
   const [navigationText, setNavigationText] = useState('');
   const [featureFlagsText, setFeatureFlagsText] = useState('');
-  const [previewKey, setPreviewKey] = useState(0);
   const [token, setToken] = useState(() => localStorage.getItem('adminToken') || '');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -114,7 +114,14 @@ const Admin = () => {
     }
   }, [themeText, contentText, layoutText, catalogText, navigationText, featureFlagsText, loadedConfig]);
 
-  const handleSave = async () => {
+  // New useEffect for live preview updates
+  useEffect(() => {
+    if (iframeRef.current && iframeRef.current.contentWindow && parsedPayload && !(parsedPayload instanceof Error)) {
+      iframeRef.current.contentWindow.postMessage(parsedPayload, window.location.origin);
+    }
+  }, [parsedPayload]); // Depend on parsedPayload to trigger updates
+
+  const handleSaveOnly = async () => {
     if (!parsedPayload || parsedPayload instanceof Error) {
       toast.error((parsedPayload as Error)?.message || 'Unable to save.');
       return;
@@ -139,8 +146,7 @@ const Admin = () => {
       const saved = await res.json();
       setLoadedConfig(saved);
       setEditorsFromConfig(saved);
-      setPreviewKey((key) => key + 1);
-      toast.success('Configuration saved. The preview iframe will refresh automatically.');
+      toast.success('Configuration saved.');
     } catch (error) {
       toast.error((error as Error).message);
     } finally {
@@ -148,24 +154,23 @@ const Admin = () => {
     }
   };
 
-  const handleResetToDefaults = async () => {
-    if (!defaults) return;
-    setEditorsFromConfig(defaults);
-    try {
-      const res = await fetch('/admin-api/reset', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-token': token,
-        },
-      });
-      if (res.ok) {
-        setPreviewKey((key) => key + 1);
-        toast.success('Configs reset to defaults.');
-      }
-    } catch (error) {
-      toast.error((error as Error).message);
+
+
+  const handleLoadDefaults = () => {    if (!defaults) {
+      toast.error("Default configuration not loaded.");
+      return;
     }
+    setEditorsFromConfig(defaults);
+    toast.info("Defaults loaded into editors. You can now preview or save them.");
+  };
+
+  const handleReset = () => {
+    if (!loadedConfig) {
+      toast.error("No configuration loaded yet.");
+      return;
+    }
+    setEditorsFromConfig(loadedConfig);
+    toast.info("Changes have been reset to the last saved state.");
   };
 
   const validationError = parsedPayload instanceof Error ? parsedPayload.message : '';
@@ -191,8 +196,8 @@ const Admin = () => {
 
       <Separator />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
+      <div className="space-y-6">
+        <div className="space-y-4">
           <Tabs defaultValue="theme" className="space-y-4">
             <TabsList className="w-full flex flex-wrap">
               <TabsTrigger value="theme">Theme</TabsTrigger>
@@ -207,7 +212,7 @@ const Admin = () => {
                 label="Theme"
                 value={themeText}
                 onChange={setThemeText}
-                resetValue={toPretty(defaults?.theme ?? {})}
+                resetValue={toPretty(loadedConfig?.theme ?? {})}
               />
             </TabsContent>
             <TabsContent value="content">
@@ -215,7 +220,7 @@ const Admin = () => {
                 label="Copy"
                 value={contentText}
                 onChange={setContentText}
-                resetValue={toPretty(defaults?.content ?? {})}
+                resetValue={toPretty(loadedConfig?.content ?? {})}
               />
             </TabsContent>
             <TabsContent value="layout">
@@ -223,7 +228,7 @@ const Admin = () => {
                 label="Layout"
                 value={layoutText}
                 onChange={setLayoutText}
-                resetValue={toPretty(defaults?.layout ?? {})}
+                resetValue={toPretty(loadedConfig?.layout ?? {})}
               />
             </TabsContent>
             <TabsContent value="catalog">
@@ -231,7 +236,7 @@ const Admin = () => {
                 label="Catalog"
                 value={catalogText}
                 onChange={setCatalogText}
-                resetValue={toPretty(defaults?.catalog ?? {})}
+                resetValue={toPretty(loadedConfig?.catalog ?? {})}
               />
             </TabsContent>
             <TabsContent value="navigation">
@@ -239,7 +244,7 @@ const Admin = () => {
                 label="Navigation"
                 value={navigationText}
                 onChange={setNavigationText}
-                resetValue={toPretty(defaults?.navigation ?? {})}
+                resetValue={toPretty(loadedConfig?.navigation ?? {})}
               />
             </TabsContent>
             <TabsContent value="featureFlags">
@@ -247,23 +252,26 @@ const Admin = () => {
                 label="Feature Flags"
                 value={featureFlagsText}
                 onChange={setFeatureFlagsText}
-                resetValue={toPretty(defaults?.featureFlags ?? {})}
+                resetValue={toPretty(loadedConfig?.featureFlags ?? {})}
               />
             </TabsContent>
           </Tabs>
           {validationError && (
             <p className="text-sm text-destructive">{validationError}</p>
           )}
-          <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={handleResetToDefaults}>
-              Reset all to defaults
+          <div className="flex flex-wrap gap-2 justify-end">
+            <Button variant="outline" onClick={handleReset}>
+              Reset
             </Button>
-            <Button onClick={handleSave} disabled={isSaving}>
-              {isSaving ? 'Saving...' : 'Apply & Preview'}
+            <Button variant="outline" onClick={handleLoadDefaults}>
+              Load Defaults
+            </Button>
+            <Button variant="outline" onClick={handleSaveOnly} disabled={isSaving}>
+              {isSaving ? 'Saving...' : 'Save'}
             </Button>
           </div>
         </div>
-        <div className="lg:col-span-1 space-y-4">
+        <div className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle>Live Preview</CardTitle>
@@ -275,10 +283,10 @@ const Admin = () => {
               </p>
               <div className="border rounded-md overflow-hidden bg-muted">
                 <iframe
-                  key={previewKey}
-                  src={`/?preview=${previewKey}`}
+                  ref={iframeRef}
+                  src={`/`}
                   title="Site preview"
-                  className="w-full h-[480px] bg-background"
+                  className="w-full h-[80vh] bg-background"
                 />
               </div>
             </CardContent>
