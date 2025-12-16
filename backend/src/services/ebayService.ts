@@ -3,6 +3,7 @@ import { Labubu } from "@labubu/common/src/types/labubu";
 import { labubuRepository, priceHistoryRepository } from "../index";
 import pLimit from "p-limit";
 import { calculateEstimatedValueForLabubu } from './estimatedValueService';
+import { enforcePriceDiscrepancyRule } from "../utils/priceUtils";
 
 // Helper function for rate limiting
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -199,18 +200,28 @@ export const processEbayLabubu = async (labubu: Labubu) => {
       const updateData: Partial<Labubu> = { ebayLastRefreshed: new Date().toISOString() };
 
       if (ebayListing.lowestPrice !== undefined) {
-        updateData.ebayLowestPrice = ebayListing.lowestPrice;
-
         const existingLabubu = await labubuRepository.get({ filter: { sku: labubu.sku } }, ["stockxPrice"]);
         const currentStockxPrice = existingLabubu[0]?.stockxPrice;
         console.log(`EBAY: Current StockX price from DB for ${labubu.name}: ${currentStockxPrice}`);
 
-        if (currentStockxPrice !== undefined && currentStockxPrice !== null) {
-          updateData.lowestPrice = Math.min(ebayListing.lowestPrice, currentStockxPrice);
+        const priceDecision = enforcePriceDiscrepancyRule(currentStockxPrice, ebayListing.lowestPrice);
+
+        if (priceDecision.ebayLowestPrice !== undefined) {
+          updateData.ebayLowestPrice = priceDecision.ebayLowestPrice;
         } else {
-          updateData.lowestPrice = ebayListing.lowestPrice;
+          updateData.ebayLowestPrice = null;
+          console.log(`EBAY: Discarding eBay price for ${labubu.name} due to >50% discrepancy with StockX.`);
         }
-        console.log(`EBAY: Updated lowest price for ${labubu.name}: ${updateData.lowestPrice}`);
+
+        if (priceDecision.stockxPrice === undefined && currentStockxPrice !== undefined && currentStockxPrice !== null) {
+          updateData.stockxPrice = null;
+          console.log(`EBAY: Discarding StockX price for ${labubu.name} due to >50% discrepancy with eBay.`);
+        }
+
+        if (priceDecision.lowestPrice !== undefined) {
+          updateData.lowestPrice = priceDecision.lowestPrice;
+          console.log(`EBAY: Updated lowest price for ${labubu.name}: ${updateData.lowestPrice}`);
+        }
       }
 
 
