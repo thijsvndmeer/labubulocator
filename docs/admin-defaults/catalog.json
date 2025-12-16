@@ -1,0 +1,16 @@
+{
+  "csvPath": "/labubus.csv",
+  "fieldMappings": {
+    "name": "name",
+    "sku": "sku",
+    "series": "series",
+    "variant": "variant",
+    "rarity": "rarity",
+    "lowestPrice": "lowestPrice",
+    "stockStatus": "stockStatus"
+  },
+  "display": {
+    "showMsrp": true,
+    "showVariant": true
+  }
+}
