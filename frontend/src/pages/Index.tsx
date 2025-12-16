@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { VariantCard } from '@/components/VariantCard';
 import heroBanner from '@/assets/hero-banner.jpg';
 import { TrendingUp } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Labubu } from '@labubu/common';
+import { CarouselConfig } from '@/types/admin-config';
 import {
   Carousel,
   CarouselContent,
@@ -13,7 +14,55 @@ import {
 } from "@/components/ui/carousel";
 import { useConfig } from '@/context/ConfigContext';
 
-const Index = () => {
+type CarouselSortOption =
+  | 'lowestPrice'
+  | 'highestPrice'
+  | 'biggestLoss24h'
+  | 'biggestGain24h'
+  | 'newest'
+  | 'oldest';
+
+type CarouselWithSorting = CarouselConfig & { sortBy?: CarouselSortOption };
+
+const getSortedVariants = (variants: Labubu[], carousel: CarouselWithSorting) => {
+  const sorted = [...variants];
+  const sortBy = carousel.sortBy;
+
+  if (sortBy === 'lowestPrice') {
+    sorted.sort((a, b) => (b.lowestPrice || 0) - (a.lowestPrice || 0));
+  } else if (sortBy === 'highestPrice') {
+    sorted.sort((a, b) => (a.lowestPrice || 0) - (b.lowestPrice || 0));
+  } else if (sortBy === 'biggestLoss24h') {
+    sorted.sort((a, b) => {
+      const aChange = a.priceChange24h || 0;
+      const bChange = b.priceChange24h || 0;
+      return aChange - bChange;
+    });
+  } else if (sortBy === 'biggestGain24h') {
+    sorted.sort((a, b) => {
+      const aChange = a.priceChange24h || 0;
+      const bChange = b.priceChange24h || 0;
+      return bChange - aChange;
+    });
+  } else if (sortBy === 'newest') {
+    sorted.sort((a, b) => {
+      const dateA = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
+      const dateB = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
+      return dateB - dateA;
+    });
+  } else if (sortBy === 'oldest') {
+    sorted.sort((a, b) => {
+      const dateA = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
+      const dateB = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
+      return dateA - dateB;
+    });
+  }
+
+  const limit = carousel.limit ?? sorted.length;
+  return sorted.slice(0, limit);
+};
+
+export const Index = () => {
   const { content, layout } = useConfig();
   const [variants, setVariants] = useState<Labubu[]>([]);
 
@@ -58,43 +107,7 @@ const Index = () => {
         {layout.homepage.carousels.map((carousel) => {
           if (!carousel.enabled) return null; // Only render enabled carousels
 
-          const sortedCarouselVariants = useMemo(() => {
-            let sorted = [...variants];
-            const sortBy = carousel.sortBy;
-
-            if (sortBy === 'lowestPrice') {
-              sorted.sort((a, b) => (b.lowestPrice || 0) - (a.lowestPrice || 0));
-            } else if (sortBy === 'highestPrice') {
-                sorted.sort((a, b) => (a.lowestPrice || 0) - (b.lowestPrice || 0)); // Ascending for highest price
-            } else if (sortBy === 'biggestLoss24h') {
-              sorted.sort((a, b) => {
-                const aChange = a.priceChange24h || 0;
-                const bChange = b.priceChange24h || 0;
-                return aChange - bChange;
-              });
-            } else if (sortBy === 'biggestGain24h') {
-              sorted.sort((a, b) => {
-                const aChange = a.priceChange24h || 0;
-                const bChange = b.priceChange24h || 0;
-                return bChange - aChange;
-              });
-            } else if (sortBy === 'newest') {
-                // Assuming releaseDate is a string and needs parsing
-                sorted.sort((a, b) => {
-                    const dateA = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
-                    const dateB = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
-                    return dateB - dateA; // Newest first
-                });
-            } else if (sortBy === 'oldest') {
-                // Assuming releaseDate is a string and needs parsing
-                sorted.sort((a, b) => {
-                    const dateA = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
-                    const dateB = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
-                    return dateA - dateB; // Oldest first
-                });
-            }
-            return sorted.slice(0, carousel.limit);
-          }, [variants, carousel.sortBy, carousel.limit]);
+          const sortedCarouselVariants = getSortedVariants(variants, carousel);
 
           return (
             <section key={carousel.id}>
