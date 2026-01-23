@@ -1,59 +1,59 @@
 # Labubu Locator 🐰
 
-> **The definitive analytics platform for Pop Mart Labubu collectors.**  
-> Aggregate market data, optimize your collection, and gain cross-platform pricing insights.
+> **The specialized market tracker for Pop Mart Labubu collectors.**  
+> Aggregate market data, manage your personal collection, and track real-time pricing across platforms.
 
 ![Labubu Locator Hero](https://labubulocator.me/assets/hero-banner-BYcVz-xF.jpg)
 
 ## 🚀 Overview
 
-**Labubu Locator** is a high-performance, full-stack ecosystem engineered to solve the fragmentation of the collectible market. By orchestrating data from major marketplaces like eBay and StockX, it provides collectors with a unified command center for tracking market values and managing high-value inventory.
+**Labubu Locator** is a dedicated tracker built to streamline how collectors follow the Labubu market. By pulling data from marketplaces like eBay and StockX, it provides a unified interface for checking current values, comparing prices, and keeping an organized inventory of variants.
 
-This project demonstrates an enterprise-grade **TypeScript Monorepo** architecture, focusing on strict type safety across the network boundary, automated data harvesting, and a high-fidelity reactive user interface.
-
----
-
-## 🛠️ Technology & Infrastructure
-
-Built with a focus on **Type Safety**, **Predictable State**, and **Scalable Data Flows**.
-
-### 🏗️ Unified TypeScript Monorepo
-Leverages a shared `common` package to enforce contract consistency between the API and the UI. This ensures that every field in the data layer is perfectly mirrored in the frontend, eliminating runtime type mismatches.
-
-### 🎨 Frontend: Reactive Performance
-- **Framework**: [React](https://react.dev/) with [Vite](https://vitejs.dev/) for sub-second hot module replacement.
-- **Server-State Orchestration**: [TanStack Query v5](https://tanstack.com/query/latest) for robust caching, background synchronization, and optimistic UI updates.
-- **Design System**: 
-  - **Tailwind CSS**: Precision utility-first styling.
-  - **Shadcn/UI**: Accessible Radix-based primitives.
-  - **GSAP**: High-performance cinematic animations and micro-interactions.
-
-### ⚙️ Backend: Automated Data Pipelines
-- **Runtime**: [Node.js](https://nodejs.org/) (ESNext) with strict TypeScript compilation.
-- **API Engine**: Express.js with structured repository patterns and middleware-driven security.
-- **Intelligent Sync Engine**: A custom-built scheduler utilizing `node-cron` and `p-limit` for controlled, rate-limited aggregation of marketplace data via the eBay Browse API.
-- **Validation Layer**: [Zod](https://zod.dev/) schema enforcement for total runtime data integrity.
-- **Storage**: Light-weight, high-concurrency SQLite database with custom repository abstractions.
+The project is built on a modern **TypeScript Monorepo** architecture, emphasizing end-to-end type safety, reliable data synchronization, and a clean, responsive user experience. It’s designed to be a practical tool for collectors while showcasing a robust full-stack development workflow.
 
 ---
 
-## ✨ Key Capabilities
+## 🛠️ Technology & Architecture
 
-1.  **Cross-Platform Market Insights**: Real-time aggregation of "Floor Price" and "Estimated Market Value" across multiple secondary markets.
-2.  **Inventory Management**: Advanced system to track personal collections, watchlists, and acquisition status.
-3.  **Algorithmic Value Estimation**: Proprietary logic that sanitizes and weighs inconsistent marketplace listings to provide a reliable "true value" metric.
-4.  **Complex Multi-Criteria Filtering**: Sophisticated search architecture allowing granular discovery by series, rarity, SKU, and availability.
-5.  **Administrative Command Center**: Enterprise dashboard for full catalog control, image asset management, and system-wide settings.
+Built with a focus on **Type Safety**, **Reliable Syncing**, and **Clean State Management**.
+
+### 🏗️ TypeScript Monorepo
+The project uses a shared `common` package to sync schemas between the API and the UI. This ensures that data structures are consistent across the entire stack, making the development process more predictable and reducing runtime errors.
+
+### 🎨 Frontend: Fast & Responsive
+- **Framework**: [React](https://react.dev/) + [Vite](https://vitejs.dev/) for a high-performance development environment and optimized production builds.
+- **State & Data**: [TanStack Query v5](https://tanstack.com/query/latest) for efficient data fetching, caching, and state synchronization.
+- **UI & Styling**: 
+  - **Tailwind CSS**: For custom, responsive layouts.
+  - **Shadcn/UI**: High-quality, accessible UI components.
+  - **GSAP**: Subtle animations to enhance the interface feel.
+
+### ⚙️ Backend: Data Management
+- **Runtime**: [Node.js](https://nodejs.org/) (ESNext) with strict TypeScript.
+- **API Engine**: Express.js with a modular repository pattern to keep business logic organized.
+- **Sync Engine**: A managed background service using `node-cron` and `p-limit` to pull marketplace data from the eBay Browse API while respecting rate limits.
+- **Validation**: [Zod](https://zod.dev/) for schema-based data validation at the API boundary.
+- **Storage**: SQLite for a fast, portable, and reliable data layer.
 
 ---
 
-## 🏁 Installation & Development
+## ✨ Key Features
+
+1.  **Cross-Platform Pricing**: Track current "Floor Prices" and estimated values aggregated from multiple secondary markets.
+2.  **Collection Tracking**: Manage your personal collection and favorites with local storage persistence and shareable links.
+3.  **Market Value Estimation**: An internal logic layer that helps filter and weight marketplace listings to provide a realistic "market value" for each variant.
+4.  **Advanced Filtering**: Search and filter by series, rarity grade, SKU, or availability status.
+5.  **Admin Tools**: Integrated dashboard for managing the product catalog, updating prices manually, and handling image assets.
+
+---
+
+## 🏁 Getting Started
 
 ### Prerequisites
 - **Node.js** (v18.0+)
 - **NPM** (v9.0+)
 
-### Setup
+### Installation
 
 1.  **Clone and Install:**
     ```bash
@@ -62,7 +62,7 @@ Leverages a shared `common` package to enforce contract consistency between the 
     npm install
     ```
 
-2.  **Environment Configuration:**
+2.  **Environment Setup:**
     Create a `.env` file in `backend/`:
     ```bash
     PORT=3001
@@ -72,9 +72,9 @@ Leverages a shared `common` package to enforce contract consistency between the 
     KICKS_DEV_API_KEY=your_key
     ```
 
-### Running the Ecosystem
+### Running the Project
 
-The project uses NPM workspaces to manage all components from the root.
+The workspace manages all components from the root.
 
 **Start Backend:**
 ```bash
@@ -86,29 +86,16 @@ npm run dev:backend
 npm run dev:frontend
 ```
 
-**Full Production Build:**
-```bash
-npm run build
-```
-
 ---
 
-## 📂 Architecture Layout
+## 📂 Project Structure
 
 ```text
 labubulocator/
-├── backend/          # Enterprise API & Data Synchronization
-│   ├── src/
-│   │   ├── services/ # Business Logic & API Aggregation
-│   │   ├── routes/   # Express Controller Layer
-│   │   └── lib/      # Infrastructure & Database
-├── frontend/         # Reactive UI & Client State Management
-│   ├── src/
-│   │   ├── pages/    # Optimized View Layers
-│   │   ├── hooks/    # Reusable Component Logic
-│   │   └── lib/      # Managed API Clients
-├── common/           # Shared Schema & Interface Registry
-└── package.json      # Monorepo Orchestration
+├── backend/          # API, database management, and sync services
+├── frontend/         # React application and UI components
+├── common/           # Shared types, interfaces, and Zod schemas
+└── package.json      # Monorepo configuration
 ```
 
 ---
