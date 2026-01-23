@@ -24,8 +24,6 @@ export const labubuSchema = z.object({
   estimatedValueLastCalculated: z.string().optional(),
   releaseDate: z.string().optional(),
   kicksdevId: z.string().optional(),
-
-
   priceChange24h: z.coerce.number().optional(),
   priceRange: z.object({ low: z.coerce.number(), high: z.coerce.number() }).optional(),
   stockStatus: z.string().optional(),
@@ -37,7 +35,33 @@ export const labubuSchema = z.object({
   ebayLastRefreshed: z.string().optional(),
   ebaySearchOverride: z.string().optional(),
 });
-export type Labubu = z.infer<typeof labubuSchema>;
+
+export interface Labubu {
+  sku: string;
+  name: string;
+  series: string;
+  rarity?: string;
+  description?: string;
+  msrp?: number;
+  lowestPrice?: number;
+  stockxPrice?: number | null;
+  ebayLowestPrice?: number | null;
+  variant?: string;
+  estimatedValue?: number;
+  estimatedValueLastCalculated?: string;
+  releaseDate?: string;
+  kicksdevId?: string;
+  priceChange24h?: number;
+  priceRange?: { low: number; high: number };
+  stockStatus?: string;
+  volatility?: number;
+  affiliateLinks?: { id: string; displayName: string; url: string }[];
+  attributes?: Record<string, string>;
+  recentSales?: { source: string; price: number; currency: string; date: string; url: string }[];
+  stockxLastRefreshed?: string;
+  ebayLastRefreshed?: string;
+  ebaySearchOverride?: string;
+}
 
 export const listingSchema = z.object({
   id: z.coerce.number(),
@@ -49,19 +73,37 @@ export const listingSchema = z.object({
   inStock: z.coerce.boolean(),
   lastCheckedAt: z.coerce.date().optional(),
 });
-export type Listing = z.infer<typeof listingSchema>;
+
+export interface Listing {
+  id: number;
+  productUrl: string;
+  labubuSku: string;
+  vendorName: string;
+  listingTitle: string;
+  currentPrice?: number;
+  inStock: boolean;
+  lastCheckedAt?: Date;
+}
 
 export const priceEntrySchema = z.object({
   price: z.coerce.number(),
   date: z.coerce.date(),
 });
-export type PriceEntry = z.infer<typeof priceEntrySchema>;
+
+export interface PriceEntry {
+  price: number;
+  date: Date;
+}
 
 export const roleSchema = z.object({
   id: z.coerce.number().optional(),
   name: z.string(),
 });
-export type Role = z.infer<typeof roleSchema>;
+
+export interface Role {
+  id?: number;
+  name: string;
+}
 
 export const userSchema = z.object({
   id: z.coerce.number().optional(),
@@ -69,7 +111,13 @@ export const userSchema = z.object({
   password: z.string(),
   role_id: z.coerce.number().optional(),
 });
-export type User = z.infer<typeof userSchema>;
+
+export interface User {
+  id?: number;
+  username: string;
+  password: string;
+  role_id?: number;
+}
 
 export const contentSchema = z.object({
   id: z.coerce.number().optional(),
@@ -77,7 +125,13 @@ export const contentSchema = z.object({
   value: z.string().optional(),
   last_updated: z.string().optional(),
 });
-export type Content = z.infer<typeof contentSchema>;
+
+export interface Content {
+  id?: number;
+  key: string;
+  value?: string;
+  last_updated?: string;
+}
 
 export const navigationSchema = z.object({
   id: z.coerce.number().optional(),
@@ -85,7 +139,13 @@ export const navigationSchema = z.object({
   structure: z.string(), // Storing as JSON string
   last_updated: z.string().optional(),
 });
-export type Navigation = z.infer<typeof navigationSchema>;
+
+export interface Navigation {
+  id?: number;
+  name: string;
+  structure: string;
+  last_updated?: string;
+}
 
 export const settingsSchema = z.object({
   id: z.coerce.number().optional(),
@@ -93,7 +153,13 @@ export const settingsSchema = z.object({
   value: z.string().optional(),
   last_updated: z.string().optional(),
 });
-export type Settings = z.infer<typeof settingsSchema>;
+
+export interface Settings {
+  id?: number;
+  key: string;
+  value?: string;
+  last_updated?: string;
+}
 
 //============================================================================================================================================================================================
 // Http parameter types

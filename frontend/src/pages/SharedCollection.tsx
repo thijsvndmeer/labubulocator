@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Boxes } from 'lucide-react';
+import { Package } from 'lucide-react';
 import { SearchFilters } from '@/components/SearchFilters';
 import { useVariantFilters } from '@/hooks/useVariantFilters';
 import { VariantCard } from '@/components/VariantCard';
@@ -60,11 +60,11 @@ export default function SharedCollection() {
         <section>
           <div className="flex items-center justify-between gap-3 mb-8">
             <div className="flex items-center gap-3">
-              <Boxes className="h-8 w-8 text-primary" />
+              <Package className="h-8 w-8 text-blue-500" />
               <div>
                 <h2 className="text-3xl font-bold">Shared Collection</h2>
                 <p className="text-muted-foreground">
-                  {collectedVariants.length} shared Labubu variants.
+                  {collectedVariants.length} shared Labubu variant{collectedVariants.length === 1 ? '' : 's'}.
                 </p>
               </div>
             </div>

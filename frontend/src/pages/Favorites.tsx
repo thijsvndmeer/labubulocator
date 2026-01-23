@@ -84,7 +84,7 @@ export const FavoritesPage = () => {
               <div>
                 <h2 className="text-3xl font-bold">My Favorites</h2>
                 <p className="text-muted-foreground">
-                  {favoritedVariants.length} favorited Labubu variants.
+                  {favoritedVariants.length} favorited Labubu variant{favoritedVariants.length === 1 ? '' : 's'}.
                 </p>
               </div>
             </div>

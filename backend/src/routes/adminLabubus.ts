@@ -94,7 +94,7 @@ const validate = (schema: z.ZodSchema) => (req: Request, res: Response, next: Ne
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         message: 'Validation failed',
-        errors: error.errors.map((err: z.ZodIssue) => ({ path: err.path.join('.'), message: err.message })),
+        errors: error.issues.map((err: z.ZodIssue) => ({ path: err.path.join('.'), message: err.message })),
       });
     }
     next(error); // Pass other errors to the next error handler
@@ -242,7 +242,7 @@ router.post('/labubus/upload', upload.single('file'), async (req: Request, res: 
         const zodError = validationResult.error as z.ZodError; // Explicitly cast
         return res.status(400).json({
           message: `CSV validation failed for SKU: ${labubu.sku}`,
-          errors: zodError.errors.map((err: z.ZodIssue) => ({ path: err.path.join('.'), message: err.message })),
+          errors: zodError.issues.map((err: z.ZodIssue) => ({ path: err.path.join('.'), message: err.message })),
         });
       }
     }

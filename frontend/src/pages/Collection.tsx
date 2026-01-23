@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { getCollection } from '@/lib/collection';
 import { useLocation } from 'react-router-dom';
-import { Share2, Boxes } from 'lucide-react';
+import { Share2, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { SearchFilters } from '@/components/SearchFilters';
@@ -100,11 +100,11 @@ export default function Collection() {
         <section>
           <div className="flex items-center justify-between gap-3 mb-8">
             <div className="flex items-center gap-3">
-              <Boxes className="h-8 w-8 text-primary" />
+              <Package className="h-8 w-8 text-blue-500" />
               <div>
-                <h2 className="text-3xl font-bold">Your Collection</h2>
+                <h2 className="text-3xl font-bold">My Collection</h2>
                 <p className="text-muted-foreground">
-                  {collectedVariants.length} collected Labubu variants.
+                  {collectedVariants.length} collected Labubu variant{collectedVariants.length === 1 ? '' : 's'}.
                 </p>
               </div>
             </div>

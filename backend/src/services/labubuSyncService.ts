@@ -33,12 +33,12 @@ export const syncLabubus = async () => {
         stockStatus: record.stockStatus,
       };
 
-      if (record.kicksdevId && record.kicksdevId.trim() !== '') {
-        labubuData.kicksdevId = record.kicksdevId;
+      if (record.kicksdevId && String(record.kicksdevId).trim() !== '') {
+        labubuData.kicksdevId = String(record.kicksdevId).trim();
       }
 
-      if (record.ebaySearchOverride && record.ebaySearchOverride.trim() !== '') {
-        labubuData.ebaySearchOverride = record.ebaySearchOverride;
+      if (record.ebaySearchOverride && String(record.ebaySearchOverride).trim() !== '') {
+        labubuData.ebaySearchOverride = String(record.ebaySearchOverride).trim();
       }
 
       await labubuRepository.updateOrCreate(labubuData as Labubu);

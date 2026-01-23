@@ -1,5 +1,5 @@
 import { ThemeToggle } from "./ThemeToggle";
-import { Search, LocateFixed, Package, Heart, Boxes } from 'lucide-react';
+import { Search, LocateFixed, Package, Heart } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from './ui/button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -80,7 +80,7 @@ export const Header = ({ searchQuery, setSearchQuery }: HeaderProps) => {
             {collectionCount > 0 && (
               <Link to="/collection">
                 <Button variant="outline" className="relative">
-                  <Boxes className="h-4 w-4" />
+                  <Package className="h-4 w-4" />
                   <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {collectionCount}
                   </span>

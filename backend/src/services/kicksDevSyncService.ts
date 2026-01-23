@@ -40,8 +40,8 @@ export const processStockxLabubu = async (labubu: Labubu) => {
 
   if (labubu.name) {
     // Only skip if refreshed recently AND lowestPrice is a valid positive number
-    if (labubu.stockxLastRefreshed && labubu.stockxPrice && labubu.stockxPrice > 0) {
-      const lastRefreshedDate = new Date(labubu.stockxLastRefreshed);
+    if (labubu.stockxLastRefreshed && labubu.stockxPrice && (labubu.stockxPrice as number) > 0) {
+      const lastRefreshedDate = new Date(String(labubu.stockxLastRefreshed));
       if (lastRefreshedDate > threeDaysAgo) {
         console.log(`STOCKX: Skipping StockX update for Labubu ${labubu.name} (SKU: ${labubu.sku}) - already refreshed recently and has a valid price.`);
         return;
@@ -129,7 +129,7 @@ export const processStockxLabubu = async (labubu: Labubu) => {
                   labubu.rarity === 'common' &&
                   labubu.stockStatus === 'aftermarketorbb' &&
                   labubu.msrp &&
-                  lowestAsk >= labubu.msrp * 2
+                  lowestAsk >= (labubu.msrp as number) * 2
                 ) {
                   if (validAsks.length > 1) {
                     console.log(`STOCKX: Price for ${labubu.name} is >= 2 * MSRP. Using second best search result.`);
@@ -154,10 +154,10 @@ export const processStockxLabubu = async (labubu: Labubu) => {
         };
 
         // Initial search
-        let initialSearchQuery = labubu.name;
-        const dashIndex = labubu.name.indexOf(' - ');
+        let initialSearchQuery = String(labubu.name);
+        const dashIndex = String(labubu.name).indexOf(' - ');
         if (dashIndex !== -1) {
-          initialSearchQuery = labubu.name.substring(0, dashIndex) + ' pin for love';
+          initialSearchQuery = String(labubu.name).substring(0, dashIndex) + ' pin for love';
         }
         console.log(`STOCKX: Performing search for Labubu ${labubu.name} (SKU: ${labubu.sku}) with query: "${initialSearchQuery}"`);
         let searchResult = await performSearch(initialSearchQuery);

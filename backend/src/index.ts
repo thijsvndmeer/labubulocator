@@ -1,7 +1,7 @@
 require('module-alias/register');
 import 'dotenv/config';
 import express, { Request, Response } from "express";
-import bodyParser from "body-parser";
+
 import labubuRoutes from "./routes/labubus";
 import listingRoutes from "./routes/listings";
 import { LabubuRepository } from "./repositories/labubuRepository";

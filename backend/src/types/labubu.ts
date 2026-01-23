@@ -15,17 +15,28 @@ import {
 export const persistedLabubuSchema = labubuSchema.extend({
   id: z.coerce.number(),
 });
-export type PersistedLabubu = z.infer<typeof persistedLabubuSchema>;
+
+import { Labubu, Listing, PriceEntry } from "@labubu/common";
+
+export interface PersistedLabubu extends Labubu {
+  id: number;
+}
 
 export const priceEntryDataSchema = priceEntrySchema.extend({
   listingId: z.coerce.number(),
 });
-export type PriceEntryData = z.infer<typeof priceEntryDataSchema>;
+
+export interface PriceEntryData extends PriceEntry {
+  listingId: number;
+}
 
 export const persistedPriceEntrySchema = priceEntryDataSchema.extend({
   id: z.coerce.number(),
 });
-export type PersistedPriceEntry = z.infer<typeof persistedPriceEntrySchema>;
+
+export interface PersistedPriceEntry extends PriceEntryData {
+  id: number;
+}
 
 //============================================================================================================================================================================================
 // Database Options

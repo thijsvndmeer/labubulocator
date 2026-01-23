@@ -64,7 +64,7 @@ export default function SharedFavorites() {
               <div>
                 <h2 className="text-3xl font-bold">Shared Favorites</h2>
                 <p className="text-muted-foreground">
-                  {favoritedVariants.length} shared Labubu variants.
+                  {favoritedVariants.length} shared Labubu variant{favoritedVariants.length === 1 ? '' : 's'}.
                 </p>
               </div>
             </div>

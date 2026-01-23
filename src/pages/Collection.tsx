@@ -78,15 +78,15 @@ export default function Collection() {
     loadCollection();
   }, []);
 
-  const { 
-    filteredVariants, 
-    selectedRarity, 
-    setSelectedRarity, 
-    selectedSeries, 
-    setSelectedSeries, 
-    sortBy, 
-    setSortBy, 
-    allSeries 
+  const {
+    filteredVariants,
+    selectedRarity,
+    setSelectedRarity,
+    selectedSeries,
+    setSelectedSeries,
+    sortBy,
+    setSortBy,
+    allSeries
   } = useVariantFilters(collectedVariants, searchQuery);
 
   if (isLoading) {
@@ -120,7 +120,7 @@ export default function Collection() {
             <div className="flex items-center gap-3">
               <Boxes className="h-8 w-8 text-primary" />
               <div>
-                <h2 className="text-3xl font-bold">Your Collection</h2>
+                <h2 className="text-3xl font-bold">My Collection</h2>
                 <p className="text-muted-foreground">
                   {collectedVariants.length} collected Labubu variants.
                 </p>
