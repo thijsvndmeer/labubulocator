@@ -97,8 +97,3 @@ labubulocator/
 ├── common/           # Shared types, interfaces, and Zod schemas
 └── package.json      # Monorepo configuration
 ```
-
----
-
-## 📄 License
-This project is licensed under the ISC License.
