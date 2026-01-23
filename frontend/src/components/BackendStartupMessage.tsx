@@ -22,7 +22,7 @@ export const BackendStartupMessage = () => {
                 </p>
 
                 <div className="flex flex-col items-center gap-4 pt-4">
-                    <div className="flex items-center gap-2 px-4 py-2 bg-muted rounded-full text-sm font-medium border animate-bounce">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-muted rounded-full text-sm font-medium border">
                         <Clock className="h-4 w-4 text-primary" />
                         <span>Estimated wait: 1-2 minutes</span>
                     </div>
