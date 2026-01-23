@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Labubu } from "@labubu/common/src/types/labubu";
+import { Labubu } from "@labubu/common";
 import { labubuRepository, priceHistoryRepository } from "../index";
 import pLimit from "p-limit";
 import { calculateEstimatedValueForLabubu } from './estimatedValueService';
@@ -144,7 +144,7 @@ export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit
     console.log("EBAY: Search result with 'authentic':", searchResult);
 
     // If no valid price found, try again without 'authentic'
-    if (searchResult.lowestPrice === undefined) { 
+    if (searchResult.lowestPrice === undefined) {
       console.log(`EBAY: No valid price found with 'authentic' for ${labubu.name}. Retrying without 'authentic'.`);
       searchResult = await performEbaySearch(baseEbayQuery, limit, stockxPrice);
       console.log("EBAY: Search result without 'authentic':", searchResult);

@@ -1,7 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { labubuRepository } from '../index'; // Assuming labubuRepository is exported from index.ts
-import { Labubu, Rarity, StockStatus } from '@labubu/common/src/types/labubu'; // Adjust path if necessary
+import { Labubu, Rarity, StockStatus } from '@labubu/common'; // Adjust path if necessary
 import Papa from 'papaparse'; // For CSV parsing
 import multer from 'multer'; // Import multer for file uploads
 import fs from 'fs'; // For file system operations

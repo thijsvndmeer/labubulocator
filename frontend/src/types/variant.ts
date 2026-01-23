@@ -1,11 +1,11 @@
-import { Rarity, StockStatus } from '@labubu/common/src/types/labubu'; // Import from common package
+import { Rarity, StockStatus } from '@labubu/common'; // Import from common package
 
 export interface PriceSource {
   source: string;
   price: number;
   currency: string;
   timestamp: string;
-  url:string;
+  url: string;
   inStock: boolean;
 }
 

@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import Papa from 'papaparse';
-import { Labubu, Rarity, StockStatus } from '@labubu/common/src/types/labubu';
+import { Labubu, Rarity, StockStatus } from '@labubu/common';
 
 export const LABUBU_CSV_FIELDS = [
   'sku',

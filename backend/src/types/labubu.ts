@@ -6,7 +6,7 @@ import {
   listingSchema,
   makeHttpOptionsSchema,
   priceEntrySchema,
-} from "@labubu/common/src/types/labubu";
+} from "@labubu/common";
 
 //============================================================================================================================================================================================
 // Database entity types

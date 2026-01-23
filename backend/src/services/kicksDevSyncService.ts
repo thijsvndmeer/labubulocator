@@ -1,5 +1,5 @@
 import { labubuRepository } from "../index";
-import { Labubu } from "@labubu/common/src/types/labubu";
+import { Labubu } from "@labubu/common";
 import axios from "axios";
 import pLimit from "p-limit";
 import { calculateEstimatedValueForLabubu } from "./estimatedValueService";

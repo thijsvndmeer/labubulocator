@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Wheel } from 'react-custom-roulette';
 import { api } from '@/lib/api';
-import { Labubu } from '@labubu/common/src/types/labubu';
+import { Labubu } from '@labubu/common';
 import { VariantCard } from '@/components/VariantCard';
 import Particles from "react-tsparticles";
 import { loadFull } from "tsparticles";
@@ -176,9 +176,9 @@ const Random: React.FC = () => {
                 textDistance={70}
               />
             </div>
-            <button 
+            <button
               className="absolute bottom-10 right-10 px-16 py-8 text-4xl font-bold text-white bg-gradient-to-r from-purple-500 to-pink-500 rounded-full hover:from-purple-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-110 disabled:bg-gray-400 disabled:from-gray-400 disabled:to-gray-400 animate-bounce z-20"
-              onClick={handleSpinClick} 
+              onClick={handleSpinClick}
               disabled={mustSpin}
             >
               Spin

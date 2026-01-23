@@ -2,7 +2,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Listing } from '@labubu/common/src/types/labubu';
+import { Listing } from '@labubu/common';
 
 interface PriceComparisonProps {
   listings: Listing[];
@@ -25,11 +25,10 @@ export const PriceComparison = ({ listings }: PriceComparisonProps) => {
           {sortedPrices.map((source, index) => (
             <div
               key={index}
-              className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
-                source === lowestPrice
+              className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${source === lowestPrice
                   ? 'border-rarity-uncommon bg-rarity-uncommon/5'
                   : 'border-border hover:border-muted-foreground/20'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3 flex-1">
                 <div className="flex-1">

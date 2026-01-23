@@ -1,7 +1,7 @@
 import { Database } from "sqlite3";
 import { QueryCriteria, QueryOptions } from "../types/labubu";
 import { BaseRepository } from "./baseRepository";
-import { Listing } from "@labubu/common/src/types/labubu";
+import { Listing } from "@labubu/common";
 
 export class ListingRepository extends BaseRepository<Listing> {
   //============================================================================================================================================================================================

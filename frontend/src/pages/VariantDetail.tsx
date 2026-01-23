@@ -295,27 +295,29 @@ export default function VariantDetail() {
 
 
             {/* StockX and eBay Windows */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className={`grid grid-cols-1 ${typeof mergedVariant.stockxPrice === 'number' && mergedVariant.kicksdevId ? 'md:grid-cols-2' : ''} gap-4`}>
               {/* StockX Window */}
-              <Card className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold">StockX</h4>
-                  {mergedVariant.msrp && mergedVariant.stockxPrice && (
-                    <span className={`text-sm font-medium text-gray-500`}>
-                      {typeof mergedVariant.stockxPrice === 'number' && typeof mergedVariant.msrp === 'number' ? `${((mergedVariant.stockxPrice - mergedVariant.msrp) / mergedVariant.msrp * 100).toFixed(0)}% vs MSRP` : '--.--'}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold">{typeof mergedVariant.stockxPrice === 'number' ? `$${mergedVariant.stockxPrice.toFixed(2)}` : '--.--'}</span>
-                  <Button size="sm" asChild>
-                    <a href={`https://stockx.com/${mergedVariant.kicksdevId}`} target="_blank" rel="noopener noreferrer">
-                      View on StockX
-                      <ExternalLink className="h-3 w-3 ml-1" />
-                    </a>
-                  </Button>
-                </div>
-              </Card>
+              {typeof mergedVariant.stockxPrice === 'number' && mergedVariant.kicksdevId && (
+                <Card className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-semibold">StockX</h4>
+                    {mergedVariant.msrp && mergedVariant.stockxPrice && (
+                      <span className={`text-sm font-medium text-gray-500`}>
+                        {typeof mergedVariant.stockxPrice === 'number' && typeof mergedVariant.msrp === 'number' ? `${((mergedVariant.stockxPrice - mergedVariant.msrp) / mergedVariant.msrp * 100).toFixed(0)}% vs MSRP` : '--.--'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl font-bold">{typeof mergedVariant.stockxPrice === 'number' ? `$${mergedVariant.stockxPrice.toFixed(2)}` : '--.--'}</span>
+                    <Button size="sm" asChild>
+                      <a href={`https://stockx.com/${mergedVariant.kicksdevId}`} target="_blank" rel="noopener noreferrer">
+                        View on StockX
+                        <ExternalLink className="h-3 w-3 ml-1" />
+                      </a>
+                    </Button>
+                  </div>
+                </Card>
+              )}
 
               {/* eBay Window */}
               <Card className="p-4">

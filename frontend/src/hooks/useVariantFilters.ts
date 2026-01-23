@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Labubu } from '@labubu/common/src/types/labubu';
+import { Labubu } from '@labubu/common';
 import { shuffleArray } from '@/lib/utils';
 
 export const useVariantFilters = (variants: Labubu[], searchQuery: string) => {

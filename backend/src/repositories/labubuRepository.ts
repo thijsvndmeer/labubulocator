@@ -1,5 +1,5 @@
 import { Database } from "sqlite3";
-import { Labubu } from "@labubu/common/src/types/labubu";
+import { Labubu } from "@labubu/common";
 import { PersistedLabubu, QueryCriteria, QueryOptions } from "../types/labubu";
 import { BaseRepository } from "./baseRepository";
 

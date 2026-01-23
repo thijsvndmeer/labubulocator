@@ -1,5 +1,5 @@
 import { Card } from '@/components/ui/card';
-import { PriceEntry } from '@labubu/common/src/types/labubu';
+import { PriceEntry } from '@labubu/common';
 
 interface PriceHistoryChartProps {
   history: PriceEntry[];

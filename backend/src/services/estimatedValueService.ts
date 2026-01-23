@@ -1,5 +1,5 @@
 import { labubuRepository, priceHistoryRepository } from "../index";
-import { Labubu } from "@labubu/common/src/types/labubu";
+import { Labubu } from "@labubu/common";
 
 const STOCKX_WEIGHT = 0.8;
 const EBAY_WEIGHT = 0.2;

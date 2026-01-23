@@ -8,14 +8,14 @@ import { useToast } from '@/components/ui/use-toast';
 import { SearchFilters } from '@/components/SearchFilters';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
-import { Labubu } from '@labubu/common/src/types/labubu';
+import { Labubu } from '@labubu/common';
 import { useQuery } from '@tanstack/react-query';
 
 export const FavoritesPage = () => {
   const { data: allVariants = [], isLoading, isFetching } = useQuery<Labubu[]>({
     queryKey: ['variants'],
     queryFn: () => api.labubus.get(),
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
   });
 
   const [favoriteSkus, setFavoriteSkus] = useState(getFavorites());
@@ -43,15 +43,15 @@ export const FavoritesPage = () => {
     localStorage.setItem('favoritesSearchQuery', searchQuery);
   }, [searchQuery]);
 
-  const { 
-    filteredVariants, 
-    selectedRarity, 
-    setSelectedRarity, 
-    selectedSeries, 
-    setSelectedSeries, 
-    sortBy, 
-    setSortBy, 
-    allSeries 
+  const {
+    filteredVariants,
+    selectedRarity,
+    setSelectedRarity,
+    selectedSeries,
+    setSelectedSeries,
+    sortBy,
+    setSortBy,
+    allSeries
   } = useVariantFilters(favoritedVariants, searchQuery);
 
   const handleShare = async () => {
@@ -131,18 +131,18 @@ export const FavoritesPage = () => {
         </section>
 
         <footer className="text-center py-8 border-t">
-        <p className="text-xs text-muted-foreground mt-4">
-          <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through these links.
-          Prices and availability are subject to change.
-          <br></br>
-          <br></br>Estimated values shown on Labubu Locator are generated using an algorithm that analyzes historical sales, current listings, and market trends. These figures are approximations and not guaranteed market prices.
-          <br></br>
-          <br></br>
-          StockX prices are algorithmically estimated. Labubu Locator does not communicate with or receive data directly from StockX. eBay data is retrieved via the official eBay Browse API.
-          <br></br>
-          <br></br>
-          While we strive for accuracy, estimates may vary due to limited data, market volatility, item uniqueness, or other factors. Values provided are for informational purposes only and should not be relied upon as financial or investment advice.
-        </p>
+          <p className="text-xs text-muted-foreground mt-4">
+            <strong>Affiliate Disclosure:</strong> We may earn a commission from purchases made through these links.
+            Prices and availability are subject to change.
+            <br></br>
+            <br></br>Estimated values shown on Labubu Locator are generated using an algorithm that analyzes historical sales, current listings, and market trends. These figures are approximations and not guaranteed market prices.
+            <br></br>
+            <br></br>
+            StockX prices are algorithmically estimated. Labubu Locator does not communicate with or receive data directly from StockX. eBay data is retrieved via the official eBay Browse API.
+            <br></br>
+            <br></br>
+            While we strive for accuracy, estimates may vary due to limited data, market volatility, item uniqueness, or other factors. Values provided are for informational purposes only and should not be relied upon as financial or investment advice.
+          </p>
         </footer>
       </div>
     </div>

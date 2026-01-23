@@ -1,19 +1,19 @@
 import { labubuRepository } from "../index";
-import { Labubu } from "@labubu/common/src/types/labubu";
+import { Labubu } from "@labubu/common";
 import { loadLabubusFromCsv, LABUBU_CSV_PATH } from "../utils/labubuCsvManager";
 
 const getSeriesFolderName = (series: string): string => {
-    const seriesLower = series.toLowerCase();
-    if (seriesLower.startsWith('exciting macaron')) return 'exciting macaron';
-    if (seriesLower.startsWith('have a seat')) return 'have a seat';
-    if (seriesLower.startsWith('big into energy')) return 'big into energy';
-    if (seriesLower.startsWith('pin for love')) return 'pin for love';
-    if (seriesLower.startsWith('plush releases')) return 'plush releases';
-    if (seriesLower.startsWith('regional')) return 'regional';
-    if (seriesLower.startsWith('zimomo')) return 'zimomo';
-    if (seriesLower.startsWith('mokoko')) return 'mokoko';
-    if (seriesLower.startsWith('coca cola')) return 'coca cola series';
-    return series.toLowerCase().replace(/ /g, '-');
+  const seriesLower = series.toLowerCase();
+  if (seriesLower.startsWith('exciting macaron')) return 'exciting macaron';
+  if (seriesLower.startsWith('have a seat')) return 'have a seat';
+  if (seriesLower.startsWith('big into energy')) return 'big into energy';
+  if (seriesLower.startsWith('pin for love')) return 'pin for love';
+  if (seriesLower.startsWith('plush releases')) return 'plush releases';
+  if (seriesLower.startsWith('regional')) return 'regional';
+  if (seriesLower.startsWith('zimomo')) return 'zimomo';
+  if (seriesLower.startsWith('mokoko')) return 'mokoko';
+  if (seriesLower.startsWith('coca cola')) return 'coca cola series';
+  return series.toLowerCase().replace(/ /g, '-');
 }
 
 export const syncLabubus = async () => {
