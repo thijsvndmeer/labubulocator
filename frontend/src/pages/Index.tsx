@@ -12,23 +12,19 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useConfig } from '@/context/ConfigContext';
+import { useQuery } from '@tanstack/react-query';
+import { BackendStartupMessage } from '@/components/BackendStartupMessage';
 
 const Index = () => {
   const { content, layout } = useConfig();
-  const [variants, setVariants] = useState<Labubu[]>([]);
+  const { data: variants = [], isLoading, isError } = useQuery<Labubu[]>({
+    queryKey: ['variants'],
+    queryFn: () => api.labubus.get(),
+  });
 
-  // useEffect to load variants
-  useEffect(() => {
-    const loadVariants = async () => {
-      try {
-        const fetchedVariants = await api.labubus.get();
-        setVariants(fetchedVariants);
-      } catch (error) {
-        console.error("Error fetching variants:", error);
-      }
-    };
-    loadVariants();
-  }, []); // Empty dependency array means this runs once on mount
+  if (isError) {
+    return <BackendStartupMessage />;
+  }
 
   return (
     <div className="min-h-screen">

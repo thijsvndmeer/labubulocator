@@ -14,8 +14,7 @@ import { api, API_ROOT_URL } from '@/lib/api';
 import { isFavorite, addFavorite, removeFavorite } from '@/lib/favorites';
 import { isCollected, addCollection, removeCollection } from '@/lib/collection';
 import { Labubu, Listing } from '@labubu/common';
-
-
+import { BackendStartupMessage } from '@/components/BackendStartupMessage';
 
 export default function VariantDetail() {
   const navigate = useNavigate();
@@ -23,7 +22,7 @@ export default function VariantDetail() {
   const [isFavorited, setIsFavorited] = useState<boolean>(false);
   const [isCollectedState, setIsCollectedState] = useState<boolean>(false);
 
-  const { data: variant, isLoading: isLoadingVariant, isFetching: isFetchingVariant, refetch: refetchVariant } = useQuery({
+  const { data: variant, isLoading: isLoadingVariant, isFetching: isFetchingVariant, refetch: refetchVariant, isError } = useQuery({
     queryKey: ['variant', sku],
     queryFn: async () => {
       if (!sku) throw new Error('SKU is required');
@@ -32,6 +31,10 @@ export default function VariantDetail() {
     },
     enabled: !!sku,
   });
+
+  if (isError) {
+    return <BackendStartupMessage />;
+  }
 
   useEffect(() => {
     if (variant) {

@@ -10,13 +10,18 @@ import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
 import { Labubu } from '@labubu/common';
 import { useQuery } from '@tanstack/react-query';
+import { BackendStartupMessage } from '@/components/BackendStartupMessage';
 
 export const FavoritesPage = () => {
-  const { data: allVariants = [], isLoading, isFetching } = useQuery<Labubu[]>({
+  const { data: allVariants = [], isLoading, isFetching, isError } = useQuery<Labubu[]>({
     queryKey: ['variants'],
     queryFn: () => api.labubus.get(),
     placeholderData: (previousData) => previousData,
   });
+
+  if (isError) {
+    return <BackendStartupMessage />;
+  }
 
   const [favoriteSkus, setFavoriteSkus] = useState(getFavorites());
 

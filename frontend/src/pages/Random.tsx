@@ -6,6 +6,8 @@ import { VariantCard } from '@/components/VariantCard';
 import Particles from "react-tsparticles";
 import { loadFull } from "tsparticles";
 import Confetti from 'react-confetti';
+import { useQuery } from '@tanstack/react-query';
+import { BackendStartupMessage } from '@/components/BackendStartupMessage';
 
 // Define a color palette for the wheel
 const colorPalette = [
@@ -22,9 +24,13 @@ const colorPalette = [
 ];
 
 const Random: React.FC = () => {
+  const { data: variants = [], isLoading, isError } = useQuery<Labubu[]>({
+    queryKey: ['variants'],
+    queryFn: () => api.labubus.get(),
+  });
+
   const [mustSpin, setMustSpin] = useState(false);
   const [prizeNumber, setPrizeNumber] = useState(0);
-  const [variants, setVariants] = useState<Labubu[]>([]);
   const [selectedVariant, setSelectedVariant] = useState<Labubu | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
@@ -36,14 +42,9 @@ const Random: React.FC = () => {
     await loadFull(engine);
   }, []);
 
-  useEffect(() => {
-    const fetchVariants = async () => {
-      const allVariants = await api.labubus.get();
-      setVariants(allVariants);
-    };
-
-    fetchVariants();
-  }, []);
+  if (isError) {
+    return <BackendStartupMessage />;
+  }
 
   const handleSpinClick = () => {
     if (!mustSpin) {

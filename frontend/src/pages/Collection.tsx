@@ -11,13 +11,18 @@ import { CardSkeleton } from '@/components/CardSkeleton';
 import { api } from '@/lib/api';
 import { Labubu } from '@labubu/common';
 import { useQuery } from '@tanstack/react-query';
+import { BackendStartupMessage } from '@/components/BackendStartupMessage';
 
 export default function Collection() {
-  const { data: allVariants = [], isLoading, isFetching } = useQuery<Labubu[]>({
+  const { data: allVariants = [], isLoading, isFetching, isError } = useQuery<Labubu[]>({
     queryKey: ['variants'],
     queryFn: () => api.labubus.get(),
     placeholderData: (previousData) => previousData,
   });
+
+  if (isError) {
+    return <BackendStartupMessage />;
+  }
 
   const [collectionSkus, setCollectionSkus] = useState(getCollection());
 

@@ -10,6 +10,7 @@ import { getCollection } from '@/lib/collection';
 import { Labubu } from '@labubu/common';
 import { useQuery } from '@tanstack/react-query';
 import { useConfig } from '@/context/ConfigContext';
+import { BackendStartupMessage } from '@/components/BackendStartupMessage';
 
 interface CatalogPageProps {
   searchQuery: string;
@@ -18,11 +19,15 @@ interface CatalogPageProps {
 
 export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) => {
   const { layout } = useConfig();
-  const { data: variants = [], isLoading, isFetching } = useQuery<Labubu[]>({
+  const { data: variants = [], isLoading, isFetching, isError } = useQuery<Labubu[]>({
     queryKey: ['variants'],
     queryFn: () => api.labubus.get(),
     placeholderData: (previousData) => previousData,
   });
+
+  if (isError) {
+    return <BackendStartupMessage />;
+  }
 
   const [popularVariantIds, setPopularVariantIds] = useState<Set<string>>(new Set());
   const [showCollectionStatus, setShowCollectionStatus] = useState(() => {
