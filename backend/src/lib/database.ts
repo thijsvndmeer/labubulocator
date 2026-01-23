@@ -175,6 +175,16 @@ db.serialize(() => {
     }
   );
 
+  // Add volatility column if it doesn't exist
+  db.run(
+    `ALTER TABLE labubus ADD COLUMN volatility REAL`,
+    (err) => {
+      if (err && !err.message.includes("duplicate column name")) {
+        console.error("DATABASE: Error adding volatility column to labubus table", err.message);
+      }
+    }
+  );
+
   // Create the listings table
 
   // Add stockStatus column if it doesn't exist
