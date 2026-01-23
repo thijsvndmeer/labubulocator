@@ -1,5 +1,4 @@
-export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'secret';
-export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock' | 'pre_order' | 'discontinued';
+import { Rarity, StockStatus } from '@labubu/common/src/types/labubu'; // Import from common package
 
 export interface PriceSource {
   source: string;

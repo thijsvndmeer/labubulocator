@@ -22,8 +22,11 @@ import { NavigationService } from "./services/navigationService";
 import { SettingsService } from "./services/settingsService";
 import fs from 'fs';
 import path from 'path';
+import adminLabubuRoutes from './routes/adminLabubus';
+import cors from 'cors'; // Import cors
 
 const app = express();
+app.set('trust proxy', true);
 console.log("APP: Starting up...");
 app.set("query parser", "extended");
 const port = process.env.PORT || 3001;
@@ -77,6 +80,7 @@ const findImageRecursively = (filename: string, currentDir: string): string | nu
   return null;
 };
 
+<<<<<<< HEAD
 app.use(bodyParser.json());
 app.use((req, res, next) => {
   const allowedOrigins = ["https://labubulocator.me","http://localhost:4173"];
@@ -86,6 +90,33 @@ app.use((req, res, next) => {
   }
   next();
 });
+=======
+app.use(express.json()); // Add this line to parse JSON request bodies
+
+// CORS Configuration
+const allowedOrigins = ["https://labubulocator.me"];
+const localhostOriginPattern = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
+
+app.use(cors({
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    if (
+      allowedOrigins.includes(origin) ||
+      localhostOriginPattern.test(origin)
+    ) {
+      return callback(null, true);
+    }
+
+    const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+    return callback(new Error(msg), false);
+  },
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: "Content-Type, x-admin-token", // Allow x-admin-token header
+  credentials: true, // Allow cookies to be sent
+}));
+>>>>>>> ff1567965961f00da574fed1b25c29819849ee56
 
 app.use((req, res, next) => {
   console.log(`Request received: ${req.method} ${req.path}`);
@@ -114,10 +145,19 @@ import adminRoutes from "./routes/admin";
 import { authMiddleware } from "./middleware/auth";
 
 app.use("/api/labubus", labubuRoutes);
-
 app.use("/api/listings", listingRoutes);
 
+<<<<<<< HEAD
 app.use("/api/admin", authMiddleware, adminRoutes);
+=======
+const allowAdminApi = Boolean(process.env.ADMIN_SECRET_TOKEN);
+
+if (allowAdminApi) {
+  app.use("/admin-api", adminLabubuRoutes); // Mount new admin API routes
+} else {
+  console.warn("Admin API disabled: set ADMIN_SECRET_TOKEN to enable.");
+}
+>>>>>>> ff1567965961f00da574fed1b25c29819849ee56
 
 //============================================================================================================================================================================================
 // Start the server
@@ -131,6 +171,7 @@ app.get("/", (req: Request, res: Response) => {
 app.listen(port, () => {
   console.log(`Backend server is running at http://localhost:${port}`);
 });
+
 
 // const interval = 0.1 * 60 * 1000 // 15 minutes
 // setInterval(() => {

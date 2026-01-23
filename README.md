@@ -1,73 +1,138 @@
-# Welcome to your Lovable project
+# Labubu Locator 🐰
 
-## Project info
+> **The ultimate companion for Pop Mart Labubu collectors.**  
+> Track prices, analyze trends, and manage your collection with real-time market data.
 
-**URL**: https://lovable.dev/projects/f24f2b88-4446-4219-a252-e77251f3c13d
+![Labubu Locator Hero](https://labubulocator.me/images/hero-banner.jpg)
 
-## How can I edit this code?
+## 🚀 Overview
 
-There are several ways of editing your application.
+**Labubu Locator** is a sophisticated full-stack application designed to aggregate, analyze, and visualize market data for Labubu collectibles. By integrating with major marketplaces like eBay, it provides collectors with actionable insights, historical price trends, and "volatility" metrics to make informed buying and selling decisions.
 
-**Use Lovable**
+This project serves as a comprehensive portfolio piece demonstrating a modern, high-performance **TypeScript Monorepo** architecture using **Bun**, **React**, and **Node.js**.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f24f2b88-4446-4219-a252-e77251f3c13d) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Tech Stack & Architecture
 
-**Use your preferred IDE**
+This project is built with a focus on **developer experience (DX)**, **type safety**, and **runtime performance**.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 🏗️ Monorepo Structure (Bun Workspaces)
+The codebase uses **Bun** as a connected runtime and package manager, managing `backend`, `frontend`, and `common` packages in a unified workspace. This ensures 100% type safety across the network boundary—types defined in `common` are consumed by both API and UI.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 🎨 Frontend (Modern & Reactive)
+- **Framework**: [React](https://react.dev/) + [Vite](https://vitejs.dev/) for lightning-fast HMR and bundling.
+- **State Management**: [TanStack Query](https://tanstack.com/query/latest) for robust server-state synchronization, caching, and optimistic updates.
+- **UI System**:
+  - **Tailwind CSS**: For utility-first, responsive styling.
+  - **Shadcn/UI & Radix Primitives**: For accessible, reliable, unrestricted component design.
+  - **Recharts**: For rendering complex price history and volatility charts.
+  - **Framer Motion / GSAP**: For smooth, high-fidelity micro-interactions and improved UX.
 
-Follow these steps:
+### ⚙️ Backend (Robust & Scalable)
+- **Runtime**: **Bun** (compatible with Node APIs) for superior startup times and script execution.
+- **API Framework**: Express.js with custom middleware for high-performance routing.
+- **Data Layer**:
+  - **SQLite**: Lightweight yet powerful database solution, perfect for reading heavy workloads and rapid prototyping.
+  - **Custom Repositories**: A clean abstraction layer separating business logic from direct DB access.
+- **Validation**: [Zod](https://zod.dev/) for runtime schema validation, ensuring API inputs and outputs match TypeScript interfaces perfectly.
+- **Sync Engine**: A custom-built scheduler (`node-cron`) that manages rate-limited scraping and API calls (eBay Browse API) using concurrency control (`p-limit`).
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+---
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## ✨ Key Features
 
-# Step 3: Install the necessary dependencies.
-npm i
+1.  **Live Market Data**: Automatically syncs listings from eBay and other sources to provide "Lowest Price" and "Average Price" metrics.
+2.  **Price History Charts**: Visualizes value trends over time, helping identifying "dips" and "spikes".
+3.  **Collection Management**: Users can "Watch" variants or add them to their personal collection.
+4.  **Smart Filtering**: Advanced search by series, release date, and price range.
+5.  **Admin Dashboard**: comprehensive control over product database, user roles, and system navigation.
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+---
+
+## 🏁 Getting Started
+
+Follow these steps to set up the project locally.
+
+### Prerequisites
+- **Bun** (v1.0+): [Install Bun](https://bun.sh/)
+- **Node.js** (Optional, but recommended for some legacy tool compatibility)
+
+### Installation
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/yourusername/labubulocator.git
+    cd labubulocator
+    ```
+
+2.  **Install dependencies:**
+    Since this is a Bun workspace, one command installs everything.
+    ```bash
+    bun install
+    ```
+
+### Configuration
+
+1.  **Backend Environment:**
+    Create a `.env` file in `backend/`:
+    ```env
+    PORT=3001
+    EBAY_APP_ID=your_ebay_app_id
+    EBAY_CERT_ID=your_ebay_cert_id
+    ADMIN_SECRET_TOKEN=secure_token_for_admin_access
+    ```
+
+2.  **Frontend Environment:**
+    (Optional) Create a `.env` file in `frontend/` if you need to override API endpoints.
+
+### Running the Project
+
+You can run the frontend and backend independently or together.
+
+**Backend Development:**
+```bash
+# From root
+bun run dev:backend
 ```
 
-**Edit a file directly in GitHub**
+**Frontend Development:**
+```bash
+# From root
+bun run dev:frontend
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+**Build for Production:**
+```bash
+bun run build
+```
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 📂 Project Structure
 
-## What technologies are used for this project?
+```text
+labubulocator/
+├── backend/          # Express API, Sync Logic, Database
+│   ├── src/
+│   │   ├── services/ # Business logic (Sync, Price Calc)
+│   │   ├── routes/   # API endpoints
+│   │   └── lib/      # DB Connection
+├── frontend/         # React + Vite Application
+│   ├── src/
+│   │   ├── pages/    # Main Views
+│   │   ├── components/ # Reusable UI components
+│   │   └── lib/      # API Clients & Util
+├── common/           # Shared TypeScript Types & interfaces
+└── package.json      # Workspace configuration
+```
 
-This project is built with:
+---
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🤝 Contributing
 
-## How can I deploy this project?
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-Simply open [Lovable](https://lovable.dev/projects/f24f2b88-4446-4219-a252-e77251f3c13d) and click on Share -> Publish.
+## 📄 License
 
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+This project is licensed under the ISC License.

@@ -1,5 +1,9 @@
 import { ThemeToggle } from "./ThemeToggle";
+<<<<<<< HEAD
 import { PlusCircle, Search, LocateFixed, Package, Heart, Boxes } from 'lucide-react'; // Import Settings icon
+=======
+import { Search, LocateFixed, Package, Heart, Boxes } from 'lucide-react';
+>>>>>>> ff1567965961f00da574fed1b25c29819849ee56
 import { Input } from '@/components/ui/input';
 import { Button } from './ui/button';
 import { Link, useNavigate } from 'react-router-dom';

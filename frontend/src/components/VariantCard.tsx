@@ -1,6 +1,9 @@
 import { Card } from '@/components/ui/card';
 import { RarityBadge } from '@/components/RarityBadge';
+<<<<<<< HEAD
 
+=======
+>>>>>>> ff1567965961f00da574fed1b25c29819849ee56
 import { StockStatusBadge } from '@/components/StockStatusBadge';
 import { ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -9,6 +12,9 @@ import { Badge } from '@/components/ui/badge';
 import { Labubu } from '@labubu/common';
 import { PriceChangeBadge } from './PriceChangeBadge';
 import { API_ROOT_URL } from '@/lib/api';
+import { featureFlags as staticFeatureFlags } from '@/config/feature-flags';
+import { layoutConfig as staticLayoutConfig } from '@/config/layout.config';
+import { useConfig } from '@/context/ConfigContext';
 
 interface VariantCardProps {
   variant: Labubu;
@@ -19,6 +25,7 @@ interface VariantCardProps {
 }
 
 export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectionStatus, isCollected }: VariantCardProps) => {
+  const { featureFlags, layout } = useConfig();
   const lowestPrice = variant.lowestPrice || 0;
 
   const getImageUrl = (variant: Labubu) => {
@@ -27,9 +34,13 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
 
   const cardClasses = [
     "group overflow-hidden transition-all duration-300 hover:shadow-card-hover fade-in",
-    showCollectionStatus && isCollected && "glow-collected",
-    showCollectionStatus && !isCollected && "glow-uncollected",
+    layout.cards.showCollectionStatus && featureFlags.collectionGlow && showCollectionStatus && isCollected && "glow-collected",
+    layout.cards.showCollectionStatus && featureFlags.collectionGlow && showCollectionStatus && !isCollected && "glow-uncollected",
   ].filter(Boolean).join(' ');
+
+  const shouldShowStock = featureFlags.stockStatus && !hideStockStatus;
+  const shouldShowAffiliate = featureFlags.affiliateButtons && variant.affiliateLinks && variant.affiliateLinks.length > 0;
+  const shouldShowPriceChange = featureFlags.priceChange && variant.priceChange24h !== undefined;
 
   return (
     <Card
@@ -61,7 +72,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
           </div>
         </Link>
 
-        {isPopular && (
+        {isPopular && layoutConfig.cards.badgeVariant === 'floating' && (
           <Badge variant="secondary" className="absolute top-2 left-2">Popular</Badge>
         )}
 
@@ -71,19 +82,23 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
               <span className="text-2xl font-bold text-primary">
                 ${(variant.estimatedValue || 0).toFixed(2)}
               </span>
-              {variant.priceChange24h !== undefined && (
-                <PriceChangeBadge priceChange={variant.priceChange24h} />
+              {shouldShowPriceChange && (
+                <PriceChangeBadge priceChange={variant.priceChange24h!} />
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              Floor: ${lowestPrice > 0 && lowestPrice !== Infinity ? lowestPrice.toFixed(2) : 'N/A'} • Range: ${variant.priceRange?.low || 'N/A'}-${variant.priceRange?.high || 'N/A'}
+              Floor: ${lowestPrice > 0 && lowestPrice !== Infinity ? lowestPrice.toFixed(2) : 'N/A'}
             </p>
           </div>
         </Link>
+<<<<<<< HEAD
         {!hideStockStatus && <StockStatusBadge status={variant.stockStatus as any} />}
+=======
+          {shouldShowStock && <StockStatusBadge status={variant.stockStatus as any} />}
+>>>>>>> ff1567965961f00da574fed1b25c29819849ee56
         <div className="flex items-center justify-between gap-0 pt-0">
 
-          {variant.affiliateLinks && variant.affiliateLinks.length > 0 && (
+          {shouldShowAffiliate && (
             <Button
               size="sm"
               variant="outline"
@@ -91,7 +106,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
               onClick={(e) => e.stopPropagation()}
             >
               <a
-                href={variant.affiliateLinks[0].url}
+                href={variant.affiliateLinks![0].url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1"
@@ -102,8 +117,11 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
             </Button>
           )}
         </div>
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> ff1567965961f00da574fed1b25c29819849ee56
       </div>
     </Card>
   );

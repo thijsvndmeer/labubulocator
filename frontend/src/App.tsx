@@ -4,12 +4,17 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { api } from './lib/api';
 import Spinner from "./components/Spinner";
 import { Header } from "./components/Header";
+import { ThemeUpdater } from "./components/ThemeUpdater";
 import { useState, useEffect, lazy, Suspense } from "react";
+<<<<<<< HEAD
 import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
+=======
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
+>>>>>>> ff1567965961f00da574fed1b25c29819849ee56
 
 const Index = lazy(() => import("./pages/Index"));
 const VariantDetail = lazy(() => import("./pages/VariantDetail"));
@@ -20,6 +25,7 @@ const Collection = lazy(() => import("./pages/Collection"));
 const SharedCollection = lazy(() => import("./pages/SharedCollection"));
 const SharedFavorites = lazy(() => import("./pages/SharedFavorites"));
 const Random = lazy(() => import("./pages/Random"));
+<<<<<<< HEAD
 const Home = lazy(() => import("./pages/Home"));
 
 const AdminLogin = lazy(() => import("./pages/AdminLogin")); // Import AdminLogin
@@ -33,6 +39,12 @@ const AdminNavigation = lazy(() => import("./pages/admin/Navigation"));
 const AdminSettings = lazy(() => import("./pages/admin/Settings"));
 const AddCatalogItem = lazy(() => import("./pages/admin/AddCatalogItem"));
 const EditCatalogItem = lazy(() => import("./pages/admin/EditCatalogItem"));
+=======
+const Admin = lazy(() => import("./pages/Admin"));
+const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage"));
+const AddVariant = lazy(() => import("./pages/AddVariant"));
+const EditVariant = lazy(() => import("./pages/EditVariant"));
+>>>>>>> ff1567965961f00da574fed1b25c29819849ee56
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,6 +65,7 @@ export const AppContent = () => {
     return storedSearchQuery || '';
   });
   const location = useLocation();
+  const isLocalAdmin = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 
   useEffect(() => {
     localStorage.setItem('searchQuery', searchQuery);
@@ -76,6 +89,7 @@ export const AppContent = () => {
 
   return (
     <>
+      <ThemeUpdater />
       {showHeader && <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />}
       <Suspense fallback={<Spinner />}>
         <Routes>
@@ -87,6 +101,7 @@ export const AppContent = () => {
           <Route path="/sharedcollection" element={<SharedCollection />} />
           <Route path="/sharedfavorites" element={<SharedFavorites />} />
           <Route path="/random" element={<Random />} />
+<<<<<<< HEAD
           <Route path="/home" element={<Home />} />
           <Route path="/admin/login" element={<AdminLogin />} /> {/* Admin Login Route */}
           <Route element={<ProtectedRoute />}>
@@ -102,6 +117,39 @@ export const AppContent = () => {
               <Route path="settings" element={<AdminSettings />} />
             </Route>
           </Route>
+=======
+          {isLocalAdmin ? (
+            <>
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route
+                path="/admin"
+                element={(
+                  <ProtectedAdminRoute>
+                    <Admin />
+                  </ProtectedAdminRoute>
+                )}
+              />
+              <Route
+                path="/admin/variants/add"
+                element={(
+                  <ProtectedAdminRoute>
+                    <AddVariant />
+                  </ProtectedAdminRoute>
+                )}
+              />
+              <Route
+                path="/admin/variants/edit/:sku"
+                element={(
+                  <ProtectedAdminRoute>
+                    <EditVariant />
+                  </ProtectedAdminRoute>
+                )}
+              />
+            </>
+          ) : (
+            <Route path="/admin/*" element={<Navigate to="/" replace />} />
+          )}
+>>>>>>> ff1567965961f00da574fed1b25c29819849ee56
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -25,7 +25,7 @@ export class LabubuRepository extends BaseRepository<PersistedLabubu> {
   public async getOrCreate(data: Labubu): Promise<number> {
     const existing = await this.get({ filter: { sku: data.sku } }, ["id"]);
     if (existing.length > 0) {
-      return existing[0].id;
+      return existing[0].id as number; // Explicitly cast to number
     }
     return await super.create(data);
   }
@@ -34,7 +34,7 @@ export class LabubuRepository extends BaseRepository<PersistedLabubu> {
     const existing = await this.get({ filter: { sku: data.sku } }, ["id"]);
     if (existing.length > 0) {
       await super.update({ filter: { sku: data.sku } }, data);
-      return existing[0].id;
+      return existing[0].id as number; // Explicitly cast to number
     }
     return await super.create(data);
   }
@@ -58,5 +58,14 @@ export class LabubuRepository extends BaseRepository<PersistedLabubu> {
 
   public async delete(criteria: QueryCriteria<PersistedLabubu> = {}): Promise<number> {
     return await super.delete(criteria);
+  }
+
+  /**
+   * Deletes all records from the labubus table.
+   * @returns A promise that resolves to the number of rows affected by the delete operation.
+   */
+  public async clearAll(): Promise<number> {
+    console.log(`REPOSITORY: Clearing all records from ${this.tableName}.`);
+    return await super.delete({});
   }
 }

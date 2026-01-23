@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z, ZodObject } from "zod";
 
+// --- Custom Types for Labubu ---
+export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'secret' | 'chase'; // Added 'chase'
+export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock' | 'pre_order' | 'discontinued' | 'aftermarketorbb'; // Added 'aftermarketorbb'
+
 //============================================================================================================================================================================================
 // Database entity types
 //============================================================================================================================================================================================
@@ -13,11 +17,12 @@ export const labubuSchema = z.object({
   description: z.string().optional(),
   msrp: z.coerce.number().optional(),
   lowestPrice: z.coerce.number().optional(),
-  stockxPrice: z.coerce.number().optional(),
+  stockxPrice: z.coerce.number().optional().nullable(),
   ebayLowestPrice: z.coerce.number().optional().nullable(),
   variant: z.string().optional(),
   estimatedValue: z.coerce.number().optional(),
   estimatedValueLastCalculated: z.string().optional(),
+  releaseDate: z.string().optional(),
   kicksdevId: z.string().optional(),
 
 

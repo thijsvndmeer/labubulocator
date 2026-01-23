@@ -19,20 +19,33 @@
     "@labubu/common": "file:../common",
     "@types/node-cron": "^3.0.11",
     "axios": "^1.12.2",
+<<<<<<< HEAD
     "body-parser": "^2.2.0",
+=======
+    "cors": "^2.8.5",
+>>>>>>> ff1567965961f00da574fed1b25c29819849ee56
     "csv-parse": "^6.1.0",
     "dotenv": "^16.6.1",
     "ebay-api": "^9.2.2",
     "express": "^5.1.0",
+    "multer": "^2.0.2",
     "node-cron": "^4.2.1",
     "p-limit": "^3.1.0",
+    "papaparse": "^5.5.3",
     "sqlite3": "^5.1.7",
+<<<<<<< HEAD
     "zod": "^4.1.12",
     "module-alias": "^2.2.3"
+=======
+    "zod": "^3.23.0"
+>>>>>>> ff1567965961f00da574fed1b25c29819849ee56
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
+    "@types/multer": "^2.0.0",
     "@types/node": "^24.7.2",
+    "@types/papaparse": "^5.5.2",
     "@types/sqlite3": "^3.1.11",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
