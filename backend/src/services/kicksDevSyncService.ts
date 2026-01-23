@@ -1,4 +1,4 @@
-import { labubuRepository } from "../index";
+import { labubuRepository, listingRepository, priceHistoryRepository } from "../index";
 import { Labubu } from "@labubu/common";
 import axios from "axios";
 import pLimit from "p-limit";
@@ -194,6 +194,25 @@ export const processStockxLabubu = async (labubu: Labubu) => {
 
         if (priceDecision.lowestPrice !== undefined) {
           updateData.lowestPrice = priceDecision.lowestPrice;
+        }
+
+        // Create individual listing for UI comparison
+        if (currentStockxLink) {
+          const listingId = await listingRepository.updateOrCreate({
+            productUrl: String(currentStockxLink),
+            labubuSku: labubu.sku,
+            vendorName: "StockX",
+            listingTitle: String(labubu.name),
+            currentPrice: currentLowestAsk,
+            inStock: true,
+            lastCheckedAt: new Date(),
+          });
+
+          await priceHistoryRepository.create({
+            listingId: listingId,
+            price: currentLowestAsk as number,
+            date: new Date(),
+          });
         }
       }
       if (currentKicksdevId && !labubu.kicksdevId) {

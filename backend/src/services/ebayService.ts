@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Labubu } from "@labubu/common";
-import { labubuRepository, priceHistoryRepository } from "../index";
+import { labubuRepository, listingRepository, priceHistoryRepository } from "../index";
 import pLimit from "p-limit";
 import { calculateEstimatedValueForLabubu } from './estimatedValueService';
 import { enforcePriceDiscrepancyRule } from "../utils/priceUtils";
@@ -65,7 +65,7 @@ const retry = async <T>(fn: () => Promise<T>, retries = 5, delay = 2000): Promis
   }
 };
 
-export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit: number = 10): Promise<{ lowestPrice?: number; ebayUrl?: string | null }> => {
+export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit: number = 10): Promise<{ lowestPrice?: number; ebayUrl?: string | null; items?: any[] }> => {
   console.log(`EBAY: --- START getEbayListing for ${String(labubu.name)} ---`);
   let ebaySearchUrl: string | null = null;
   try {
@@ -105,7 +105,7 @@ export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit
       const items = response.data.itemSummaries;
       console.log(`EBAY: Found ${items ? items.length : 0} items from eBay API for query "${query}"`);
       if (items && items.length > 0) {
-        let validPrices: { price: number; url: string }[] = [];
+        let validPrices: { price: number; url: string; title: string }[] = [];
         for (const item of items) {
           const price = parseFloat(item.price.value);
           console.log(`EBAY: Processing item with price: ${price}`);
@@ -114,7 +114,7 @@ export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit
               console.log(`EBAY: Discarding eBay listing for ${String(labubu.name)} due to price (${price}) being too low compared to StockX (${stockxPrice}).`);
               continue;
             }
-            validPrices.push({ price: price, url: item.itemWebUrl || currentEbaySearchUrl });
+            validPrices.push({ price: price, url: item.itemWebUrl || currentEbaySearchUrl, title: item.title });
           } else {
             console.log(`EBAY: Discarding item with price ${price} because it is less than 20.`);
           }
@@ -127,11 +127,11 @@ export const getEbayListing = async (labubu: Labubu, stockxPrice?: number, limit
           const medianPrice = validPrices.length % 2 !== 0 ? validPrices[mid].price : (validPrices[mid - 1].price + validPrices[mid].price) / 2;
           const medianUrl = validPrices[mid].url;
           console.log(`EBAY: Returning median price: ${medianPrice}`);
-          return { lowestPrice: medianPrice, ebayUrl: medianUrl };
+          return { lowestPrice: medianPrice, ebayUrl: medianUrl, items: validPrices.slice(0, 3) };
         }
       }
       console.log(`EBAY: No valid price found for query "${query}"`);
-      return { lowestPrice: undefined, ebayUrl: currentEbaySearchUrl };
+      return { lowestPrice: undefined, ebayUrl: currentEbaySearchUrl, items: [] };
     };
 
     let searchResult = await performEbaySearch(baseEbayQuery + " authentic", limit, stockxPrice);
@@ -176,10 +176,28 @@ export const processEbayLabubu = async (labubu: Labubu) => {
 
       // If eBay price is significantly lower than StockX price, try to find a more reliable listing
       if (stockxPrice && ebayListing.lowestPrice && ebayListing.lowestPrice < stockxPrice * 0.5) {
-        console.log(`EBAY: eBay price for ${labubu.name} is significantly lower than StockX. Attempting to find a more reliable listing.`);
-        // Re-run getEbayListing with a higher limit to get more options
-        ebayListing = await getEbayListing(labubu, stockxPrice, 20); // Pass a higher limit
-        console.log(`EBAY: New eBay listing after retry:`, ebayListing);
+        ebayListing = await getEbayListing(labubu, stockxPrice, 20);
+      }
+
+      // Persist individual listings for UI comparison
+      if (ebayListing.items && ebayListing.items.length > 0) {
+        for (const item of ebayListing.items) {
+          const listingId = await listingRepository.updateOrCreate({
+            productUrl: item.url,
+            labubuSku: labubu.sku,
+            vendorName: "eBay",
+            listingTitle: item.title,
+            currentPrice: item.price,
+            inStock: true,
+            lastCheckedAt: new Date(),
+          });
+
+          await priceHistoryRepository.create({
+            listingId: listingId,
+            price: item.price,
+            date: new Date(),
+          });
+        }
       }
 
       const updateData: Partial<Labubu> = { ebayLastRefreshed: new Date().toISOString() };

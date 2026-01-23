@@ -30,21 +30,34 @@ export const startApiSync = () => {
         try {
           const allLabubus = await labubuRepository.get({});
           console.log(`SCHEDULER: Found ${allLabubus.length} Labubus for initial Kicks.dev synchronization.`);
-          // const promises = allLabubus.map(labubu => stockxLimit(() => processStockxLabubu(labubu)));
-          // await Promise.all(promises); uncomment these lines to enable initial sync
-          console.log("SCHEDULER: Initial Labubu value synchronization completed.");
+
+          if (process.env.KICKS_DEV_API_KEY) {
+            const promises = allLabubus.map(labubu => stockxLimit(() => processStockxLabubu(labubu)));
+            await Promise.all(promises);
+            console.log("SCHEDULER: Initial Labubu value synchronization completed.");
+          } else {
+            console.warn("SCHEDULER: Skipping initial Kicks.dev sync - KICKS_DEV_API_KEY missing in .env");
+          }
         } catch (error) {
           console.error("SCHEDULER: Error during initial Labubu value synchronization:", error);
         }
       })(),
-      // syncAllEbayLabubus() // Uncomment this line if you want to run eBay sync on startup as well
+      (async () => {
+        if (process.env.EBAY_APP_ID && process.env.EBAY_CERT_ID) {
+          await syncAllEbayLabubus();
+        } else {
+          console.warn("SCHEDULER: Skipping initial eBay sync - EBAY credentials missing in .env");
+        }
+      })()
     ]);
     console.log("SCHEDULER: Initial API synchronization completed.");
 
     // Schedule eBay synchronization to run every 30 minutes after initial sync
     cron.schedule("*/30 * * * *", () => {
       console.log("SCHEDULER: Starting scheduled eBay synchronization...");
-      syncAllEbayLabubus();
+      if (process.env.EBAY_APP_ID && process.env.EBAY_CERT_ID) {
+        syncAllEbayLabubus();
+      }
     });
 
     // Schedule estimated value calculation to run once a day
