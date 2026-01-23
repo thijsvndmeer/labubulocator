@@ -3,7 +3,7 @@
 > **The ultimate companion for Pop Mart Labubu collectors.**  
 > Track prices, analyze trends, and manage your collection with real-time market data.
 
-![Labubu Locator Hero](https://labubulocator.me/images/hero-banner.jpg)
+![Labubu Locator Hero](https://labubulocator.me/assets/hero-banner-BYcVz-xF.jpg)
 
 ## 🚀 Overview
 
