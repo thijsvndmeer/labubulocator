@@ -1,1 +1,0 @@
-import{c as r,r as t}from"./index-CrPLI1Sl.js";const a=r("Check",[["path",{d:"M20 6 9 17l-5-5",key:"1gmf2c"}]]);var c=t.createContext(void 0);function i(e){const o=t.useContext(c);return e||o||"ltr"}export{a as C,i as u};
