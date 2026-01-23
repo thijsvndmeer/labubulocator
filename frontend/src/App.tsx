@@ -39,7 +39,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minutes
-      cacheTime: 1000 * 60 * 60, // 1 hour
+      gcTime: 1000 * 60 * 60, // 1 hour
     },
   },
 });
@@ -91,20 +91,24 @@ export const AppContent = () => {
           <Route path="/sharedfavorites" element={<SharedFavorites />} />
           <Route path="/random" element={<Random />} />
           <Route path="/home" element={<Home />} />
-          <Route path="/admin/login" element={<AdminLogin />} /> {/* Admin Login Route */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="catalog" element={<AdminCatalog />} />
-              <Route path="catalog/add" element={<AddCatalogItem />} />
-              <Route path="catalog/edit/:sku" element={<EditCatalogItem />} />
-              <Route path="users" element={<AdminUsers />} />
-              <Route path="roles" element={<AdminRoles />} />
-              <Route path="content" element={<AdminContent />} />
-              <Route path="navigation" element={<AdminNavigation />} />
-              <Route path="settings" element={<AdminSettings />} />
-            </Route>
-          </Route>
+          {isLocalAdmin && (
+            <>
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route element={<ProtectedRoute />}>
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="catalog" element={<AdminCatalog />} />
+                  <Route path="catalog/add" element={<AddCatalogItem />} />
+                  <Route path="catalog/edit/:sku" element={<EditCatalogItem />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="roles" element={<AdminRoles />} />
+                  <Route path="content" element={<AdminContent />} />
+                  <Route path="navigation" element={<AdminNavigation />} />
+                  <Route path="settings" element={<AdminSettings />} />
+                </Route>
+              </Route>
+            </>
+          )}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

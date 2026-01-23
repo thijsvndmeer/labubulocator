@@ -40,16 +40,16 @@ vi.mock('./context/ConfigContext', () => ({
       },
     },
     featureFlags: {
-        affiliateButtons: true,
-        stockStatus: true,
-        priceChange: true,
-        collectionGlow: true,
+      affiliateButtons: true,
+      stockStatus: true,
+      priceChange: true,
+      collectionGlow: true,
     },
     navigation: {
-        primaryLinks: [], footerLinks: [], resources: []
+      primaryLinks: [], footerLinks: [], resources: []
     },
     theme: {
-        modes: { light: {}, dark: {} } // Minimal mock for theme
+      modes: { light: {}, dark: {} } // Minimal mock for theme
     }
   }),
   ConfigProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>, // Mock ConfigProvider
@@ -73,7 +73,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: Infinity,
-      cacheTime: Infinity,
+      gcTime: Infinity,
     },
   },
 });
