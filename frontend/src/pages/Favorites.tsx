@@ -19,10 +19,6 @@ export const FavoritesPage = () => {
     placeholderData: (previousData) => previousData,
   });
 
-  if (isError) {
-    return <BackendStartupMessage />;
-  }
-
   const [favoriteSkus, setFavoriteSkus] = useState(getFavorites());
 
   useEffect(() => {
@@ -58,6 +54,10 @@ export const FavoritesPage = () => {
     setSortBy,
     allSeries
   } = useVariantFilters(favoritedVariants, searchQuery);
+
+  if (isError) {
+    return <BackendStartupMessage />;
+  }
 
   const handleShare = async () => {
     const shareableLink = `${window.location.origin}/sharedfavorites?skus=${favoriteSkus.join(',')}`;

@@ -20,10 +20,6 @@ export default function Collection() {
     placeholderData: (previousData) => previousData,
   });
 
-  if (isError) {
-    return <BackendStartupMessage />;
-  }
-
   const [collectionSkus, setCollectionSkus] = useState(getCollection());
 
   useEffect(() => {
@@ -96,6 +92,10 @@ export default function Collection() {
     setSortBy,
     allSeries
   } = useVariantFilters(collectedVariants, searchQuery);
+
+  if (isError) {
+    return <BackendStartupMessage />;
+  }
 
   const showSkeletons = isLoading;
 

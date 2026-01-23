@@ -25,10 +25,6 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
     placeholderData: (previousData) => previousData,
   });
 
-  if (isError) {
-    return <BackendStartupMessage />;
-  }
-
   const [popularVariantIds, setPopularVariantIds] = useState<Set<string>>(new Set());
   const [showCollectionStatus, setShowCollectionStatus] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -68,6 +64,10 @@ export const CatalogPage = ({ searchQuery, setSearchQuery }: CatalogPageProps) =
       setSelectedSeries(series);
     }
   }, [location.search, setSelectedSeries]);
+
+  if (isError) {
+    return <BackendStartupMessage />;
+  }
 
   return (
     <div className="min-h-screen">

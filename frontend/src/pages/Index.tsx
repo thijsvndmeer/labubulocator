@@ -15,6 +15,69 @@ import { useConfig } from '@/context/ConfigContext';
 import { useQuery } from '@tanstack/react-query';
 import { BackendStartupMessage } from '@/components/BackendStartupMessage';
 
+const CarouselSection = ({ carousel, variants }: { carousel: any, variants: Labubu[] }) => {
+  const sortedCarouselVariants = useMemo(() => {
+    let sorted = [...variants];
+    const { baseVariable, sortDirection } = carousel;
+
+    const compare = (a: Labubu, b: Labubu, variable: string) => {
+      let valA: any, valB: any;
+
+      if (variable === 'releaseDate') {
+        valA = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
+        valB = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
+      } else {
+        valA = (a as any)[variable] !== undefined ? (a as any)[variable] : (sortDirection === 'ASC' ? Infinity : -Infinity);
+        valB = (b as any)[variable] !== undefined ? (b as any)[variable] : (sortDirection === 'ASC' ? Infinity : -Infinity);
+      }
+
+      if (sortDirection === 'ASC') {
+        return valA - valB;
+      } else {
+        return valB - valA;
+      }
+    };
+
+    sorted.sort((a, b) => compare(a, b, baseVariable));
+    return sorted.slice(0, carousel.limit);
+  }, [variants, carousel.baseVariable, carousel.sortDirection, carousel.limit]);
+
+  return (
+    <section key={carousel.id}>
+      <div className="flex items-center gap-3 mb-8">
+        <TrendingUp className="h-8 w-8 text-primary" />
+        <div>
+          <h2 className="text-3xl font-bold">{carousel.title}</h2>
+          <p className="text-muted-foreground">{carousel.description}</p>
+        </div>
+      </div>
+
+      <Carousel
+        opts={{
+          align: carousel.align as any,
+          loop: carousel.loop,
+        }}
+        className="w-full"
+      >
+        <CarouselContent>
+          {sortedCarouselVariants.map((variant) => (
+            <CarouselItem
+              key={variant.sku}
+              className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
+            >
+              <div className="p-1">
+                <VariantCard variant={variant} />
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
+    </section>
+  );
+};
+
 const Index = () => {
   const { content, layout } = useConfig();
   const { data: variants = [], isLoading, isError } = useQuery<Labubu[]>({
@@ -52,69 +115,8 @@ const Index = () => {
       <div className="container mx-auto px-4 py-12 space-y-16">
         {/* Carousels Section */}
         {layout.homepage.carousels.map((carousel) => {
-          if (!carousel.enabled) return null; // Only render enabled carousels
-
-          const sortedCarouselVariants = useMemo(() => {
-            let sorted = [...variants];
-            const { baseVariable, sortDirection } = carousel;
-
-            const compare = (a: Labubu, b: Labubu, variable: typeof baseVariable) => {
-              let valA: any, valB: any;
-
-              if (variable === 'releaseDate') {
-                valA = a.releaseDate ? new Date(a.releaseDate).getTime() : 0;
-                valB = b.releaseDate ? new Date(b.releaseDate).getTime() : 0;
-              } else {
-                // Ensure the property exists on Labubu and handle potential undefined values
-                valA = (a as any)[variable] !== undefined ? (a as any)[variable] : (sortDirection === 'ASC' ? Infinity : -Infinity);
-                valB = (b as any)[variable] !== undefined ? (b as any)[variable] : (sortDirection === 'ASC' ? Infinity : -Infinity);
-              }
-
-              if (sortDirection === 'ASC') {
-                return valA - valB;
-              } else { // DESC
-                return valB - valA;
-              }
-            };
-
-            sorted.sort((a, b) => compare(a, b, baseVariable));
-            return sorted.slice(0, carousel.limit);
-          }, [variants, carousel.baseVariable, carousel.sortDirection, carousel.limit]);
-
-          return (
-            <section key={carousel.id}>
-              <div className="flex items-center gap-3 mb-8">
-                <TrendingUp className="h-8 w-8 text-primary" /> {/* Re-enabled */}
-                <div>
-                  <h2 className="text-3xl font-bold">{carousel.title}</h2>
-                  <p className="text-muted-foreground">{carousel.description}</p>
-                </div>
-              </div>
-
-              <Carousel
-                opts={{
-                  align: carousel.align as any,
-                  loop: carousel.loop,
-                }}
-                className="w-full"
-              >
-                <CarouselContent>
-                  {sortedCarouselVariants.map((variant) => (
-                    <CarouselItem
-                      key={variant.sku}
-                      className="md:basis-1/2 lg:basis-1/3 xl:basis-1/4"
-                    >
-                      <div className="p-1">
-                        <VariantCard variant={variant} />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious />
-                <CarouselNext />
-              </Carousel>
-            </section>
-          );
+          if (!carousel.enabled) return null;
+          return <CarouselSection key={carousel.id} carousel={carousel} variants={variants} />;
         })}
 
 

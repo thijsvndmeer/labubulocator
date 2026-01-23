@@ -32,10 +32,6 @@ export default function VariantDetail() {
     enabled: !!sku,
   });
 
-  if (isError) {
-    return <BackendStartupMessage />;
-  }
-
   useEffect(() => {
     if (variant) {
       setIsFavorited(isFavorite((variant as Labubu).sku));
@@ -91,6 +87,10 @@ export default function VariantDetail() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  if (isError) {
+    return <BackendStartupMessage />;
+  }
 
   if (isLoadingVariant && !mergedVariant) {
     return (
