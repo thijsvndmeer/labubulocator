@@ -10,11 +10,7 @@ import Spinner from "./components/Spinner";
 import { Header } from "./components/Header";
 import { ThemeUpdater } from "./components/ThemeUpdater";
 import { useState, useEffect, lazy, Suspense } from "react";
-<<<<<<< HEAD
 import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
-=======
-import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
->>>>>>> ff1567965961f00da574fed1b25c29819849ee56
 
 const Index = lazy(() => import("./pages/Index"));
 const VariantDetail = lazy(() => import("./pages/VariantDetail"));
@@ -25,7 +21,6 @@ const Collection = lazy(() => import("./pages/Collection"));
 const SharedCollection = lazy(() => import("./pages/SharedCollection"));
 const SharedFavorites = lazy(() => import("./pages/SharedFavorites"));
 const Random = lazy(() => import("./pages/Random"));
-<<<<<<< HEAD
 const Home = lazy(() => import("./pages/Home"));
 
 const AdminLogin = lazy(() => import("./pages/AdminLogin")); // Import AdminLogin
@@ -39,12 +34,6 @@ const AdminNavigation = lazy(() => import("./pages/admin/Navigation"));
 const AdminSettings = lazy(() => import("./pages/admin/Settings"));
 const AddCatalogItem = lazy(() => import("./pages/admin/AddCatalogItem"));
 const EditCatalogItem = lazy(() => import("./pages/admin/EditCatalogItem"));
-=======
-const Admin = lazy(() => import("./pages/Admin"));
-const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage"));
-const AddVariant = lazy(() => import("./pages/AddVariant"));
-const EditVariant = lazy(() => import("./pages/EditVariant"));
->>>>>>> ff1567965961f00da574fed1b25c29819849ee56
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -101,7 +90,6 @@ export const AppContent = () => {
           <Route path="/sharedcollection" element={<SharedCollection />} />
           <Route path="/sharedfavorites" element={<SharedFavorites />} />
           <Route path="/random" element={<Random />} />
-<<<<<<< HEAD
           <Route path="/home" element={<Home />} />
           <Route path="/admin/login" element={<AdminLogin />} /> {/* Admin Login Route */}
           <Route element={<ProtectedRoute />}>
@@ -117,39 +105,6 @@ export const AppContent = () => {
               <Route path="settings" element={<AdminSettings />} />
             </Route>
           </Route>
-=======
-          {isLocalAdmin ? (
-            <>
-              <Route path="/admin/login" element={<AdminLoginPage />} />
-              <Route
-                path="/admin"
-                element={(
-                  <ProtectedAdminRoute>
-                    <Admin />
-                  </ProtectedAdminRoute>
-                )}
-              />
-              <Route
-                path="/admin/variants/add"
-                element={(
-                  <ProtectedAdminRoute>
-                    <AddVariant />
-                  </ProtectedAdminRoute>
-                )}
-              />
-              <Route
-                path="/admin/variants/edit/:sku"
-                element={(
-                  <ProtectedAdminRoute>
-                    <EditVariant />
-                  </ProtectedAdminRoute>
-                )}
-              />
-            </>
-          ) : (
-            <Route path="/admin/*" element={<Navigate to="/" replace />} />
-          )}
->>>>>>> ff1567965961f00da574fed1b25c29819849ee56
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

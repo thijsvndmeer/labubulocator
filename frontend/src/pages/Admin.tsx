@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-import React from "react";
-
-const Admin = () => {
-  return (
-    <div>
-      <h1>Admin Page</h1>
-      <p>Welcome to the admin page!</p>
-=======
 import { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { AdminConfig } from '@/types/admin-config';
@@ -18,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { ContentConfigEditor } from '@/components/admin/ContentConfigEditor';
-import { ContentConfig, FeatureFlags, LayoutConfig, NavigationConfig, ThemeConfig } from '@/types/admin-config';
+import { ContentConfig, FeatureFlags, LayoutConfig, NavigationConfig, ThemeConfig, CatalogConfig } from '@/types/admin-config';
 import { themeConfig as initialThemeConfig } from '@/config/theme.config';
 import { layoutConfig as initialLayoutConfig } from '@/config/layout.config';
 import { contentConfig as initialContentConfig } from '@/config/content.config';
@@ -153,10 +144,10 @@ const Admin = () => {
 
       // Perform a more thorough structural validation to ensure all critical nested properties exist
       if (!parsedLayout || !parsedLayout.homepage || !Array.isArray(parsedLayout.homepage.carousels)) {
-          throw new Error("Layout configuration is invalid or incomplete (homepage.carousels missing).");
+        throw new Error("Layout configuration is invalid or incomplete (homepage.carousels missing).");
       }
       if (!parsedContent || !parsedContent.hero || !parsedContent.footer) {
-          throw new Error("Content configuration is invalid or incomplete (hero or footer missing).");
+        throw new Error("Content configuration is invalid or incomplete (hero or footer missing).");
       }
       // Add more checks for other critical sections as needed
 
@@ -173,7 +164,7 @@ const Admin = () => {
       return error as Error;
     }
   }, [themeText, contentText, layoutText, catalogText, navigationText, featureFlagsText, loadedConfig,
-      initialThemeConfig, initialContentConfig, initialLayoutConfig, initialCatalogConfig, initialNavigationConfig, initialFeatureFlags // Add initial configs to dependencies
+    initialThemeConfig, initialContentConfig, initialLayoutConfig, initialCatalogConfig, initialNavigationConfig, initialFeatureFlags // Add initial configs to dependencies
   ]);
 
   // New useEffect for live preview updates
@@ -224,7 +215,8 @@ const Admin = () => {
 
 
 
-  const handleLoadDefaults = () => {    if (!defaults) {
+  const handleLoadDefaults = () => {
+    if (!defaults) {
       toast.error("Default configuration not loaded.");
       console.error("Admin: Defaults not loaded when handleLoadDefaults called.");
       return;
@@ -506,7 +498,6 @@ const Admin = () => {
           </Card>
         </div>
       </div>
->>>>>>> ff1567965961f00da574fed1b25c29819849ee56
     </div>
   );
 };

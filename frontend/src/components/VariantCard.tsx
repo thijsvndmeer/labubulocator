@@ -1,9 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { RarityBadge } from '@/components/RarityBadge';
-<<<<<<< HEAD
 
-=======
->>>>>>> ff1567965961f00da574fed1b25c29819849ee56
 import { StockStatusBadge } from '@/components/StockStatusBadge';
 import { ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -72,7 +69,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
           </div>
         </Link>
 
-        {isPopular && layoutConfig.cards.badgeVariant === 'floating' && (
+        {isPopular && layout.cards.badgeVariant === 'floating' && (
           <Badge variant="secondary" className="absolute top-2 left-2">Popular</Badge>
         )}
 
@@ -91,11 +88,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
             </p>
           </div>
         </Link>
-<<<<<<< HEAD
-        {!hideStockStatus && <StockStatusBadge status={variant.stockStatus as any} />}
-=======
-          {shouldShowStock && <StockStatusBadge status={variant.stockStatus as any} />}
->>>>>>> ff1567965961f00da574fed1b25c29819849ee56
+        {shouldShowStock && <StockStatusBadge status={variant.stockStatus as any} />}
         <div className="flex items-center justify-between gap-0 pt-0">
 
           {shouldShowAffiliate && (
@@ -117,11 +110,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
             </Button>
           )}
         </div>
-<<<<<<< HEAD
 
-
-=======
->>>>>>> ff1567965961f00da574fed1b25c29819849ee56
       </div>
     </Card>
   );

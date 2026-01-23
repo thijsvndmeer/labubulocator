@@ -80,17 +80,6 @@ const findImageRecursively = (filename: string, currentDir: string): string | nu
   return null;
 };
 
-<<<<<<< HEAD
-app.use(bodyParser.json());
-app.use((req, res, next) => {
-  const allowedOrigins = ["https://labubulocator.me","http://localhost:4173"];
-  const origin = req.headers.origin;
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-  next();
-});
-=======
 app.use(express.json()); // Add this line to parse JSON request bodies
 
 // CORS Configuration
@@ -116,7 +105,6 @@ app.use(cors({
   allowedHeaders: "Content-Type, x-admin-token", // Allow x-admin-token header
   credentials: true, // Allow cookies to be sent
 }));
->>>>>>> ff1567965961f00da574fed1b25c29819849ee56
 
 app.use((req, res, next) => {
   console.log(`Request received: ${req.method} ${req.path}`);
@@ -147,17 +135,7 @@ import { authMiddleware } from "./middleware/auth";
 app.use("/api/labubus", labubuRoutes);
 app.use("/api/listings", listingRoutes);
 
-<<<<<<< HEAD
 app.use("/api/admin", authMiddleware, adminRoutes);
-=======
-const allowAdminApi = Boolean(process.env.ADMIN_SECRET_TOKEN);
-
-if (allowAdminApi) {
-  app.use("/admin-api", adminLabubuRoutes); // Mount new admin API routes
-} else {
-  console.warn("Admin API disabled: set ADMIN_SECRET_TOKEN to enable.");
-}
->>>>>>> ff1567965961f00da574fed1b25c29819849ee56
 
 //============================================================================================================================================================================================
 // Start the server

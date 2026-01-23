@@ -1,9 +1,4 @@
-<<<<<<< HEAD
 import { HttpOptions, Labubu, Listing, PriceEntry, User, Role, Content, Navigation, Settings } from "@labubu/common";
-=======
-import { HttpOptions, Labubu, Listing, PriceEntry } from "@labubu/common";
-import { Variant } from '@/types/variant'; // Import Variant type
->>>>>>> ff1567965961f00da574fed1b25c29819849ee56
 
 export const API_ROOT_URL = import.meta.env.VITE_API_ROOT_URL || "https://api.labubulocator.me";
 const API_BASE_URL = `${API_ROOT_URL}/api`;
@@ -37,12 +32,7 @@ function toUrlSearchParams(obj: any, prefix = ''): URLSearchParams {
   return params;
 }
 
-<<<<<<< HEAD
 async function fetchFromApi<T>(path: string, options?: HttpOptions<T>, method: "GET" | "POST" | "PUT" | "DELETE" = "GET", body?: any, useAdminToken: boolean = false): Promise<T> {
-=======
-// Generic fetch function for non-admin API calls
-async function fetchFromApi<T>(path: string, options?: HttpOptions<T>): Promise<T> {
->>>>>>> ff1567965961f00da574fed1b25c29819849ee56
   const url = new URL(`${API_BASE_URL}${path}`);
   if (options) {
     const params = toUrlSearchParams(options);
@@ -119,7 +109,6 @@ export const api = {
   },
   admin: {
     labubus: {
-<<<<<<< HEAD
       create: (data: Labubu) => fetchFromApi<Labubu>("/admin/labubus", {}, "POST", data, true),
       update: (sku: string, data: Labubu) => fetchFromApi<Labubu>(`/admin/labubus/${sku}`, {}, "PUT", data, true),
       delete: (sku: string) => fetchFromApi<void>(`/admin/labubus/${sku}`, {}, "DELETE", undefined, true),
@@ -158,18 +147,6 @@ export const api = {
       create: (data: Settings) => fetchFromApi<Settings>("/admin/settings", undefined, "POST", data, true),
       update: (id: number, data: Partial<Settings>) => fetchFromApi<Settings>(`/admin/settings/${id}`, undefined, "PUT", data, true),
       delete: (id: number) => fetchFromApi<void>(`/admin/settings/${id}`, undefined, "DELETE", undefined, true),
-=======
-      get: async () => adminFetch<Variant[]>('/labubus', 'GET'),
-      getBySku: async (sku: string) => adminFetch<Variant>(`/labubus/${sku}`, 'GET'),
-      create: async (variant: Partial<Variant>) => adminFetch<Variant>('/labubus', 'POST', variant),
-      update: async (sku: string, variant: Partial<Variant>) => adminFetch<Variant>(`/labubus/${sku}`, 'PUT', variant),
-      delete: async (sku: string) => adminFetch<void>(`/labubus/${sku}`, 'DELETE'),
-      uploadCatalog: async (file: File) => {
-        const formData = new FormData();
-        formData.append('file', file);
-        return adminFetch<{ message: string; processed: number }>('/labubus/upload', 'POST', formData);
-      },
->>>>>>> ff1567965961f00da574fed1b25c29819849ee56
     },
   },
 };
