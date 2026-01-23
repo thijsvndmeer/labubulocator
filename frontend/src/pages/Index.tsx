@@ -83,6 +83,8 @@ const Index = () => {
   const { data: variants = [], isLoading, isError } = useQuery<Labubu[]>({
     queryKey: ['variants'],
     queryFn: () => api.labubus.get(),
+    retry: 1,
+    staleTime: 5000,
   });
 
   if (isError) {

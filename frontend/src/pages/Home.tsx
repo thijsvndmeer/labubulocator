@@ -2,12 +2,24 @@ import React, { useLayoutEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
+import { useQuery } from '@tanstack/react-query';
+import { api, API_ROOT_URL } from '@/lib/api';
+import { BackendStartupMessage } from '@/components/BackendStartupMessage';
+
 gsap.registerPlugin(ScrollTrigger);
 
 const Home: React.FC = () => {
+  const { isError, isLoading } = useQuery({
+    queryKey: ['variants'],
+    queryFn: () => api.labubus.get(),
+    retry: 1, // Fail faster to show initialization message
+    staleTime: 5000,
+  });
+
   const main = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
+    if (isError || isLoading) return;
     const ctx = gsap.context((self) => {
       if (!self.selector) return;
       const sections = self.selector('.panel');
@@ -19,12 +31,24 @@ const Home: React.FC = () => {
           pin: true,
           scrub: 1,
           snap: 1 / (sections.length - 1),
-          end: () => '+=' + document.querySelector('.container')?.offsetWidth,
+          end: () => '+=' + (document.querySelector('.container') as HTMLElement)?.offsetWidth,
         },
       });
     }, main);
     return () => ctx.revert();
-  }, []);
+  }, [isError, isLoading]);
+
+  if (isError) {
+    return <BackendStartupMessage />;
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      </div>
+    );
+  }
 
   const images = [
     'LBB-PFL-A.png',
@@ -49,7 +73,7 @@ const Home: React.FC = () => {
         </div>
         {images.map((image, index) => (
           <div key={index} className="panel w-screen h-screen flex-shrink-0 flex items-center justify-center bg-black">
-            <img src={`https://api.labubulocator.me/images/${image}`} alt={`Labubu ${image}`} className="max-h-full" />
+            <img src={`${API_ROOT_URL}/images/${image}`} alt={`Labubu ${image}`} className="max-h-full" />
           </div>
         ))}
         <div className="panel w-screen h-screen flex-shrink-0 flex items-center justify-center text-white bg-black">
