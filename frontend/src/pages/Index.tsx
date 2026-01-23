@@ -60,7 +60,7 @@ const Index = () => {
               <Gem className="h-8 w-8 text-primary" />
               <div>
                 <h2 className="text-3xl font-bold">Highest Value</h2>
-                <p className="text-muted-foreground">Highest value Labubus</p>
+                <p className="text-muted-foreground">Current highest value Labubus</p>
               </div>
             </div>
 

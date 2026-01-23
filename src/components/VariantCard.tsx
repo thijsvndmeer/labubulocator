@@ -47,7 +47,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
   ].filter(Boolean).join(' ');
 
   return (
-    <Card 
+    <Card
       className={cardClasses}
     >
       <Link to={`/variant/${variant.sku}`}>
@@ -61,7 +61,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
           />
         </div>
       </Link>
-      
+
       <div className="p-4 space-y-3">
         <Link to={`/variant/${variant.sku}`}>
           <div className="flex items-start justify-between gap-2">
@@ -86,23 +86,24 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
               <span className="text-2xl font-bold text-primary">
                 ${(variant.estimatedValue || 0).toFixed(2)}
               </span>
-              <div className={`flex items-center gap-1 text-sm font-medium ${
-                (variant.priceChange24h || 0) > 0 ? 'text-rarity-uncommon' : 'text-destructive'
-              }`}>
-                {(variant.priceChange24h || 0) > 0 ? (
-                  <TrendingUp className="h-3.5 w-3.5" />
-                ) : (
-                  <TrendingDown className="h-3.5 w-3.5" />
-                )}
-                {Math.abs(variant.priceChange24h || 0)}%
-              </div>
+              {(variant.priceChange24h || 0) !== 0 && (
+                <div className={`flex items-center gap-1 text-sm font-medium ${(variant.priceChange24h || 0) > 0 ? 'text-rarity-uncommon' : 'text-destructive'
+                  }`}>
+                  {(variant.priceChange24h || 0) > 0 ? (
+                    <TrendingUp className="h-3.5 w-3.5" />
+                  ) : (
+                    <TrendingDown className="h-3.5 w-3.5" />
+                  )}
+                  {Math.abs(variant.priceChange24h || 0)}%
+                </div>
+              )}
             </div>
             <p className="text-xs text-muted-foreground">
               Floor: ${lowestPrice > 0 && lowestPrice !== Infinity ? lowestPrice.toFixed(2) : 'N/A'} • Range: ${variant.priceRange?.low || 'N/A'}-${variant.priceRange?.high || 'N/A'}
             </p>
           </div>
         </Link>
-          {!hideStockStatus && <StockStatusBadge status={variant.stockStatus as any} />}
+        {!hideStockStatus && <StockStatusBadge status={variant.stockStatus as any} />}
         <div className="flex items-center justify-between gap-0 pt-0">
 
           {variant.affiliateLinks && variant.affiliateLinks.length > 0 && (

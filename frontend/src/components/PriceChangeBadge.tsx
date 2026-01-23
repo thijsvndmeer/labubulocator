@@ -5,7 +5,7 @@ interface PriceChangeBadgeProps {
 }
 
 export const PriceChangeBadge = ({ priceChange }: PriceChangeBadgeProps) => {
-  if (priceChange === 0) {
+  if (Math.abs(priceChange) < 0.01) {
     return null;
   }
 

@@ -3,19 +3,17 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RarityBadge } from '@/components/RarityBadge';
-import { VolatilityMetric } from '@/components/VolatilityMetric';
+
 import { StockStatusBadge } from '@/components/StockStatusBadge';
 import { PriceComparison } from '@/components/PriceComparison';
-import { PriceHistoryChart } from '@/components/PriceHistoryChart';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Bell, Heart, ExternalLink, Package, Tag, RefreshCw } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ArrowLeft, Heart, ExternalLink, Package, Tag, RefreshCw } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useQuery } from '@tanstack/react-query';
 import { api, API_ROOT_URL } from '@/lib/api';
 import { isFavorite, addFavorite, removeFavorite } from '@/lib/favorites';
 import { isCollected, addCollection, removeCollection } from '@/lib/collection';
-import { Labubu, Listing, PriceEntry } from '@labubu/common';
+import { Labubu, Listing } from '@labubu/common';
 
 
 
@@ -71,14 +69,9 @@ export default function VariantDetail() {
     refetchInterval: 30000,
   });
 
-  const { data: priceHistory, isFetching: isFetchingPriceHistory } = useQuery({
-    queryKey: ['priceHistory', sku],
-    queryFn: () => listings && (listings as Listing[]).length > 0 ? api.listings.getPriceHistory((listings as Listing[])[0].id) : Promise.resolve([]),
-    enabled: !!sku && !!variant && !!listings,
-    refetchInterval: 30000,
-  });
 
-  const isRefreshing = isFetchingVariant || isFetchingListings || isFetchingPriceHistory;
+
+  const isRefreshing = isFetchingVariant || isFetchingListings;
 
   const mergedVariant = useMemo(() => {
     if (!variant) return null;
@@ -87,9 +80,8 @@ export default function VariantDetail() {
     return {
       ...v,
       estimatedValue: l?.[0]?.currentPrice || v.estimatedValue,
-      priceHistory: priceHistory || [],
     };
-  }, [variant, listings, priceHistory]);
+  }, [variant, listings]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -155,36 +147,11 @@ export default function VariantDetail() {
                 <Skeleton className="h-12 w-12" />
               </div>
 
-              {/* Attributes Skeleton */}
-              <Card className="p-4">
-                <Skeleton className="h-6 w-40 mb-3" /> {/* Product Details Header */}
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-full" />
-                </div>
-              </Card>
+
             </div>
           </div>
 
-          {/* Price History Skeleton */}
-          <Card className="mt-8 p-6">
-            <Skeleton className="h-8 w-48 mb-4" /> {/* Price History Header */}
-            <Skeleton className="h-64 w-full" /> {/* Chart area */}
-          </Card>
 
-          {/* Recent Sales Skeleton */}
-          <Card className="mt-8 p-6">
-            <Skeleton className="h-8 w-48 mb-4" /> {/* Recent Sales Header */}
-            <div className="space-y-2">
-              <Skeleton className="h-10 w-full" /> {/* Table Header */}
-              <Skeleton className="h-10 w-full" /> {/* Table Row 1 */}
-              <Skeleton className="h-10 w-full" /> {/* Table Row 2 */}
-              <Skeleton className="h-10 w-full" /> {/* Table Row 3 */}
-            </div>
-            <Skeleton className="h-4 w-3/4 mt-4" /> {/* Sales data aggregated text */}
-          </Card>
         </div>
       </div>
     );
@@ -196,7 +163,7 @@ export default function VariantDetail() {
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center space-y-4">
             <h1 className="text-2xl font-bold">Variant not found</h1>
-              <Button onClick={() => navigate(-1)}>Back</Button>
+            <Button onClick={() => navigate(-1)}>Back</Button>
           </div>
         </div>
       </div>
@@ -249,7 +216,7 @@ export default function VariantDetail() {
                 </div>
                 <RarityBadge rarity={mergedVariant.rarity as any} />
               </div>
-              
+
               <div className="flex items-center gap-2 mt-3">
                 <Badge variant="outline" className="font-mono">
                   <Tag className="h-3 w-3 mr-1" />
@@ -259,269 +226,142 @@ export default function VariantDetail() {
               </div>
             </div>
 
-                        <p className="text-muted-foreground">{mergedVariant.description}</p>
-
-            
-
-                        {/* Price Info */}
-
-                        <Card className="p-6 bg-gradient-primary relative">
-                          <div className="space-y-4">
-                            <div>
-                              <p className="text-sm text-primary-foreground/80 mb-1">Estimated Market Value</p>
-                              <div className="flex items-baseline gap-3">
-                                <span className="text-4xl font-bold text-primary-foreground">
-                                  {typeof mergedVariant.estimatedValue === 'number' ? `$${mergedVariant.estimatedValue.toFixed(2)}` : '--.--'}
-                                </span>
-                                <span className="text-sm text-primary-foreground/80">
-                                  Floor: {typeof mergedVariant.lowestPrice === 'number' ? `$${mergedVariant.lowestPrice.toFixed(2)}` : '--.--'}
-                                </span>
-                              </div>
-                            </div>
-          
-                            {mergedVariant.priceRange && (
-                              <div className="flex items-center gap-4 text-sm text-primary-foreground/90">
-                                <div>
-                                  <span className="text-primary-foreground/70">Past Week Range: </span>
-                                  <span className="font-semibold">{typeof mergedVariant.priceRange.low === 'number' ? `$${mergedVariant.priceRange.low.toFixed(2)}` : '--.--'} - {typeof mergedVariant.priceRange.high === 'number' ? `$${mergedVariant.priceRange.high.toFixed(2)}` : '--.--'}</span>
-                                </div>
-                              </div>
-                            )}
-
-                            <div className="flex items-center gap-4 text-sm text-primary-foreground/90">
-                              <div>
-                                <span className="text-primary-foreground/70">MSRP: </span>
-                                <span className="font-semibold">{typeof mergedVariant.msrp === 'number' ? `$${mergedVariant.msrp.toFixed(2)}` : '--.--'}</span>
-                              </div>
-                            </div>
-          
-                            <VolatilityMetric volatility={mergedVariant.volatility || 0} />
-                          </div>
-                        </Card>
-
-            
-
-                        {/* Action Buttons */}
-
-                        <div className="flex gap-3">
-
-                          {mergedVariant.affiliateLinks && mergedVariant.affiliateLinks.slice(0, 2).map((link) => (
-
-                            <Button key={link.id} size="lg" className="flex-1" asChild>
-
-                              <a href={link.url} target="_blank" rel="noopener noreferrer">
-
-                                {link.displayName}
-
-                                <ExternalLink className="h-4 w-4 ml-2" />
-
-                              </a>
-
-                            </Button>
-
-                          ))}
-
-                        </div>
-
-            
-
-                        {/* StockX and eBay Windows */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {/* StockX Window */}
-                          <Card className="p-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-semibold">StockX</h4>
-                              {mergedVariant.msrp && mergedVariant.stockxPrice && (
-                                <span className={`text-sm font-medium text-gray-500`}>
-                                  {typeof mergedVariant.stockxPrice === 'number' && typeof mergedVariant.msrp === 'number' ? `${((mergedVariant.stockxPrice - mergedVariant.msrp) / mergedVariant.msrp * 100).toFixed(0)}% vs MSRP` : '--.--'}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-2xl font-bold">{typeof mergedVariant.stockxPrice === 'number' ? `$${mergedVariant.stockxPrice.toFixed(2)}` : '--.--'}</span>
-                              <Button size="sm" asChild>
-                                <a href={`https://stockx.com/${mergedVariant.kicksdevId}`} target="_blank" rel="noopener noreferrer">
-                                  View on StockX
-                                  <ExternalLink className="h-3 w-3 ml-1" />
-                                </a>
-                              </Button>
-                            </div>
-                          </Card>
-
-                          {/* eBay Window */}
-                          <Card className="p-4">
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-semibold">eBay</h4>
-                              {mergedVariant.msrp && mergedVariant.ebayLowestPrice && (
-                                <span className={`text-sm font-medium text-gray-500`}>
-                                  {((mergedVariant.ebayLowestPrice - mergedVariant.msrp) / mergedVariant.msrp * 100).toFixed(0)}% vs MSRP
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-2xl font-bold">{typeof mergedVariant.ebayLowestPrice === 'number' ? `$${mergedVariant.ebayLowestPrice.toFixed(2)}` : 'Not Found'}</span>
-                              <Button size="sm" asChild>
-                                <a href={`https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent((mergedVariant.name || '') + ' labubu')}&_sacat=246&LH_ItemCondition=1000&_sop=15&mkcid=1&mkrid=711-53200-19255-0&siteid=0&numpt=0&toolid=10001&campid=5339126898&customid=&mkevt=1`} target="_blank" rel="noopener noreferrer">
-                                  Search on eBay
-                                  <ExternalLink className="h-3 w-3 ml-1" />
-                                </a>
-                              </Button>
-                            </div>
-                          </Card>
-                        </div>
-
-            
-
-                        <div className="flex gap-3">
-
-                          <Button variant="outline" size="lg" className="flex-1">
-
-                            <Bell className="h-4 w-4 mr-2" />
-
-                            Watch This Variant
-
-                          </Button>
-
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={handleFavoriteToggle}
-                            className={isFavorited ? 'text-red-500 hover:text-red-600' : ''}
-                          >
-                            <Heart className={isFavorited ? 'h-4 w-4 fill-current' : 'h-4 w-4'} />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={handleCollectionToggle}
-                            className={isCollectedState ? 'text-blue-500 hover:text-blue-600' : ''}
-                          >
-                            <Package className={isCollectedState ? 'h-4 w-4 fill-current' : 'h-4 w-4'} />
-                          </Button>
-                        </div>
-
-            
-
-                        {/* Attributes */}
-
-                        <Card className="p-4">
-
-                          <h3 className="font-semibold mb-3 flex items-center gap-2">
-
-                            <Package className="h-4 w-4" />
-
-                            Product Details
-
-                          </h3>
-
-                          <div className="grid grid-cols-2 gap-3 text-sm">
-
-                            {mergedVariant.attributes && Object.entries(mergedVariant.attributes).map(([key, value]) => (
-
-                              <div key={key}>
-
-                                                    <span className="text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}: </span>
-                                <span className="font-medium">{String(value)}</span>
-
-                              </div>
-
-                            ))}
-
-                          </div>
-
-                        </Card>
-
-                      </div>
-
-                    </div>
-
-            
-
-                    {/* Price History */}
-
-                    <div className="mt-8">
-                      <PriceHistoryChart history={mergedVariant.priceHistory || []} />
-                    </div>
-
-            
-
-                    {/* Recent Sales */}
-
-                    <Card className="mt-8 p-6">
-
-                      <h2 className="text-2xl font-bold mb-4">Recent Sales</h2>
-
-                        {(mergedVariant.recentSales && mergedVariant.recentSales.length > 0) ? (
-                          <Table>
-
-                            <TableHeader>
-
-                              <TableRow>
-
-                                <TableHead>Date</TableHead>
-
-                                <TableHead>Source</TableHead>
-
-                                <TableHead>Price</TableHead>
-
-                                <TableHead>Currency</TableHead>
-
-                                <TableHead></TableHead>
-
-                              </TableRow>
-
-                            </TableHeader>
-
-                            <TableBody>
-
-                              {mergedVariant.recentSales?.map((sale, index) => (
-
-                                <TableRow key={index}>
-
-                                  <TableCell>{new Date(sale.date).toLocaleDateString()}</TableCell>
-
-                                  <TableCell>{sale.source}</TableCell>
-
-                                  <TableCell className="font-semibold">${sale.price.toFixed(2)}</TableCell>
-
-                                  <TableCell>{sale.currency}</TableCell>
-
-                                  <TableCell>
-
-                                    <Button variant="ghost" size="sm" asChild>
-
-                                      <a href={sale.url} target="_blank" rel="noopener noreferrer">
-
-                                        View <ExternalLink className="h-3 w-3 ml-1" />
-
-                                      </a>
-
-                                    </Button>
-
-                                  </TableCell>
-
-                                </TableRow>
-
-                              ))}
-
-                            </TableBody>
-
-                          </Table>
-                        ) : (
-                          <div className="text-center py-12">
-                            <p className="text-muted-foreground">No recent sales data available.</p>
-                          </div>
-                        )}
-
-                      <p className="text-xs text-muted-foreground mt-4">
-
-                        
-
-                      </p>
-
-                    </Card>
-
+            <p className="text-muted-foreground">{mergedVariant.description}</p>
+
+
+
+            {/* Price Info */}
+
+            <Card className="p-6 bg-gradient-primary relative">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-primary-foreground/80 mb-1">Estimated Market Value</p>
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-4xl font-bold text-primary-foreground">
+                      {typeof mergedVariant.estimatedValue === 'number' ? `$${mergedVariant.estimatedValue.toFixed(2)}` : '--.--'}
+                    </span>
+                    <span className="text-sm text-primary-foreground/80">
+                      Floor: {typeof mergedVariant.lowestPrice === 'number' ? `$${mergedVariant.lowestPrice.toFixed(2)}` : '--.--'}
+                    </span>
                   </div>
-
                 </div>
-)}
+
+                {mergedVariant.priceRange && (
+                  <div className="flex items-center gap-4 text-sm text-primary-foreground/90">
+                    <div>
+                      <span className="text-primary-foreground/70">Past Week Range: </span>
+                      <span className="font-semibold">{typeof mergedVariant.priceRange.low === 'number' ? `$${mergedVariant.priceRange.low.toFixed(2)}` : '--.--'} - {typeof mergedVariant.priceRange.high === 'number' ? `$${mergedVariant.priceRange.high.toFixed(2)}` : '--.--'}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-4 text-sm text-primary-foreground/90">
+                  <div>
+                    <span className="text-primary-foreground/70">MSRP: </span>
+                    <span className="font-semibold">{typeof mergedVariant.msrp === 'number' ? `$${mergedVariant.msrp.toFixed(2)}` : '--.--'}</span>
+                  </div>
+                </div>
+
+
+              </div>
+            </Card>
+
+
+
+            {/* Action Buttons */}
+
+            <div className="flex gap-3">
+
+              {mergedVariant.affiliateLinks && mergedVariant.affiliateLinks.slice(0, 2).map((link) => (
+
+                <Button key={link.id} size="lg" className="flex-1" asChild>
+
+                  <a href={link.url} target="_blank" rel="noopener noreferrer">
+
+                    {link.displayName}
+
+                    <ExternalLink className="h-4 w-4 ml-2" />
+
+                  </a>
+
+                </Button>
+
+              ))}
+
+            </div>
+
+
+
+            {/* StockX and eBay Windows */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* StockX Window */}
+              <Card className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-semibold">StockX</h4>
+                  {mergedVariant.msrp && mergedVariant.stockxPrice && (
+                    <span className={`text-sm font-medium text-gray-500`}>
+                      {typeof mergedVariant.stockxPrice === 'number' && typeof mergedVariant.msrp === 'number' ? `${((mergedVariant.stockxPrice - mergedVariant.msrp) / mergedVariant.msrp * 100).toFixed(0)}% vs MSRP` : '--.--'}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-bold">{typeof mergedVariant.stockxPrice === 'number' ? `$${mergedVariant.stockxPrice.toFixed(2)}` : '--.--'}</span>
+                  <Button size="sm" asChild>
+                    <a href={`https://stockx.com/${mergedVariant.kicksdevId}`} target="_blank" rel="noopener noreferrer">
+                      View on StockX
+                      <ExternalLink className="h-3 w-3 ml-1" />
+                    </a>
+                  </Button>
+                </div>
+              </Card>
+
+              {/* eBay Window */}
+              <Card className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-semibold">eBay</h4>
+                  {mergedVariant.msrp && mergedVariant.ebayLowestPrice && (
+                    <span className={`text-sm font-medium text-gray-500`}>
+                      {((mergedVariant.ebayLowestPrice - mergedVariant.msrp) / mergedVariant.msrp * 100).toFixed(0)}% vs MSRP
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl font-bold">{typeof mergedVariant.ebayLowestPrice === 'number' ? `$${mergedVariant.ebayLowestPrice.toFixed(2)}` : 'Not Found'}</span>
+                  <Button size="sm" asChild>
+                    <a href={`https://www.ebay.com/sch/i.html?_nkw=${encodeURIComponent((mergedVariant.name || '') + ' labubu')}&_sacat=246&LH_ItemCondition=1000&_sop=15&mkcid=1&mkrid=711-53200-19255-0&siteid=0&numpt=0&toolid=10001&campid=5339126898&customid=&mkevt=1`} target="_blank" rel="noopener noreferrer">
+                      Search on eBay
+                      <ExternalLink className="h-3 w-3 ml-1" />
+                    </a>
+                  </Button>
+                </div>
+              </Card>
+            </div>
+
+
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleFavoriteToggle}
+                className={`flex-1 ${isFavorited ? 'text-red-500 hover:text-red-600' : ''}`}
+              >
+                <Heart className={`h-4 w-4 mr-2 ${isFavorited ? 'fill-current' : ''}`} />
+                Favorite
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleCollectionToggle}
+                className={`flex-1 ${isCollectedState ? 'text-blue-500 hover:text-blue-600' : ''}`}
+              >
+                <Package className={`h-4 w-4 mr-2 ${isCollectedState ? 'fill-current' : ''}`} />
+                Collection
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

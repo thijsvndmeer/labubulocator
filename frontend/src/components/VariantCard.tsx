@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { RarityBadge } from '@/components/RarityBadge';
-import { VolatilityMetric } from '@/components/VolatilityMetric';
+
 import { StockStatusBadge } from '@/components/StockStatusBadge';
 import { ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -32,7 +32,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
   ].filter(Boolean).join(' ');
 
   return (
-    <Card 
+    <Card
       className={cardClasses}
     >
       <Link to={`/variant/${variant.sku}`}>
@@ -46,7 +46,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
           />
         </div>
       </Link>
-      
+
       <div className="p-4 space-y-3">
         <Link to={`/variant/${variant.sku}`}>
           <div className="flex items-start justify-between gap-2">
@@ -80,7 +80,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
             </p>
           </div>
         </Link>
-          {!hideStockStatus && <StockStatusBadge status={variant.stockStatus as any} />}
+        {!hideStockStatus && <StockStatusBadge status={variant.stockStatus as any} />}
         <div className="flex items-center justify-between gap-0 pt-0">
 
           {variant.affiliateLinks && variant.affiliateLinks.length > 0 && (
@@ -103,9 +103,7 @@ export const VariantCard = ({ variant, isPopular, hideStockStatus, showCollectio
           )}
         </div>
 
-        <Link to={`/variant/${variant.sku}`}>
-          <VolatilityMetric volatility={variant.volatility || 0} />
-        </Link>
+
       </div>
     </Card>
   );
