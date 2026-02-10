@@ -11,6 +11,7 @@ import { Header } from "./components/Header";
 import { ThemeUpdater } from "./components/ThemeUpdater";
 import { useState, useEffect, lazy, Suspense } from "react";
 import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
+import { BackendStartupMessage } from "./components/BackendStartupMessage";
 
 const Index = lazy(() => import("./pages/Index"));
 const VariantDetail = lazy(() => import("./pages/VariantDetail"));
@@ -110,6 +111,7 @@ export const AppContent = () => {
             </>
           )}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/test-startup" element={<BackendStartupMessage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
