@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { VariantCard } from '@/components/VariantCard';
-import heroBanner from '@/assets/hero-banner.jpg';
+import heroBanner from '@/assets/hero-banner.svg';
 import { TrendingUp } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Labubu } from '@labubu/common/src/types/labubu';
